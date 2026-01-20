@@ -239,6 +239,19 @@ terra::plot(stack_habitat)
 
 ## Prepare `trophic_df`: a `data.frame` of trophic web
 
+You can use a data.frame like this:
+
+```{r}
+df_raw <- data.frame(
+  src = c("sol", "sol", "sp10", "sp12"),
+  target = c("sp10", "sp12", "sp12", "sp22"),
+  w = c(2, 3, 2, 1))
+trophic_from_df <- trophic(df_raw, from = "src", to = "target", weight = "w")
+
+attr(trophic_from_df, "level")
+```
+
+
 ```{r build_trophic_web_df}
 trophic_df <- trophic() |>
   add_link("sol", "sp10", 2) |>

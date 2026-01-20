@@ -54,7 +54,10 @@ spacemodel <- function(raster_stack, trophic_tbl) {
 #'
 #' @export
 #' @importFrom terra rast
-raster_stack <- function(raster_list, names) {
+raster_stack <- function(raster_list, names=NULL) {
+  if(is.null(names)){
+    names <- names(raster_list)
+  }
   if (length(raster_list) != length(names)) {
     stop("'raster_list' and 'names' should have the same length")
   }

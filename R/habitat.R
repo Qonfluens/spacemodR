@@ -104,6 +104,8 @@ print.habitat <- function(x, ...) {
 #'
 #' @param hab A Habitat object
 #' @param sf_data An sf object containing geometries to add
+#' @param weight A weight to apply on the habitat feature. Can then be used as
+#'  resistance for dispersal functions for instance.
 #' @param ... Additional arguments
 #' @return A Habitat object with new geometries added as habitat
 #' @export
