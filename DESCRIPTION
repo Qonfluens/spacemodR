@@ -7,10 +7,8 @@ Description: Build the habitat and the trophic links of different species.
 License: MIT + file LICENSE
 Imports: 
     archive,
-    config,
     ggplot2,
     httr,
-    igraph,
     sf,
     terra
 Encoding: UTF-8
