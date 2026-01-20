@@ -1,31 +1,80 @@
-#' Create an empty trophic table
+#' Create a trophic table
 #'
-#' Creates an empty data.frame of class \code{trophic_tbl} designed
-#' to store trophic links in a safe and structured way.
+#' Creates a data.frame of class \code{trophic_tbl} designed to store trophic links.
+#' Can be initialized empty or from an existing data.frame.
 #'
-#' @return An empty object of class \code{trophic_tbl} with columns:
-#' \describe{
-#'   \item{link}{A list column containing named character vectors c(from=..., to=...)}
-#'   \item{weight}{Numeric weight associated with each link}
-#' }
-#' The object also contains an attribute \code{level} that will store
-#' the trophic level of each node.
+#' @param data (Optional) A data.frame containing link information.
+#' @param from (Optional) Character string. Name of the column in \code{data} containing source nodes.
+#' @param to (Optional) Character string. Name of the column in \code{data} containing target nodes.
+#' @param weight (Optional) Character string. Name of the column in \code{data} containing weights.
+#'   Default is 1 if not specified.
+#'
+#' @return An object of class \code{trophic_tbl}.
 #'
 #' @examples
-#' net <- trophic()
+#' # 1. Empty initialization (pipe style)
+#' net <- trophic() |>
+#'   add_link("sol", "sp1")
+#'
+#' # 2. Initialization from data.frame
+#' df_raw <- data.frame(src = c("A", "A"), target = c("B", "C"), w = c(2, 5))
+#' net_from_df <- trophic(df_raw, from = "src", to = "target", weight = "w")
 #'
 #' @export
-trophic <- function() {
+trophic <- function(data = NULL, from = NULL, to = NULL, weight = NULL) {
+
+  # --- Cas 1 : Initialisation vide ---
+  if (is.null(data)) {
+    df <- data.frame(
+      link = I(list()),
+      weight = numeric(),
+      stringsAsFactors = FALSE
+    )
+    class(df) <- c("trophic_tbl", class(df))
+    attr(df, "level") <- numeric()
+    return(df)
+  }
+
+  # --- Cas 2 : Initialisation depuis un data.frame ---
+  if (!is.data.frame(data)) stop("Argument 'data' must be a data.frame")
+  if (is.null(from) || is.null(to)) stop("Arguments 'from' and 'to' are required when data is provided")
+  if (!all(c(from, to) %in% names(data))) stop("Columns specified in 'from' or 'to' not found in data")
+
+  # Extraction des vecteurs
+  v_from <- as.character(data[[from]])
+  v_to <- as.character(data[[to]])
+
+  # Gestion des poids
+  if (is.null(weight)) {
+    v_weight <- rep(1, nrow(data))
+  } else {
+    if (!weight %in% names(data)) stop("Column specified in 'weight' not found in data")
+    v_weight <- as.numeric(data[[weight]])
+  }
+
+  # Construction de la colonne 'link' (liste de vecteurs nommés)
+  # On utilise Map pour itérer ligne par ligne
+  new_links <- Map(function(f, t) {
+    # On s'assure que ce n'est pas une boucle (optionnel ici, mais attrapé par validate plus tard)
+    structure(
+      c(from = f, to = t),
+      class = "trophic_link"
+    )
+  }, v_from, v_to)
+
+  # Création de l'objet final
   df <- data.frame(
-    link = I(list()),
-    weight = numeric(),
+    link = I(new_links),
+    weight = v_weight,
     stringsAsFactors = FALSE
   )
 
   class(df) <- c("trophic_tbl", class(df))
-  attr(df, "level") <- numeric()
+  attr(df, "level") <- numeric() # Sera calculé plus tard si besoin
 
-  return(df)
+  # Validation (supposant que la fonction existe dans votre package)
+  # Si elle n'existe pas encore, retournez juste df
+  validate_trophic_tbl(df)
 }
 
 
@@ -162,7 +211,7 @@ is_cyclic <- function(df) {
 
   nodes <- unique(c(df$from, df$to))
 
-  indegree <- setNames(rep(0, length(nodes)), nodes)
+  indegree <- stats::setNames(rep(0, length(nodes)), nodes)
   for (v in df$to) {
     indegree[v] <- indegree[v] + 1
   }
@@ -250,6 +299,8 @@ compute_levels <- function(edges) {
 #' Creates a simple graphical representation of a trophic network using ggplot2.
 #'
 #' @param x A \code{trophic_tbl} object.
+#' @param shift To shift x_axis between trophic level and avoid
+#'   the potential overlapping of arrows.
 #' @param ... Additional arguments (not used, for S3 consistency).
 #'
 #' @details
@@ -316,7 +367,7 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
     ggplot2::geom_segment(
       data = edges,
       ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to),
-      arrow = arrow(length = unit(0.2, "cm"))
+      arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm"))
     ) +
     # noeuds
     ggplot2::geom_point(
