@@ -84,17 +84,12 @@ print.spacemodel <- function(x, ...) {
 
 
 #' @export
-plot.spacemodel <- function(x, layer = 1, ...) {
+plot.spacemodel <- function(x, layer = 1, graph=FALSE, ...) {
+  if(graph){
+    trophic_tbl <- attr(spcmdl_habitat, "trophic_tbl")
+    return(plot(trophic_tbl))
+  }
   # plot raster
   terra::plot(x$raster_stack[[layer]], main = paste("Layer", layer))
 }
-
-
-#' @export
-graph.spacemodel <- function(x, ...) {
-  plot(trophic_tbl)
-}
-
-
-
 

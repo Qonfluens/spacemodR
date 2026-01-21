@@ -256,7 +256,7 @@ is_cyclic <- function(df) {
 #' @keywords internal
 compute_levels <- function(edges) {
   nodes <- unique(c(edges$from, edges$to))
-  level <- setNames(rep(NA, length(nodes)), nodes)
+  level <- stats::setNames(rep(NA, length(nodes)), nodes)
   indeg <- table(factor(edges$to, levels = nodes))
   level[names(indeg[indeg == 0])] <- 1
 
@@ -372,14 +372,14 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
     # noeuds
     ggplot2::geom_point(
       data = node_df,
-      aes(x = x, y = y),
+      ggplot2::aes(x = x, y = y),
       alpha=0.6, color="grey",
       size = 4
     ) +
     # labels
     ggplot2::geom_text(
       data = node_df,
-      aes(x = x, y = y, label = node),
+      ggplot2::aes(x = x, y = y, label = node),
       vjust = -1
     ) +
     ggplot2::scale_y_continuous(
