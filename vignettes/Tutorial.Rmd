@@ -189,6 +189,15 @@ head(habitat_22)
 plot(habitat_22)
 ```
 
+### /!\ WHAT IS AN HABITAT
+
+What we consider `habitat` is defined by the purpose of the model.
+
+There is 3 situations:
+1. the area where the species cannot go, even just passing (impossible)
+
+A raster of
+
 ### Defining raster of habitat based on a raster of the ground
 
 Here, we download a raster layer with the interpolation of the ground concentration
@@ -322,24 +331,34 @@ terra::plot(spcmdl_dispersal[["sol"]])
 ```
 
 
-```{r exposure_spacemodel_build}
+```{r kernel_exposure}
 kernels <- list(
   sol  = NA,
   sp10 = k_sp10,
   sp12 = k_sp12,
   sp22 = k_sp22
 )
+```
 
-intakes <- attr(spcmdl_dispersal, "trophic_tbl")
-intakes <- normalize_weights(intakes)
-intakes$flux <- list(
-  function(x) x*2 + 0,
-  function(x) x*3 + 0,
-  function(x) x*4 + 0,
-  function(x) x*5 + 0
+
+```{r}
+attr(spcmdl_dispersal, "trophic_tbl")
+```
+
+
+```{r exposure_spacemodel_build}
+test_intakes <- intake(spcmdl_dispersal,
+  # General rule: sp12 uptake with factor 3
+  "sp12" = 3,  
+  # Exception: when sp12 feed on sp10, factor is 5
+  "sp10 -> sp12" = 5,
+  # General rule: sp22 has a complex function
+  "sp22" = ~ x^2 + 10,
+  # Exception: sol to sp10 is a coef
+  "sol -> sp10" = 0.1,
+  default = 1 # for all other default is 1
 )
-
-spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, intakes)
+spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_intakes)
 ```
 
 ```{r exposure_spacemodel_plot}
@@ -390,22 +409,26 @@ terra::plot(spcmdl_ecossl_h)
 
 ## Build the Risk indice
 
-```{r eco_ssl_risk_build}
-kernels <- list(
+```{r eco_ssl_kernles_build}
+# no dispersal for eco_ssl
+ecossl_kernels <- list(
   soil  = NA, plant = NA, invert = NA,
   mamHerb = NA, mamInsect = NA, birdInsect = NA)
+```
 
-indices <- attr(spcmdl_ecossl_h, "trophic_tbl")
-indices <- normalize_weights(indices)
-indices$flux <- list(
-  function(x) 10^x/32,
-  function(x) 10^x/140,
-  function(x) 10^x/73,
-  function(x) 10^x/0.36,
-  function(x) 10^x/0.77
+
+```{r eco_ssl_risk_build}
+ecossl_intakes <- intake(spcmdl_ecossl_h,
+  "soil -> plant"       = ~ 10^x/32,  
+  "soil -> invert"      = ~ 10^x/140,
+  "soil -> mamHerb"     = ~ 10^x/73,
+  "soil -> mamInsect"   = ~ 10^x/0.36,
+  "soil -> birdInsect"  = ~ 10^x/0.77,
+
+  default = 1 # for all other default is 1
 )
 
-spcmdl_ecossl_risk <- transfer(spcmdl_ecossl_h, kernels, indices)
+spcmdl_ecossl_risk <- transfer(spcmdl_ecossl_h, ecossl_kernels, ecossl_intakes)
 ```
 
 A plot of layer with risk threshold color scale.

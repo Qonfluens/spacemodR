@@ -1,121 +1,47 @@
-#' Download and extract OCS GE data for a Region Of Interest
+#' Collecte les données OCS GE depuis un FlatGeobuf sur S3
 #'
-#' This function downloads (if needed) OCS GE v2 datasets from IGN,
-#' extracts them, merges data from all intersecting departments,
-#' and crops the result to the provided region of interest (ROI).
+#' @param roi Un objet `sf` définissant la zone d'intérêt.
+#' @param fgb_url L'URL publique ou signée du fichier .fgb sur Scaleway S3.
 #'
-#' @param roi An `sf` object defining the region of interest.
-#'   Only the first feature is used.
-#' @param local_cache Optional directory path where downloaded
-#'   archives are cached. If empty, a temporary directory is used.
-#'
-#' @return An `sf` object in Lambert-93 projection (EPSG:2154)
-#'
+#' @return Un objet `sf` coupé à la bounding box du ROI.
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' roi <- sf::st_read("roi.shp")
-#' data <- get_ocsge_data(roi)
-#' }
-get_ocsge_data <- function(roi, local_cache = "") {
+get_ocsge_data_fgb <- function(roi, fgb_url) {
 
-  # Ensure CRS is Lambert-93
+  # 1. Gestion des projections
+  # On s'assure que le ROI est dans la même projection que la source (souvent Lambert-93 pour OCS GE)
+  # Note: Idéalement, vérifiez la projection du FGB avant. Ici on force 2154 comme dans votre script original.
   roi <- sf::st_transform(roi, 2154)
 
-  # Identify intersecting departments
-  dpts <- get_departements_for_roi(roi)
+  # 2. Préparation de la lecture "Cloud Native"
+  # Le préfixe /vsicurl/ indique à GDAL (utilisé par sf) de lire via HTTP
+  # Si l'URL commence déjà par http, sf le détecte souvent, mais /vsicurl/ est explicite.
+  dsn <- paste0("/vsicurl/", fgb_url)
 
-  if (length(dpts) == 0) {
-    stop("no overlapping department found.")
-  }
+  # 3. Récupération de la Bounding Box du ROI pour le filtre
+  # FlatGeobuf est très efficace pour filtrer par BBOX sans tout lire
+  bbox <- sf::st_bbox(roi)
 
-  # Check data availability
-  for (d in dpts) {
-    if (!d %in% names(ocsge_v2_links)) {
-      stop(sprintf("data not available for department %s", d))
-    }
-  }
+  # 4. Lecture filtrée
+  tryCatch({
+    # st_read avec filtre spatial.
+    # GDAL va demander uniquement les chunks de données qui intersectent le bbox.
+    res <- sf::st_read(
+      dsn,
+      wkt_filter = sf::st_as_text(sf::st_as_sfc(bbox)),
+      quiet = TRUE
+    )
 
-  # Download, extract and read data for each department
-  dfs <- lapply(
-    dpts,
-    function(d) {
-      get_ocsge_extract(
-        dl_url = ocsge_v2_links[[d]],
-        roi = roi,
-        local_cache = local_cache
-      )
-    }
-  )
+    # 5. Intersection précise (optionnel mais recommandé)
+    # Le filtre bbox récupère un rectangle, on coupe selon le polygone exact du ROI
+    res <- sf::st_intersection(res, roi)
 
-  do.call(rbind, dfs)
+    return(res)
+
+  }, error = function(e) {
+    stop("Erreur lors de la lecture du FGB sur S3. Vérifiez l'URL et la connexion internet.\n", e)
+  })
 }
 
-# -------------------------------------------------------------------
-# Internal helpers
-# -------------------------------------------------------------------
-
-#' Download, extract and read OCS GE data for a single department
-#'
-#' Internal helper. Downloads a .7z archive if necessary,
-#' extracts it, reads the OCCUPATION_SOL shapefile
-#' and crops it to the ROI bounding box.
-#'
-#' @param dl_url Download URL of the OCS GE archive
-#' @param roi An `sf` object (EPSG:2154)
-#' @param local_cache Optional cache directory
-#'
-#' @return An `sf` object
-#'
-#' @keywords internal
-get_ocsge_extract <- function(dl_url, roi, local_cache = "") {
-
-  filename <- stringr::str_match(dl_url, ".*/([^/]+)$")[, 2]
-  # unique tempdir
-  workdir <- tempfile()
-  dir.create(workdir)
-
-  arc_name <- if (nzchar(local_cache)) {
-    file.path(local_cache, filename)
-  } else {
-    # file.path(workdir, "archive.7z")
-    file.path(workdir, filename)
-  }
-
-  # Download archive if not cached
-  if (!nzchar(local_cache) || !file.exists(arc_name)) {
-    message(sprintf("downloading %s...", dl_url))
-    req <- httr::GET(dl_url)
-    writeBin(httr::content(req, "raw"), arc_name)
-  }
-
-  archive::archive_extract(arc_name, dir = workdir)
-
-  # Locate OCCUPATION_SOL shapefile
-  paths <- list.files(workdir, recursive = TRUE, full.names = TRUE)
-  gpkg_paths <- paths[grepl("OCCUPATION_SOL\\.gpkg$", paths)]
-
-  if (length(gpkg_paths) == 0) {
-    stop("OCSGE: expected path name not found")
-  } else if (length(gpkg_paths) > 1) {
-    stop("OCSGE: several files have the expected name")
-  }
-
-  # Crop to ROI bounding box
-  roi_2154 <- sf::st_transform(roi, 2154)
-  roi_union <- sf::st_union(roi_2154)
-  bbox_polygon <- sf::st_as_sfc(sf::st_bbox(roi_union))
-
-  result <- sf::st_read(
-    gpkg_paths[1],
-    quiet = TRUE,
-    wkt_filter = sf::st_as_text(bbox_polygon)
-  )
-  # Supprimer le répertoire temporaire après utilisation (optionnel)
-  unlink(workdir, recursive = TRUE)
-  return(result)
-}
 
 # -------------------------------------------------------------------
 # Exported data objects
@@ -236,6 +162,7 @@ ref_ocsge <- data.frame(
 
 # Aperçu
 # print(ref_ocsge)
+
 
 
 
