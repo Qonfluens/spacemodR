@@ -208,11 +208,13 @@ flux <- function(raster, intakes, from, to) {
   }
 
   # Apply flux function and normalized weight
-  w <- intakes$normalized_weight[idx]
   flux_fun <- intakes$flux[[idx]]
-
-  raster[] <- w * flux_fun(raster[])
-
+  w <- intakes$normalized_weight[idx]
+  if(!is.null(w)){
+    raster[] <- w * flux_fun(raster[])
+  } else{
+    raster[] <- flux_fun(raster[])
+  }
   raster
 }
 

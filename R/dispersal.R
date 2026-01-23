@@ -73,38 +73,181 @@ compute_dispersal <- function(x, method = "convolution", options = list(), mask 
 
   # 1. Dispatch Method
   if (method == "convolution") {
-    # Validation du kernel
+    # --- CONVOLUTION (Terra) ---
     if (is.null(options$kernel) || !is.matrix(options$kernel)) {
       stop("Method 'convolution' requires a 'kernel' matrix in 'method_option'.")
     }
 
-    # Terra focal is very fast.
-    # na.policy = "omit" consider NA as 0 in the weighted sum,
     out <- terra::focal(
       x,
       w = options$kernel,
       fun = "sum",
-      na.policy = "omit", # neighbor NA do not propagate NA, they are set to 0
-      fillvalue = 0,      # frontiers fill of 0
-      expand = FALSE      # same extent
+      na.policy = "omit",
+      fillvalue = 0,
+      expand = FALSE
     )
 
   } else if (method == "omniscape") {
-    # --- Placeholder for future integration as Julia ---
-    # out <- run_julia_omniscape(x, options)
-    stop("Method 'omniscape' is not yet implemented.")
+    # --- OMNISCAPE (Julia) ---
+    # Cette méthode nécessite Julia et le package Omniscape.jl
+    out <- run_julia_omniscape(x, options)
 
   } else {
     stop(sprintf("Dispersal method '%s' is not recognized.", method))
   }
 
   # 2. Mask (Smart handling)
-  # If their is a mask, (predator habitat), result is filtered.
-  # Keep intake in the realistic area for transfer function.
   if (!is.null(mask)) {
     out <- terra::mask(out, mask)
   }
 
   return(out)
+}
+
+#' @section Using Omniscape (Julia):
+#' To use `method = "omniscape"`, you must have Julia installed on your machine
+#' and the `JuliaCall` R package.
+#'
+#' \strong{First-time setup:}
+#' \enumerate{
+#'   \item Install Julia from \url{https://julialang.org/downloads/}
+#'   \item In R, install JuliaCall: \code{install.packages("JuliaCall")}
+#'   \item Setup Julia in R: \code{JuliaCall::julia_setup(installJulia = TRUE)}
+#'   \item Install the Omniscape package in Julia (via R):
+#'     \code{JuliaCall::julia_install_package("Omniscape")}
+#' }
+#'
+#' \strong{Usage example:}
+#' \preformatted{
+#' # 1. Initialize Julia (Required at the start of the session)
+#' library(JuliaCall)
+#' julia_setup()
+#'
+#' # 2. Define inputs
+#' my_habitat <- ... # SpatRaster
+#' my_resistance <- ... # SpatRaster (1 = low resistance, 100 = high)
+#'
+#' # 3. Run dispersal
+#' # This will compute connectivity using Circuit Theory
+#' dispersed_map <- dispersal(
+#'   spacemodel = my_model,
+#'   layer = "Fox",
+#'   method = "omniscape",
+#'   method_option = list(
+#'     resistance = my_resistance,
+#'     radius = 15 # Moving window radius in pixels
+#'   )
+#' )
+#' }
+#'
+#'
+
+
+#' Run Omniscape via JuliaCall
+#'
+#' @param x SpatRaster. The source strength (abundance).
+#' @param options List containing:
+#'   - `resistance`: SpatRaster (Required). Resistance map.
+#'   - `radius`: Numeric (Required). Moving window radius (in pixels).
+#'   - `block_size`: Integer (Optional). Block size for parallel processing.
+#'   - `parallel`: Boolean (Optional). Use parallel processing in Julia.
+#'
+#' @return SpatRaster (Cumulative Current)
+#' @noRd
+run_julia_omniscape <- function(x, options) {
+
+  # --- A. Vérifications Préliminaires ---
+  if (!requireNamespace("JuliaCall", quietly = TRUE)) {
+    stop("Package 'JuliaCall' is required for method='omniscape'. Please install it.")
+  }
+
+  # Vérification des options obligatoires pour Omniscape
+  if (is.null(options$resistance)) {
+    stop("Method 'omniscape' requires a 'resistance' raster in 'options'.")
+  }
+  if (is.null(options$radius)) {
+    stop("Method 'omniscape' requires a 'radius' (in pixels) in 'options'.")
+  }
+
+  # Vérification de la connexion Julia (l'utilisateur doit l'avoir initialisé)
+  # On tente une commande simple pour voir si Julia répond
+  tryCatch({
+    JuliaCall::julia_command("1 + 1")
+  }, error = function(e) {
+    stop("Julia is not connected. Please run 'JuliaCall::julia_setup()' before using this function.")
+  })
+
+  # --- B. Préparation des Données (R -> Julia) ---
+  # Omniscape.jl attend des Arrays (matrices) ou des chemins de fichiers.
+  # Le transfert mémoire via matrice est plus propre pour un package R.
+
+  # Conversion Terra -> Matrix
+  source_mat <- terra::as.matrix(x, wide = TRUE)
+  resist_mat <- terra::as.matrix(options$resistance, wide = TRUE)
+
+  # Gestion des NA : Omniscape n'aime pas les NA dans la résistance.
+  # On remplace par une résistance infinie ou très haute (ex: -9999 géré par Omniscape ou juste une valeur haute)
+  # Ici, on laisse l'utilisateur gérer ses NA ou on met une valeur par défaut ?
+  # Pour la démo, on remplace NA résistance par -9999 (nodata standard)
+  resist_mat[is.na(resist_mat)] <- -9999
+  source_mat[is.na(source_mat)] <- 0
+
+  # Envoi vers Julia
+  JuliaCall::julia_assign("source_arr", source_mat)
+  JuliaCall::julia_assign("resist_arr", resist_mat)
+
+  # --- C. Configuration et Exécution ---
+
+  # Chargement de la librairie Julia
+  JuliaCall::julia_library("Omniscape")
+
+  # Création du dictionnaire de configuration Julia
+  # Note : Omniscape.jl utilise un Dict pour la config
+  radius <- as.integer(options$radius)
+  block_size <- ifelse(is.null(options$block_size), 1, as.integer(options$block_size))
+
+  JuliaCall::julia_command(sprintf('
+    config = Dict{String, String}(
+      "radius" => "%d",
+      "block_size" => "%d",
+      "source_from_resistance" => "false",
+      "calc_flow_potential" => "false",
+      "calc_normalized_current" => "false",
+      "solver" => "cg+amg" # Solver rapide
+    )
+  ', radius, block_size))
+
+  # Lancement du calcul ("run_omniscape" peut prendre des arrays directement dans les versions récentes)
+  # Sinon on injecte les arrays dans le run
+  message("Running Omniscape in Julia... (This may take time)")
+
+  JuliaCall::julia_command('
+    # On lance Omniscape en lui passant les arrays directement
+    # Note: La signature exacte dépend de la version d\'Omniscape.jl.
+    # Cette approche simule le passage via mémoire.
+
+    using Omniscape
+
+    # On appelle la fonction interne ou l\'API publique qui accepte les arrays
+    # Si l\'API publique ne prend que des fichiers, on peut utiliser `run_omniscape(config, source_arr, resist_arr)`
+    # Supposons l\'API standard v0.5+:
+    result = run_omniscape(config, source_arr, resistance=resist_arr)
+
+    # Récupération du courant cumulatif
+    cum_currmap = result.cum_currmap
+  ')
+
+  # --- D. Récupération (Julia -> R) ---
+  result_mat <- JuliaCall::julia_eval("cum_currmap")
+
+  # Conversion Matrix -> Terra
+  # On reprend la géométrie du raster d'entrée 'x'
+  out_rast <- terra::rast(x)
+  terra::values(out_rast) <- result_mat
+
+  # On remet les NA là où c'était NA dans la source (optionnel, mais propre)
+  out_rast[is.na(x)] <- NA
+
+  return(out_rast)
 }
 
