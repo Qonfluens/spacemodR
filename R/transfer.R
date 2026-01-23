@@ -1,6 +1,6 @@
-#' Transfer concentration across trophic levels
+#' Transfer (food, contaminant) across trophic levels
 #'
-#' Computes the transfer of concentration through a trophic network from
+#' Computes the transfer through a trophic network from
 #' lower to higher trophic levels using spatial spreading and intake functions.
 #'
 #' @param spacemodel A named list of spatial layers (e.g. \code{SpatRaster} objects).
@@ -8,6 +8,19 @@
 #' @param kernels A list of kernel parameters for each layer.
 #' @param intakes A \code{trophic_tbl} object (or compatible table) containing
 #'        normalized weights and flux functions for each trophic link.
+#' @param exposure_weighting Character. Defines how the realized exposure is calculated
+#' based on the predator's presence. Options are:
+#' \itemize{
+#'   \item \code{"local"} (Default): Weight exposure by the local habitat value (`predator_habitat`).
+#'   Assumes the predator's intake is strictly proportional to the habitat quality/density
+#'   of the pixel where it resides.
+#'   \item \code{"diffuse"}: Weight exposure by a dispersed habitat kernel.
+#'   Represents a "neighborhood" effect where the predator's presence is smoothed
+#'   over its home range. Useful to avoid edge effects where a predator on a poor pixel
+#'   surrounded by good habitat would otherwise have 0 exposure.
+#'   \item \code{"potential"}: No weighting. Returns the pure environmental offer (potential exposure)
+#'   regardless of the predator's density. Useful for identifying risk hotspots.
+#' }
 #' @param verbose Logical. If \code{TRUE}, prints progress information.
 #'
 #' @details
@@ -33,83 +46,126 @@
 #' # result <- transfer(spacemodel, kernels, intakes)
 #'
 #' @export
-transfer <- function(spacemodel, kernels, intakes, verbose = FALSE) {
+transfer <- function(
+    spacemodel,
+    kernels,
+    intakes=NULL,
+    exposure_weighting = "local",
+    verbose = FALSE) {
 
-  stopifnot(attr(spacemodel, "spacemodel"))
+  # Checking arguments
   stopifnot(!is.null(attr(spacemodel, "trophic_tbl")))
-
   trophic_tbl <- attr(spacemodel, "trophic_tbl")
-  levels <- attr(trophic_tbl, "level")
+  levels <- attr(trophic_tbl, "level") # Ordered list needed
 
-  stopifnot(!is.null(levels))
+  # Clone to do not change the original during computing
+  uptake_stack <- as.list(spacemodel)
+  names(uptake_stack) <- names(spacemodel)
 
-  concentration_stack <- list()
+  # loop over trophic levels (bottom to top)
+  for (predator_name in names(levels)) {
 
-  # "level" attribute is ordered from lower to upper layer.
-  for (layer in names(levels)) {
+    ressources <- lower_neighbors(trophic_tbl, predator_name)
 
-    if (verbose) message("Processing layer: ", layer)
+    # if no ressources, increment in for loop
+    if (length(ressources) == 0) next
 
-    ressources <- lower_neighbors(trophic_tbl, layer)
-    concentration_stack[[layer]] <- spacemodel[[layer]]
+    if (verbose) message("Processing Consumer: ", predator_name)
 
-    if(length(ressources)>0) {
-      out <- concentration_stack[[layer]][] * 0
-      for (r_name in ressources) {
+    # Init uptake_raster for the consumer (empty)
+    predator_habitat <- uptake_stack[[predator_name]]
+    total_out <- terra::init(predator_habitat, 0)
 
-        if (verbose) {
-          message("  Resource: ", r_name)
-        }
-        exposure <- spread(
-          concentration_stack[[r_name]],
-          spacemodel[[layer]],
-          kernels[[layer]]
-        )
-        bodyburden <- intake(exposure, intakes, r_name, layer)
-        out <- out + bodyburden[]
+    # Kernel of the consumer (searching for the resource)
+    pred_kernel <- kernels[[predator_name]]
+
+    # check if kernel are available (otherwise, no consumer searching process, only habitat spreading)
+    use_diffusion <- !is.null(pred_kernel) && is.matrix(pred_kernel)
+
+    # --------------------
+    # weighting_method
+    # --------------------
+    weight_map <- .compute_predator_weight(
+      predator_habitat,
+      pred_kernel,
+      exposure_weighting,
+      use_diffusion)
+
+    for (prey_name in ressources) {
+
+      if (verbose) message("  -> Input from: ", prey_name)
+
+      out_r_map <- compute_exposure_map(
+        prey_conc = uptake_stack[[prey_name]],
+        predator_hab = predator_habitat,
+        weight_map = weight_map,
+        kernel = pred_kernel,
+        use_diffusion = use_diffusion
+      )
+
+      # INTAKE / FLUX
+      if(!is.null(intakes)) {
+        out_r_map <- flux(out_r_map, intakes, from = prey_name, to = predator_name)
       }
-      concentration_stack[[layer]][] <- out
+      ## accumulation
+      total_out <- total_out + out_r_map
     }
+    # CLEANING FINAL
+    uptake_stack[[predator_name]] <- terra::mask(total_out, predator_habitat)
   }
-  # CONVERT IN SPACEMODEL
+
+  # Reconstruction de l'objet spacemodel final
+  # Note: `raster_stack` et `spacemodel` sont des constructeurs de votre package
   stack_transfer <- raster_stack(
-    raster_list = concentration_stack,
-    names = names(concentration_stack)
+    raster_list = uptake_stack,
+    names = names(uptake_stack)
   )
-  spacemodel_transfer <- spacemodel(stack_transfer, trophic_tbl)
-  return(spacemodel_transfer)
+
+  return(spacemodel(stack_transfer, trophic_tbl))
 }
 
 
+#' Compute the realized exposure map for a specific link
+#'
+#' @param prey_conc SpatRaster. Concentration of the prey/resource.
+#' @param predator_hab SpatRaster. Habitat of the predator.
+#' @param weight_map SpatRaster or Numeric. The spatial weighting of the predator (local or dispersed).
+#' @param kernel Matrix or NULL. The dispersal kernel of the predator.
+#' @param use_diffusion Logical. Whether to apply convolution.
+#'
+#' @return SpatRaster. The map of exposure (concentration * access * presence).
+#' @noRd
+#'
+compute_exposure_map <- function(prey_conc, predator_hab, weight_map, kernel, use_diffusion) {
 
-#' Spread concentration using a kernel
-#'
-#' Applies a spatial spreading (convolution) of a raster layer using a kernel.
-#'
-#' @param l_raster A \code{SpatRaster} representing the lower-level layer to spread.
-#' @param u_raster A \code{SpatRaster} of the upper layer used to mask invalid cells.
-#' @param kernel A list with elements \code{radius}, \code{GSD}, and \code{kernel_size_std}.
-#'
-#' @return A \code{SpatRaster} representing the spread concentration, masked by \code{u_raster}.
-#'
-#' @export
-spread <- function(l_raster, u_raster, kernel=NA){
-  if(is.matrix(kernel)){
-    tmp_raster=l_raster
-    l_raster[is.na(l_raster)] = 0
-    l_raster <- terra::focal(
-      l_raster,
-      w = kernel,
-      fun = "sum",
-      na.policy = "omit",
-      pad = TRUE
+  # 1. Accessibilité : On ne mange que ce qui est dans sa zone d'habitat
+  # (Zone d'exclusion physique)
+  accessible_prey <- terra::mask(prey_conc, predator_hab)
+
+  # 2. Dispersion (OFFRE) : Potentiel de proies autour du point
+  if (use_diffusion) {
+    exposure_potential <- compute_dispersal(
+      x = accessible_prey,
+      method = "convolution",
+      options = list(kernel = kernel),
+      mask = NULL
     )
+  } else {
+    exposure_potential <- accessible_prey
   }
-  l_raster[is.na(u_raster)] = NA
-  return(l_raster)
+
+  # 3. Pondération (DEMANDE) : Présence réelle du prédateur
+  if (is.numeric(weight_map) && weight_map == 1) {
+    exposure_realized <- exposure_potential
+  } else {
+    exposure_realized <- exposure_potential * weight_map
+  }
+
+  return(exposure_realized)
 }
 
-#' Apply trophic intake from a resource layer
+
+#' Apply trophic flux from a resource layer
 #'
 #' Computes the contribution of a resource raster to a consumer layer using
 #' the normalized weight and a flux function stored in the trophic table.
@@ -133,7 +189,7 @@ spread <- function(l_raster, u_raster, kernel=NA){
 #' @return A raster object with transformed values.
 #'
 #' @export
-intake <- function(raster, intakes, from, to) {
+flux <- function(raster, intakes, from, to) {
 
   stopifnot(inherits(intakes, "trophic_tbl"))
 
@@ -158,4 +214,26 @@ intake <- function(raster, intakes, from, to) {
   raster[] <- w * flux_fun(raster[])
 
   raster
+}
+
+# -------------------
+# INTERNAL FUNCTION
+# -------------------
+
+#' Petite fonction helper pour alléger le code principal
+#' Calcule la carte de pondération du prédateur
+#' @noRd
+.compute_predator_weight <- function(habitat, kernel, method, use_diffusion) {
+  if (method == "potential") return(1)
+
+  if (method == "diffuse" && use_diffusion) {
+    return(compute_dispersal(
+      x = habitat,
+      method = "convolution",
+      options = list(kernel = kernel),
+      mask = habitat
+    ))
+  }
+  # Default "local"
+  return(habitat)
 }
