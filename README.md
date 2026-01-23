@@ -32,4 +32,18 @@ install.packages("path/to/spacemodR_0.1.0.tar.gz", repos = NULL, type = "source"
 Note: Ensure that system dependencies (GDAL, PROJ, GEOS) are installed, 
 as the package depends on `sf` and `terra`.
 
+# Using the docker file
 
+```
+docker build -t spacemodr .
+```
+
+```
+docker run --rm -ti \
+  -p 8787:8787 \
+  -e PASSWORD=mdp \
+  -v /home/virgile/Downloads:/home/rstudio/data \
+  spacemodr
+```
+
+Go to `http://localhost:8787`, where user is `rstudio` and password: `mdp`.

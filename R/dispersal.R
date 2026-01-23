@@ -68,7 +68,8 @@ dispersal <- function(spacemodel,
 #' @param mask SpatRaster (optional). A mask to apply after dispersion (e.g., maintain original NA structure).
 #'
 #' @return SpatRaster
-#' @noRd
+#'
+#' @export
 compute_dispersal <- function(x, method = "convolution", options = list(), mask = NULL) {
 
   # 1. Dispatch Method
@@ -142,112 +143,85 @@ compute_dispersal <- function(x, method = "convolution", options = list(), mask 
 #'
 #'
 
-
-#' Run Omniscape via JuliaCall
+#' Run Omniscape via JuliaCall (Robust Version)
 #'
-#' @param x SpatRaster. The source strength (abundance).
-#' @param options List containing:
-#'   - `resistance`: SpatRaster (Required). Resistance map.
-#'   - `radius`: Numeric (Required). Moving window radius (in pixels).
-#'   - `block_size`: Integer (Optional). Block size for parallel processing.
-#'   - `parallel`: Boolean (Optional). Use parallel processing in Julia.
+#' @noRd
+#' Run Omniscape via JuliaCall (Fixed Syntax)
 #'
-#' @return SpatRaster (Cumulative Current)
 #' @noRd
 run_julia_omniscape <- function(x, options) {
 
-  # --- A. Vérifications Préliminaires ---
+  # --- A. Vérifications ---
   if (!requireNamespace("JuliaCall", quietly = TRUE)) {
-    stop("Package 'JuliaCall' is required for method='omniscape'. Please install it.")
+    stop("Package 'JuliaCall' is required. Please install it.")
   }
 
-  # Vérification des options obligatoires pour Omniscape
-  if (is.null(options$resistance)) {
-    stop("Method 'omniscape' requires a 'resistance' raster in 'options'.")
-  }
-  if (is.null(options$radius)) {
-    stop("Method 'omniscape' requires a 'radius' (in pixels) in 'options'.")
-  }
-
-  # Vérification de la connexion Julia (l'utilisateur doit l'avoir initialisé)
-  # On tente une commande simple pour voir si Julia répond
   tryCatch({
-    JuliaCall::julia_command("1 + 1")
+    JuliaCall::julia_command("1")
   }, error = function(e) {
-    stop("Julia is not connected. Please run 'JuliaCall::julia_setup()' before using this function.")
+    stop("Julia not connected. Run 'JuliaCall::julia_setup()' first.")
   })
 
-  # --- B. Préparation des Données (R -> Julia) ---
-  # Omniscape.jl attend des Arrays (matrices) ou des chemins de fichiers.
-  # Le transfert mémoire via matrice est plus propre pour un package R.
+  if (is.null(options$resistance) || is.null(options$radius)) {
+    stop("Options 'resistance' and 'radius' are mandatory for omniscape.")
+  }
 
-  # Conversion Terra -> Matrix
+  # --- B. Préparation (R -> Julia) ---
   source_mat <- terra::as.matrix(x, wide = TRUE)
   resist_mat <- terra::as.matrix(options$resistance, wide = TRUE)
 
-  # Gestion des NA : Omniscape n'aime pas les NA dans la résistance.
-  # On remplace par une résistance infinie ou très haute (ex: -9999 géré par Omniscape ou juste une valeur haute)
-  # Ici, on laisse l'utilisateur gérer ses NA ou on met une valeur par défaut ?
-  # Pour la démo, on remplace NA résistance par -9999 (nodata standard)
-  resist_mat[is.na(resist_mat)] <- -9999
+  # Gestion simple des NA pour le transfert
   source_mat[is.na(source_mat)] <- 0
+  # On laisse les NA de résistance tels quels pour l'instant (transfert en NaN ou NA selon R)
 
-  # Envoi vers Julia
-  JuliaCall::julia_assign("source_arr", source_mat)
-  JuliaCall::julia_assign("resist_arr", resist_mat)
+  JuliaCall::julia_assign("source_mat_R", source_mat)
+  JuliaCall::julia_assign("resist_mat_R", resist_mat)
 
-  # --- C. Configuration et Exécution ---
+  # --- C. Exécution (Julia) ---
+  # CORRECTION : On utilise 'begin ... end' pour que Julia accepte le bloc entier.
+  # On retire les accents dans les commentaires Julia pour éviter les erreurs d'encodage via sprintf.
 
-  # Chargement de la librairie Julia
-  JuliaCall::julia_library("Omniscape")
+  cmd_julia <- sprintf('
+    begin
+        using Omniscape
 
-  # Création du dictionnaire de configuration Julia
-  # Note : Omniscape.jl utilise un Dict pour la config
-  radius <- as.integer(options$radius)
-  block_size <- ifelse(is.null(options$block_size), 1, as.integer(options$block_size))
+        # 1. Configuration
+        config = Dict{String, String}(
+          "radius" => "%d",
+          "block_size" => "1",
+          "source_from_resistance" => "false",
+          "solver" => "cg+amg"
+        )
 
-  JuliaCall::julia_command(sprintf('
-    config = Dict{String, String}(
-      "radius" => "%d",
-      "block_size" => "%d",
-      "source_from_resistance" => "false",
-      "calc_flow_potential" => "false",
-      "calc_normalized_current" => "false",
-      "solver" => "cg+amg" # Solver rapide
-    )
-  ', radius, block_size))
+        # 2. Conversion safe (coalesce remplace les missing par 0.0)
+        # On s assure que tout est en Float64
+        src = coalesce.(Float64.(source_mat_R), 0.0)
+        rst = Float64.(resist_mat_R)
 
-  # Lancement du calcul ("run_omniscape" peut prendre des arrays directement dans les versions récentes)
-  # Sinon on injecte les arrays dans le run
-  message("Running Omniscape in Julia... (This may take time)")
+        # 3. Run Omniscape
+        # Le resultat est stocke dans res
+        res = run_omniscape(config, src, resistance=rst)
 
-  JuliaCall::julia_command('
-    # On lance Omniscape en lui passant les arrays directement
-    # Note: La signature exacte dépend de la version d\'Omniscape.jl.
-    # Cette approche simule le passage via mémoire.
+        # 4. Nettoyage Sortie
+        # On recupere la matrice brute et on nettoie les Missing
+        out_raw = res.cum_currmap
+        out_clean = map(x -> ismissing(x) ? NaN : Float64(x), out_raw)
+    end
+  ', as.integer(options$radius))
 
-    using Omniscape
-
-    # On appelle la fonction interne ou l\'API publique qui accepte les arrays
-    # Si l\'API publique ne prend que des fichiers, on peut utiliser `run_omniscape(config, source_arr, resist_arr)`
-    # Supposons l\'API standard v0.5+:
-    result = run_omniscape(config, source_arr, resistance=resist_arr)
-
-    # Récupération du courant cumulatif
-    cum_currmap = result.cum_currmap
-  ')
+  # Exécution du bloc
+  JuliaCall::julia_command(cmd_julia)
 
   # --- D. Récupération (Julia -> R) ---
-  result_mat <- JuliaCall::julia_eval("cum_currmap")
+  # La variable "out_clean" a été définie dans le scope global (Main) par le bloc begin/end
+  result_mat <- JuliaCall::julia_eval("out_clean")
 
-  # Conversion Matrix -> Terra
-  # On reprend la géométrie du raster d'entrée 'x'
+  # --- E. Reconstruction du Raster ---
   out_rast <- terra::rast(x)
   terra::values(out_rast) <- result_mat
 
-  # On remet les NA là où c'était NA dans la source (optionnel, mais propre)
-  out_rast[is.na(x)] <- NA
+  # Remettre les NA originaux si besoin
+  # out_rast[is.na(x)] <- NA
 
   return(out_rast)
 }
-
