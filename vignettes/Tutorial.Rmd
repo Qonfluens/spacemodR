@@ -211,6 +211,19 @@ terra::plot(ground_cd)
 
 Then, it's the same algorithm to specified habitat and then build rasters.
 
+```{r OCSGE_codes}
+# prepare a list of OSGE code to make life easier
+OCSGE_codes <- list(
+  forest = c("CS2.1.1.1", "CS2.1.1.2", "CS2.1.1.3", "CS2.1.3"),
+  grass = "CS2.2.1",
+  water = "CS1.2.2",
+  soil = c("CS1.2.1","CS2.1.1.1","CS2.1.1.2","CS2.1.1.3",
+           "CS2.1.2","CS2.1.3","CS2.2.1","CS2.2.3"),
+  sealed = c("CS1.1.1.1", "CS1.1.1.2", "CS1.1.2.1")
+)
+```
+
+
 ```{r build_habitat_sol}
 layer_soil_natural = ocsge_metaleurop[ocsge_metaleurop$code_cs %in% OCSGE_codes$soil, ]
 layer_soil_artificial = ocsge_metaleurop[ocsge_metaleurop$code_cs %in% OCSGE_codes$sealed, ]
@@ -366,9 +379,7 @@ color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)
 terra::plot(spcmdl_transfer, col=color_transfer)
 ```
 
-# Spacemodel for Risk: a full example: Eco-SSL
-
-## Build a `spacemodel` for Eco-SSL
+# Eco-SSL Example: Build a `spacemodel` for Eco-SSL
 
 The first step is to build a raster stack with the ground as raster.
 
@@ -424,11 +435,15 @@ ecossl_intakes <- intake(spcmdl_ecossl_h,
   "soil -> mamHerb"     = ~ 10^x/73,
   "soil -> mamInsect"   = ~ 10^x/0.36,
   "soil -> birdInsect"  = ~ 10^x/0.77,
-
-  default = 1 # for all other default is 1
+  default = 1, # for all other default is 1
+  normalize = FALSE # TRUE would weight every link to sum at 1
 )
 
-spcmdl_ecossl_risk <- transfer(spcmdl_ecossl_h, ecossl_kernels, ecossl_intakes)
+spcmdl_ecossl_risk <- transfer(
+  spcmdl_ecossl_h,
+  ecossl_kernels,
+  ecossl_intakes,
+  exposure_weighting="potential")
 ```
 
 A plot of layer with risk threshold color scale.
@@ -461,6 +476,28 @@ poly_vect <- terra::project(terra::vect(poly), terra::crs(spcmdl_ecossl_risk_sub
 rast_crop <- terra::crop(spcmdl_ecossl_risk_sub, poly_vect)
 rast_final <- terra::mask(rast_crop, poly_vect)
 terra::plot(rast_final,
+            breaks = breaks_risk,
+            col = cols_risk)
+```
+
+
+### checking Eco-SSL
+
+For this very simple example, a simple check can be done, because Eco-SSL
+is a computing of a risk based on the amount in soil:
+
+```{r}
+check_ecossl_risk = list(
+  "soil -> plant"       = 10^ground_cd/32,  
+  "soil -> invert"      = 10^ground_cd/140,
+  "soil -> mamHerb"     = 10^ground_cd/73,
+  "soil -> mamInsect"   = 10^ground_cd/0.36,
+  "soil -> birdInsect"  = 10^ground_cd/0.77
+)
+
+r_check_ecossl_risk = terra::rast(check_ecossl_risk)
+
+terra::plot(r_check_ecossl_risk,
             breaks = breaks_risk,
             col = cols_risk)
 ```

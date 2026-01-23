@@ -22,3 +22,13 @@
 #' data(ocsge_metaleurop)
 #' @keywords datasets
 "ocsge_metaleurop"
+
+
+#' Nomenclature of OCS-GE soil cover
+#'
+#' @usage data(ref_ocsge)
+#'
+#' @examples
+#' data(ref_ocsge)
+#' @keywords datasets
+"ref_ocsge"
