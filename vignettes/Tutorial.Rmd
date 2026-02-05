@@ -205,7 +205,7 @@ of cadmium.
 
 ```{r load_ground_cd}
 # the raster tif file is internal to the spacemodR package
-ground_cd <- load_raster_extdata("ground_concentration_cd.tif")
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 terra::plot(ground_cd)
 ```
 
@@ -384,7 +384,7 @@ terra::plot(spcmdl_transfer, col=color_transfer)
 The first step is to build a raster stack with the ground as raster.
 
 ```{r eco_ssl_cd_habitat}
-ground_cd <- load_raster_extdata("ground_concentration_cd.tif")
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)

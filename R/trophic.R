@@ -398,7 +398,7 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
 #'
 #' Returns the upstream neighbors (prey/resources) of a given layer in a trophic graph.
 #'
-#' @param trophic_tbl A \¢ode{trophic_tbl} object
+#' @param trophic_tbl A \code{trophic_tbl} object
 #' @param layer Name of the layer (string) in the spacemodel.
 #'
 #' @return A character vector of names of layers that are resources for \code{layer}.

@@ -142,16 +142,10 @@ compute_dispersal <- function(x, method = "convolution", options = list(), mask 
 #' }
 #'
 #'
-
-#' Run Omniscape via JuliaCall (Robust Version)
-#'
-#' @noRd
-#' Run Omniscape via JuliaCall (Fixed Syntax)
-#'
 #' @noRd
 run_julia_omniscape <- function(x, options) {
 
-  # --- A. Vérifications ---
+  # --- A. CHECKING ---
   if (!requireNamespace("JuliaCall", quietly = TRUE)) {
     stop("Package 'JuliaCall' is required. Please install it.")
   }
@@ -166,21 +160,16 @@ run_julia_omniscape <- function(x, options) {
     stop("Options 'resistance' and 'radius' are mandatory for omniscape.")
   }
 
-  # --- B. Préparation (R -> Julia) ---
+  # --- B. PREPARE R to Julia ---
   source_mat <- terra::as.matrix(x, wide = TRUE)
   resist_mat <- terra::as.matrix(options$resistance, wide = TRUE)
 
-  # Gestion simple des NA pour le transfert
+  # NA become 0 for JULIA Handling
   source_mat[is.na(source_mat)] <- 0
-  # On laisse les NA de résistance tels quels pour l'instant (transfert en NaN ou NA selon R)
-
   JuliaCall::julia_assign("source_mat_R", source_mat)
   JuliaCall::julia_assign("resist_mat_R", resist_mat)
 
-  # --- C. Exécution (Julia) ---
-  # CORRECTION : On utilise 'begin ... end' pour que Julia accepte le bloc entier.
-  # On retire les accents dans les commentaires Julia pour éviter les erreurs d'encodage via sprintf.
-
+  # --- C. RUN (Julia) ---
   cmd_julia <- sprintf('
     begin
         using Omniscape
@@ -194,34 +183,30 @@ run_julia_omniscape <- function(x, options) {
         )
 
         # 2. Conversion safe (coalesce remplace les missing par 0.0)
-        # On s assure que tout est en Float64
         src = coalesce.(Float64.(source_mat_R), 0.0)
         rst = Float64.(resist_mat_R)
 
         # 3. Run Omniscape
-        # Le resultat est stocke dans res
         res = run_omniscape(config, src, resistance=rst)
 
-        # 4. Nettoyage Sortie
-        # On recupere la matrice brute et on nettoie les Missing
+        # 4. Cleaning outputs
         out_raw = res.cum_currmap
         out_clean = map(x -> ismissing(x) ? NaN : Float64(x), out_raw)
     end
   ', as.integer(options$radius))
 
-  # Exécution du bloc
+  # RUN JULIA
   JuliaCall::julia_command(cmd_julia)
 
-  # --- D. Récupération (Julia -> R) ---
-  # La variable "out_clean" a été définie dans le scope global (Main) par le bloc begin/end
+  # --- D. RETRIVEE (Julia -> R) ---
   result_mat <- JuliaCall::julia_eval("out_clean")
 
-  # --- E. Reconstruction du Raster ---
+  # --- E. REBUILD RASTER ---
   out_rast <- terra::rast(x)
   terra::values(out_rast) <- result_mat
 
-  # Remettre les NA originaux si besoin
-  # out_rast[is.na(x)] <- NA
+  # ADD NA
+  out_rast[is.na(x)] <- NA
 
   return(out_rast)
 }
