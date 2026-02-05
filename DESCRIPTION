@@ -1,16 +1,18 @@
 Package: spacemodR
 Title: Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: 
-    person("Virgile", "Baudrot", , "virgile.baudrot@qonfluens.com", role = c("aut", "cre"))
+    c(person("Virgile", "Baudrot", email = "virgile.baudrot@qonfluens.com", role = c("aut", "cre")),
+      person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr ", role = "ctb"),
+      person("Clémentine", "Fritsch", email = "clementine.fritsch@univ-fcomte.fr", role = "ctb"),
+      person("Renaud", "Scheifler", email = "renaud.scheifler@univ-fcomte.fr", role = "ctb")
+    )
 Description: Build the habitat and the trophic links of different species.
 License: MIT + file LICENSE
 Imports: 
-    archive,
     ggplot2,
     httr,
     sf,
-    stringr,
     terra
 Encoding: UTF-8
 LazyData: true
@@ -23,4 +25,4 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
-    R (>= 4.0)
+    R (>= 4.1.0)

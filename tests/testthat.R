@@ -10,3 +10,5 @@ library(testthat)
 library(spacemodR)
 
 test_check("spacemodR")
+
+
