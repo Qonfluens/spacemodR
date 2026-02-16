@@ -2,15 +2,8 @@
 % Please edit documentation in R/dispersal.R
 \name{dispersal}
 \alias{dispersal}
-\title{Create a raster mask from a habitat object}
+\title{Disperse a species or variable over the landscape}
 \usage{
-dispersal(
-  spacemodel,
-  layer = 1,
-  method = "convolution",
-  method_option = list()
-)
-
 dispersal(
   spacemodel,
   layer = 1,
@@ -19,19 +12,44 @@ dispersal(
 )
 }
 \arguments{
-\item{spacemodel}{spacemodel object.}
+\item{spacemodel}{A \code{spacemodel} object.}
 
-\item{layer}{character or integer. Name or index of the layer to disperse.}
+\item{layer}{Character or Integer. The name or index of the layer to disperse
+(e.g., "Fox", 1).}
 
-\item{method}{method use for dispersal ("convolution", etc.).}
+\item{method}{Character. The dispersal method to use. Options are:
+\itemize{
+  \item \code{"convolution"} (default): Uses a moving window (kernel).
+  \item \code{"omniscape"}: Uses Circuit Theory (via Julia and Omniscape.jl).
+}}
 
-\item{method_option}{parameters list (must contain `kernel` for convolution).}
+\item{method_option}{A list of parameters specific to the chosen method:
+\itemize{
+  \item For \code{"convolution"}: must contain \code{kernel} (a matrix).
+  \item For \code{"omniscape"}: must contain \code{resistance} (SpatRaster) and \code{radius} (numeric).
+}}
 }
 \value{
-spacemod with modification of the layer
-
-spacemod with modification of the layer
+The \code{spacemodel} object with the specified layer updated with dispersed values.
 }
 \description{
-Applies dispersal logic to a specific layer of the spacemodel.
+Applies a dispersal mechanism to a specific layer of the `spacemodel` object.
+This function acts as a wrapper around \code{\link{compute_dispersal}} to handle
+the `spacemodel` class structure.
+}
+\examples{
+\dontrun{
+# 1. Convolution example
+my_kernel <- matrix(1, nrow=3, ncol=3)
+sm_updated <- dispersal(sm, layer = "Predator", method = "convolution",
+                        method_option = list(kernel = my_kernel))
+
+# 2. Omniscape example (requires Julia)
+sm_updated <- dispersal(sm, layer = "Predator", method = "omniscape",
+                        method_option = list(resistance = res_map, radius = 10))
+}
+
+}
+\seealso{
+\code{\link{compute_dispersal}}
 }

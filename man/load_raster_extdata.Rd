@@ -2,7 +2,7 @@
 % Please edit documentation in R/load_extdata.R
 \name{load_raster_extdata}
 \alias{load_raster_extdata}
-\title{load_raster_extdata}
+\title{load raster file from internal data}
 \format{
 An object `SpatRaster` (package terra).
 }
@@ -15,7 +15,13 @@ load_raster_extdata(path_name)
 \arguments{
 \item{path_name}{Path of the raster (.tiff) file to download.}
 }
+\value{
+A \code{\link[terra]{SpatRaster}} object
+}
 \description{
 A raster of the (example).
+}
+\seealso{
+\code{\link[terra]{rast}}
 }
 \keyword{datasets}
