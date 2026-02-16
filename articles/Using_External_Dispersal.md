@@ -97,7 +97,7 @@ means “many animals pass here,” making it a critical zone for
 contaminant exposure.
 
 Then using
-[`spacemodR::transfer`](https://qonfluens.github.io/spacemodr/reference/transfer.md),
+[`spacemodR::transfer`](https://qonfluens.github.io/spacemodR/reference/transfer.md),
 we can compute the `exposure` and diffusion of the contaminant in
 population.
 

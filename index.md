@@ -1,6 +1,6 @@
 # spacemodR
 
-[![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodr/)
+[![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodR/)
 
 **Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping**
 

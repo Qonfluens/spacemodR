@@ -1,6 +1,6 @@
 # spacemodR
 
-[![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodr/)
+[![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodR/)
 
 **Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping**
 
@@ -53,62 +53,62 @@ Go to `http://localhost:8787`, where user is `rstudio` and password:
 
 ## All functions
 
-- [`add_habitat()`](https://qonfluens.github.io/spacemodr/reference/add_habitat.md)
+- [`add_habitat()`](https://qonfluens.github.io/spacemodR/reference/add_habitat.md)
   : Add habitat zones to a Habitat object
-- [`add_link()`](https://qonfluens.github.io/spacemodr/reference/add_link.md)
+- [`add_link()`](https://qonfluens.github.io/spacemodR/reference/add_link.md)
   : Add links to a trophic table
-- [`add_nohabitat()`](https://qonfluens.github.io/spacemodr/reference/add_nohabitat.md)
+- [`add_nohabitat()`](https://qonfluens.github.io/spacemodR/reference/add_nohabitat.md)
   : Add non-habitat zones to a Habitat object
-- [`compute_dispersal()`](https://qonfluens.github.io/spacemodr/reference/compute_dispersal.md)
+- [`compute_dispersal()`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
   : Compute dispersal or spread map (Generic Engine)
-- [`compute_kernel()`](https://qonfluens.github.io/spacemodr/reference/compute_kernel.md)
+- [`compute_kernel()`](https://qonfluens.github.io/spacemodR/reference/compute_kernel.md)
   : Create a 2D Gaussian motion kernel as a SpatRaster
-- [`dispersal()`](https://qonfluens.github.io/spacemodr/reference/dispersal.md)
+- [`dispersal()`](https://qonfluens.github.io/spacemodR/reference/dispersal.md)
   : Disperse a species or variable over the landscape
-- [`flux()`](https://qonfluens.github.io/spacemodr/reference/flux.md) :
+- [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) :
   Apply trophic flux from a resource layer
-- [`get_departements_for_roi()`](https://qonfluens.github.io/spacemodr/reference/get_departements_for_roi.md)
+- [`get_departements_for_roi()`](https://qonfluens.github.io/spacemodR/reference/get_departements_for_roi.md)
   : Identify codes of departments intersecting a region of interest
-- [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodr/reference/get_ocsge_data_fgb.md)
+- [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md)
   : Collect data from OCS GE repository using FlatGeobuf on S3
-- [`habitat()`](https://qonfluens.github.io/spacemodr/reference/habitat.md)
+- [`habitat()`](https://qonfluens.github.io/spacemodR/reference/habitat.md)
   : Create a Habitat object
-- [`habitat_raster()`](https://qonfluens.github.io/spacemodr/reference/habitat_raster.md)
+- [`habitat_raster()`](https://qonfluens.github.io/spacemodR/reference/habitat_raster.md)
   : Create a raster from a habitat object
-- [`intake()`](https://qonfluens.github.io/spacemodr/reference/intake.md)
+- [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md)
   : Constructor for Intake Parameters
-- [`is_cyclic()`](https://qonfluens.github.io/spacemodr/reference/is_cyclic.md)
+- [`is_cyclic()`](https://qonfluens.github.io/spacemodR/reference/is_cyclic.md)
   : Test if a directed graph is cyclic
-- [`load_raster_extdata()`](https://qonfluens.github.io/spacemodr/reference/load_raster_extdata.md)
+- [`load_raster_extdata()`](https://qonfluens.github.io/spacemodR/reference/load_raster_extdata.md)
   : load raster file from internal data
-- [`lower_neighbors()`](https://qonfluens.github.io/spacemodr/reference/lower_neighbors.md)
+- [`lower_neighbors()`](https://qonfluens.github.io/spacemodR/reference/lower_neighbors.md)
   : Get resource layers for a given trophic layer
-- [`normalize_weights()`](https://qonfluens.github.io/spacemodr/reference/normalize_weights.md)
+- [`normalize_weights()`](https://qonfluens.github.io/spacemodR/reference/normalize_weights.md)
   : Normalize weights of a trophic table
-- [`ocsge_metaleurop`](https://qonfluens.github.io/spacemodr/reference/ocsge_metaleurop.md)
+- [`ocsge_metaleurop`](https://qonfluens.github.io/spacemodR/reference/ocsge_metaleurop.md)
   : SF object defining very simplified OCS-GE soil cover metaleurop
-- [`plot(`*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodr/reference/plot.trophic_tbl.md)
+- [`plot(`*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.trophic_tbl.md)
   : Plot a trophic table
-- [`raster_stack()`](https://qonfluens.github.io/spacemodr/reference/raster_stack.md)
+- [`raster_stack()`](https://qonfluens.github.io/spacemodR/reference/raster_stack.md)
   : Create a RasterStack from a list of rasters and names
-- [`ref_ocsge`](https://qonfluens.github.io/spacemodr/reference/ref_ocsge.md)
+- [`ref_ocsge`](https://qonfluens.github.io/spacemodR/reference/ref_ocsge.md)
   : Nomenclature of OCS-GE soil cover
-- [`roi_metaleurop`](https://qonfluens.github.io/spacemodr/reference/roi_metaleurop.md)
+- [`roi_metaleurop`](https://qonfluens.github.io/spacemodR/reference/roi_metaleurop.md)
   : SF object defining ROI metaleurop
-- [`spacemodel()`](https://qonfluens.github.io/spacemodr/reference/spacemodel.md)
+- [`spacemodel()`](https://qonfluens.github.io/spacemodR/reference/spacemodel.md)
   : Create a spacemodel object
-- [`` `[`( ``*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodr/reference/sub-.trophic_tbl.md)
+- [`` `[`( ``*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodR/reference/sub-.trophic_tbl.md)
   : Subset method for trophic_tbl
-- [`transfer()`](https://qonfluens.github.io/spacemodr/reference/transfer.md)
+- [`transfer()`](https://qonfluens.github.io/spacemodR/reference/transfer.md)
   : Transfer (food, contaminant) across trophic levels
-- [`trophic()`](https://qonfluens.github.io/spacemodr/reference/trophic.md)
+- [`trophic()`](https://qonfluens.github.io/spacemodR/reference/trophic.md)
   : Create a trophic table
 
 # Articles
 
 ### All vignettes
 
-- [Example_Berisp](https://qonfluens.github.io/spacemodr/articles/Example_Berisp_full.md):
-- [Example_Beris_simple](https://qonfluens.github.io/spacemodr/articles/Example_Berisp_simple.md):
-- [Tutorial](https://qonfluens.github.io/spacemodr/articles/Tutorial.md):
-- [Using_External_Dispersal](https://qonfluens.github.io/spacemodr/articles/Using_External_Dispersal.md):
+- [Example_Berisp](https://qonfluens.github.io/spacemodR/articles/Example_Berisp_full.md):
+- [Example_Beris_simple](https://qonfluens.github.io/spacemodR/articles/Example_Berisp_simple.md):
+- [Tutorial](https://qonfluens.github.io/spacemodR/articles/Tutorial.md):
+- [Using_External_Dispersal](https://qonfluens.github.io/spacemodR/articles/Using_External_Dispersal.md):

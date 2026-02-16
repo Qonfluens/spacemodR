@@ -73,7 +73,7 @@ For each layer:
     `spread()`.
 
 3.  Intake is computed using
-    [`intake()`](https://qonfluens.github.io/spacemodr/reference/intake.md).
+    [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md).
 
 4.  Contributions from all resources are summed.
 

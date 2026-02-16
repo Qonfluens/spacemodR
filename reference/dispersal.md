@@ -2,7 +2,7 @@
 
 Applies a dispersal mechanism to a specific layer of the \`spacemodel\`
 object. This function acts as a wrapper around
-[`compute_dispersal`](https://qonfluens.github.io/spacemodr/reference/compute_dispersal.md)
+[`compute_dispersal`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
 to handle the \`spacemodel\` class structure.
 
 ## Usage
@@ -51,7 +51,7 @@ values.
 
 ## See also
 
-[`compute_dispersal`](https://qonfluens.github.io/spacemodr/reference/compute_dispersal.md)
+[`compute_dispersal`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
 
 ## Examples
 
