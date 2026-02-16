@@ -68,7 +68,7 @@ kernels <- list(
 
 
 ```{r}
-sf_micromammals <- sf::read_sf("~/Documents/qonfluens/model/SPACEMOD/spacemodR/raw_data/INSPECT_woodmouse_vole_shrew_2006200720082010_Cd.geojson")
+data("sf_micromammals")
 sf_micromammals$trophic = ifelse(sf_micromammals$genus %in% c("crocidura", "sorex"), "insectivore", "herbivore")
 ggplot(data = sf_micromammals) +
   theme_minimal() +
