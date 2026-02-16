@@ -1,5 +1,7 @@
 # spacemodR
 
+[![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodr/)
+
 **Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping**
 
 `spacemodR` is an R package designed for spatial ecological risk modeling.

@@ -1,0 +1,116 @@
+---
+title: "Example_Berisp"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example_Berisp}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spacemodR)
+```
+
+
+# Define a Spacemodel
+
+## Habitat
+
+```{r}
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
+list_habitat <- lapply(names_hab, function(i) ground_cd)
+stack_habitat <- raster_stack(list_habitat, names_hab)
+
+terra::plot(stack_habitat)
+```
+
+## Trophic web
+
+```{r}
+trophic_df <- trophic() |>
+  add_link("soil", "plant") |>
+  add_link("soil", "invert") |>
+  add_link("soil", "mamHerb") |>
+  add_link("soil", "mamInsect") |>
+  add_link("soil", "birdInsect")
+```
+
+# Fixed species
+
+## Contamination of earthworm
+
+For Cadmium, the equation is given by (Ma et al., 2004):
+
+$$
+\log C_{earthworm} = a + b \times \log C_{soil} + c \times \log OM + d \times pH
+$$
+
+For Zinc and Arsenic, equation si given by: 
+
+$$
+\log C_{earthworm} = a + b \times \log C_{soil} + d \times pH
+$$
+
+```{r}
+feq1 = function(Csoil,OM,pH,a,b,c,d){
+  a+b*log(x)+c*log(OM)+d*pH
+}
+crt_feq1 <- function(a, b, c, d) {
+  function(Csoil, OM, pH) {
+    feq1(Csoil, OM, pH, a, b, c, d)
+  }
+}
+
+soil_earthworm <- list(
+  c(substance = "cadmium", from = "soil", to = "earthworm",
+    flux = crt_feq1(a=2.92,  b=0.747,  c=-0.5336, d=-0.2101)),
+  c(substance = "zinc",    from = "soil", to = "earthworm",
+    flux = crt_feq1(a=4.453, b=0.234,  c=0.0,     d=-0.12845)),
+  c(substance = "arsenic", from = "soil", to = "earthworm",
+    flux = crt_feq1(a=0.341, b=1.0908, c=0.0,     d=-0.41611))
+)
+df <- as.data.frame(do.call(rbind, soil_earthworm), stringsAsFactors = FALSE)
+
+print(df)
+```
+
+## Vegetation
+
+```{r}
+feq1 = function(Csoil,OM,pH,a,b,c,d){
+  a+b*log(x)+c*log(OM)+d*pH
+}
+crt_feq1 <- function(a, b, c, d) {
+  function(Csoil, OM, pH) {
+    feq1(Csoil, OM, pH, a, b, c, d)
+  }
+}
+
+soil_earthworm <- list(
+  c(substance = "cadmium", from = "soil", to = "earthworm",
+    flux = crt_feq1(a=2.92,  b=0.747,  c=-0.5336, d=-0.2101)),
+  c(substance = "zinc",    from = "soil", to = "earthworm",
+    flux = crt_feq1(a=4.453, b=0.234,  c=0.0,     d=-0.12845)),
+  c(substance = "arsenic", from = "soil", to = "earthworm",
+    flux = crt_feq1(a=0.341, b=1.0908, c=0.0,     d=-0.41611))
+)
+df <- as.data.frame(do.call(rbind, soil_earthworm), stringsAsFactors = FALSE)
+
+print(df)
+```
+
+
+
+# Fixed Species
+
+## Cadmium
+
+
