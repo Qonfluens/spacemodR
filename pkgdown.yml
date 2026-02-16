@@ -1,0 +1,7 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  Tutorial: Tutorial.html
+  Using_External_Dispersal: Using_External_Dispersal.html
+last_built: 2026-02-16T07:52Z
