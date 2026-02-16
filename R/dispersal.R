@@ -1,73 +1,74 @@
-#' Create a raster mask from a habitat object
+#' Disperse a species or variable over the landscape
 #'
-#' @param spacemodel spacemodel.
-#' @param layer layer of the \code{spacemodel}.
-#' @param method method use for dispersal. Default is "convolution".
-#' @param method_option parameters to be used in `method`.
+#' @description
+#' Applies a dispersal mechanism to a specific layer of the `spacemodel` object.
+#' This function acts as a wrapper around \code{\link{compute_dispersal}} to handle
+#' the `spacemodel` class structure.
 #'
-#' @return spacemod with modification of the layer
+#' @param spacemodel A \code{spacemodel} object.
+#' @param layer Character or Integer. The name or index of the layer to disperse
+#' (e.g., "Fox", 1).
+#' @param method Character. The dispersal method to use. Options are:
+#' \itemize{
+#'   \item \code{"convolution"} (default): Uses a moving window (kernel).
+#'   \item \code{"omniscape"}: Uses Circuit Theory (via Julia and Omniscape.jl).
+#' }
+#' @param method_option A list of parameters specific to the chosen method:
+#' \itemize{
+#'   \item For \code{"convolution"}: must contain \code{kernel} (a matrix).
+#'   \item For \code{"omniscape"}: must contain \code{resistance} (SpatRaster) and \code{radius} (numeric).
+#' }
 #'
+#' @return The \code{spacemodel} object with the specified layer updated with dispersed values.
+#'
+#' @examples
+#' \dontrun{
+#' # 1. Convolution example
+#' my_kernel <- matrix(1, nrow=3, ncol=3)
+#' sm_updated <- dispersal(sm, layer = "Predator", method = "convolution",
+#'                         method_option = list(kernel = my_kernel))
+#'
+#' # 2. Omniscape example (requires Julia)
+#' sm_updated <- dispersal(sm, layer = "Predator", method = "omniscape",
+#'                         method_option = list(resistance = res_map, radius = 10))
+#' }
+#'
+#' @seealso \code{\link{compute_dispersal}}
 #' @export
 dispersal <- function(spacemodel,
                       layer = 1,
                       method = "convolution",
                       method_option = list()) {
-  if (method == "convolution") {
-    out <- dispersal_convolution(
-      raster <- spacemodel[[layer]],
-      kernel <- method_option$kernel
-    )
-  }
-  spacemodel[[layer]][] = out
-  return(spacemodel)
-}
 
-#' Create a raster mask from a habitat object
-#'
-#' Applies dispersal logic to a specific layer of the spacemodel.
-#'
-#' @param spacemodel spacemodel object.
-#' @param layer character or integer. Name or index of the layer to disperse.
-#' @param method method use for dispersal ("convolution", etc.).
-#' @param method_option parameters list (must contain `kernel` for convolution).
-#'
-#' @return spacemod with modification of the layer
-#'
-#' @export
-dispersal <- function(spacemodel,
-                      layer = 1,
-                      method = "convolution",
-                      method_option = list()) {
-  # secure raster for computing
+  # Secure raster for computing
   input_rast <- spacemodel[[layer]]
-  # Calcul using generique computer
+  # Compute dispersal using generic engine
   out_rast <- compute_dispersal(
     x = input_rast,
     method = method,
     options = method_option,
-    mask = input_rast # mask by itself => keep same NA
+    mask = input_rast # Apply mask to keep original NAs
   )
-  # update
+  # Update the spacemodel layer
   spacemodel[[layer]] <- out_rast
-
   return(spacemodel)
 }
-
 # ===============================
 # Dispersal Method
 # ===============================
 
-#' Compute dispersal or spread map
+#' Compute dispersal or spread map (Generic Engine)
 #'
-#' Generic engine to apply spatial processing (Convolution or External algorithms).
-#' Handles NA masking and method dispatch.
+#' @description
+#' Low-level function to apply spatial processing (Convolution or External algorithms)
+#' to a raster. It handles NA masking and method dispatch to Julia if necessary.
 #'
 #' @param x SpatRaster. Source layer to disperse.
 #' @param method Character. "convolution" or "omniscape" (placeholder).
 #' @param options List. Parameters (e.g., `kernel` for convolution).
 #' @param mask SpatRaster (optional). A mask to apply after dispersion (e.g., maintain original NA structure).
 #'
-#' @return SpatRaster
+#' @return A \code{\link[terra]{SpatRaster}} object containing the dispersed values.
 #'
 #' @export
 compute_dispersal <- function(x, method = "convolution", options = list(), mask = NULL) {

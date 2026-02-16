@@ -38,12 +38,8 @@
 #' The function assumes that intake weights are already normalized so that,
 #' for each consumer, the sum of contributions from all resources equals 1.
 #'
-#' @return A named list of spatial layers representing concentrations
-#'         after trophic transfer.
-#'
-#' @examples
-#' # Assuming spacemodel, kernels and intakes are defined:
-#' # result <- transfer(spacemodel, kernels, intakes)
+#' @return A named `spacemodel` object as a list of spatial layers representing
+#'  values after transfer.
 #'
 #' @export
 transfer <- function(
@@ -115,7 +111,7 @@ transfer <- function(
   }
 
   # Reconstruction de l'objet spacemodel final
-  # Note: `raster_stack` et `spacemodel` sont des constructeurs de votre package
+  # Note: `raster_stack` et `spacemodel` sont des constructeurs
   stack_transfer <- raster_stack(
     raster_list = uptake_stack,
     names = names(uptake_stack)

@@ -4,7 +4,7 @@
 #' @param GSD Numeric, ground sampling distance in meters per pixel
 #' @param size_std Numeric, how many std to extend kernel on each side
 #'
-#' @return SpatRaster of the kernel
+#' @return A matrix defining the kernel
 #' @export
 compute_kernel <- function(radius, GSD, size_std = 1.5) {
   # Kernel size in pixels
