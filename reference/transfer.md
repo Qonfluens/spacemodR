@@ -72,7 +72,8 @@ For each layer:
 2.  Concentration from each resource is spatially spread using
     `spread()`.
 
-3.  Intake is computed using [`intake()`](intake.md).
+3.  Intake is computed using
+    [`intake()`](https://qonfluens.github.io/spacemodr/reference/intake.md).
 
 4.  Contributions from all resources are summed.
 

@@ -96,8 +96,10 @@ You get a map showing where the animals go. A pixel with high current
 means “many animals pass here,” making it a critical zone for
 contaminant exposure.
 
-Then using [`spacemodR::transfer`](../reference/transfer.md), we can
-compute the `exposure` and diffusion of the contaminant in population.
+Then using
+[`spacemodR::transfer`](https://qonfluens.github.io/spacemodr/reference/transfer.md),
+we can compute the `exposure` and diffusion of the contaminant in
+population.
 
 ## Initialize Julia (Required at the start of the session)
 
