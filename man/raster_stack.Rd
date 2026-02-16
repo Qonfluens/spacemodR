@@ -12,7 +12,7 @@ raster_stack(raster_list, names = NULL)
 \item{names}{A character vector of unique names for each raster layer in the stack.}
 }
 \value{
-A `SpatRaster` stack with named layers.
+A \code{\link[terra]{SpatRaster}} object with named layers.
 }
 \description{
 This function creates a `SpatRaster` stack from a list of rasters and assigns unique names to each layer.

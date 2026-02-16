@@ -1,6 +1,6 @@
 Package: spacemodR
 Title: Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: 
     c(person("Virgile", "Baudrot", email = "virgile.baudrot@qonfluens.com", role = c("aut", "cre")),
       person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr ", role = "ctb"),

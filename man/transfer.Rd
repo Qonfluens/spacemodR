@@ -38,8 +38,8 @@ based on the predator's presence. Options are:
 \item{verbose}{Logical. If \code{TRUE}, prints progress information.}
 }
 \value{
-A named list of spatial layers representing concentrations
-        after trophic transfer.
+A named `spacemodel` object as a list of spatial layers representing
+ values after transfer.
 }
 \description{
 Computes the transfer through a trophic network from
@@ -59,9 +59,4 @@ For each layer:
 
 The function assumes that intake weights are already normalized so that,
 for each consumer, the sum of contributions from all resources equals 1.
-}
-\examples{
-# Assuming spacemodel, kernels and intakes are defined:
-# result <- transfer(spacemodel, kernels, intakes)
-
 }

@@ -14,7 +14,7 @@ compute_kernel(radius, GSD, size_std = 1.5)
 \item{size_std}{Numeric, how many std to extend kernel on each side}
 }
 \value{
-SpatRaster of the kernel
+A matrix defining the kernel
 }
 \description{
 Create a 2D Gaussian motion kernel as a SpatRaster

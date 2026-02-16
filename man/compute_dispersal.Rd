@@ -2,7 +2,7 @@
 % Please edit documentation in R/dispersal.R
 \name{compute_dispersal}
 \alias{compute_dispersal}
-\title{Compute dispersal or spread map}
+\title{Compute dispersal or spread map (Generic Engine)}
 \usage{
 compute_dispersal(x, method = "convolution", options = list(), mask = NULL)
 }
@@ -16,9 +16,9 @@ compute_dispersal(x, method = "convolution", options = list(), mask = NULL)
 \item{mask}{SpatRaster (optional). A mask to apply after dispersion (e.g., maintain original NA structure).}
 }
 \value{
-SpatRaster
+A \code{\link[terra]{SpatRaster}} object containing the dispersed values.
 }
 \description{
-Generic engine to apply spatial processing (Convolution or External algorithms).
-Handles NA masking and method dispatch.
+Low-level function to apply spatial processing (Convolution or External algorithms)
+to a raster. It handles NA masking and method dispatch to Julia if necessary.
 }
