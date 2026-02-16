@@ -1,7 +1,33 @@
 #' Create a spacemodel object
 #'
-#' @param raster_stack SpatRaster (multi-layer stack)
-#' @param trophic_tbl Object of class \code{trophic_tbl}
+#' @description
+#' Constructor for the `spacemodel` class. This function combines spatial data
+#' (a raster stack) and ecological data (a trophic table) into a single object
+#' used for modelling.
+#'
+#' @param raster_stack A \code{\link[terra]{SpatRaster}} object (multi-layer stack) representing
+#' the spatial distribution of the species or groups.
+#' @param trophic_tbl An object of class \code{trophic_tbl} containing the
+#' ecological parameters and properties of the species.
+#'
+#' @details
+#' The function performs several checks to ensure data consistency:
+#' \itemize{
+#'   \item Verifies that \code{raster_stack} is a \code{SpatRaster}.
+#'   \item Verifies that \code{trophic_tbl} is a \code{trophic_tbl} object.
+#'   \item Ensures the number of raster layers matches the number of levels in the trophic table.
+#'   \item Ensures that the names of the raster layers match the names in the trophic table.
+#' }
+#'
+#' @return A \code{\link[terra]{SpatRaster}} object with the following additional attributes:
+#' \itemize{
+#'   \item \code{trophic_tbl}: The \code{trophic_tbl} object passed as input.
+#'   \item \code{spacemodel}: A logical flag set to \code{TRUE}, indicating this raster
+#'   is part of a spacemodel.
+#' }
+#'
+#' @seealso \code{\link[terra]{rast}}, \code{trophic_tbl}
+#'
 #' @export
 spacemodel <- function(raster_stack, trophic_tbl) {
   if (!inherits(raster_stack, "SpatRaster")) {
@@ -39,7 +65,7 @@ spacemodel <- function(raster_stack, trophic_tbl) {
 #' @param raster_list A list of `SpatRaster` objects or file paths to raster files.
 #' @param names A character vector of unique names for each raster layer in the stack.
 #'
-#' @return A `SpatRaster` stack with named layers.
+#' @return A \code{\link[terra]{SpatRaster}} object with named layers.
 #'
 #' @details
 #' The function checks that the length of `raster_list` matches the length of `names`,
@@ -78,7 +104,7 @@ print.spacemodel <- function(x, ...) {
   cat("Spacemodel object\n")
   cat("Number of raster layers:", terra::nlyr(x), "\n")
   cat("Raster extent:", terra::ext(x), "\n")
-  trophic_tbl <- attr(spcmdl_habitat, "trophic_tbl")
+  trophic_tbl <- attr(x, "trophic_tbl")
   cat("Trophic data.frame:", trophic_tbl, "\n")
 }
 
@@ -86,10 +112,10 @@ print.spacemodel <- function(x, ...) {
 #' @export
 plot.spacemodel <- function(x, layer = 1, graph=FALSE, ...) {
   if(graph){
-    trophic_tbl <- attr(spcmdl_habitat, "trophic_tbl")
+    trophic_tbl <- attr(x, "trophic_tbl")
     return(plot(trophic_tbl))
   }
   # plot raster
-  terra::plot(x$raster_stack[[layer]], main = paste("Layer", layer))
+  terra::plot(x[[layer]], main = paste("Layer", layer))
 }
 

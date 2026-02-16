@@ -1,13 +1,17 @@
 Package: spacemodR
 Title: Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     c(person("Virgile", "Baudrot", email = "virgile.baudrot@qonfluens.com", role = c("aut", "cre")),
       person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr ", role = "ctb"),
       person("Clémentine", "Fritsch", email = "clementine.fritsch@univ-fcomte.fr", role = "ctb"),
       person("Renaud", "Scheifler", email = "renaud.scheifler@univ-fcomte.fr", role = "ctb")
     )
-Description: Build the habitat and the trophic links of different species.
+Description: A set of tools dedicated to modeling trophic transfer based on an
+  initial ground raster. It provides a directed acyclic graph structure for a 
+  set of rasters representing the flow of elements (e.g., food, energy, 
+  contaminants). It also includes tools for working with dispersal algorithms, 
+  enabling the combination of flux data with population movement.
 License: MIT + file LICENSE
 Imports: 
     ggplot2,

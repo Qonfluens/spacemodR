@@ -1,4 +1,4 @@
-#' load_raster_extdata
+#' load raster file from internal data
 #'
 #' A raster of the (example).
 #'
@@ -6,6 +6,11 @@
 #'
 #' @format An object `SpatRaster` (package terra).
 #' @source Internal data package.
+#'
+#' @return A \code{\link[terra]{SpatRaster}} object
+#'
+#' @seealso \code{\link[terra]{rast}}
+#'
 #' @keywords datasets
 #' @export
 load_raster_extdata <- function(path_name) {

@@ -72,8 +72,7 @@ trophic <- function(data = NULL, from = NULL, to = NULL, weight = NULL) {
   class(df) <- c("trophic_tbl", class(df))
   attr(df, "level") <- numeric() # Sera calculé plus tard si besoin
 
-  # Validation (supposant que la fonction existe dans votre package)
-  # Si elle n'existe pas encore, retournez juste df
+  # Validation
   validate_trophic_tbl(df)
 }
 
@@ -215,24 +214,17 @@ is_cyclic <- function(df) {
   for (v in df$to) {
     indegree[v] <- indegree[v] + 1
   }
-
   queue <- names(indegree[indegree == 0])
-
   edges <- df[, c("from", "to")]
 
   count <- 0
-
   while (length(queue) > 0) {
     node <- queue[1]
     queue <- queue[-1]
-
     count <- count + 1
-
     outgoing <- edges[edges$from == node, ]
-
     for (v in outgoing$to) {
       indegree[v] <- indegree[v] - 1
-
       if (indegree[v] == 0) {
         queue <- c(queue, v)
       }
@@ -240,7 +232,6 @@ is_cyclic <- function(df) {
 
     edges <- edges[edges$from != node, ]
   }
-
   count != length(nodes)
 }
 

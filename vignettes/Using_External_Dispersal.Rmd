@@ -126,7 +126,7 @@ n_col <- 20
 
 ```{r}
 # ==============================================================================
-#  MATRIX of habiata (Source Strength)
+#  MATRIX of habitat (Source Strength)
 # ==============================================================================
 mat_habitat <- matrix(0, nrow = n_row, ncol = n_col)
 mat_habitat[2:6, 2:6] <- 100
@@ -149,7 +149,6 @@ names(rast_resistance) <- "resistance"
 
 ```{r}
 # VIZUALIZE
-par(mfrow = c(1, 2))
 terra::plot(rast_habitat, main = "Habitat (Sources)", col = c("white", "green", "darkgreen"))
 terra::plot(rast_resistance, main = "Resistance", col = c("grey", "brown"))
 ```
