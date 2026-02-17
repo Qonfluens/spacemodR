@@ -1,0 +1,59 @@
+---
+title: "Habitat"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Habitat}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(spacemodR)
+library(dplyr)
+```
+
+We have build a database linking OCSGE label with species label.
+
+```{r}
+data("ocsge_species_dict")
+dfhab <- ocsge_species_dict
+dfhab_Apsy <- dfhab[grepl("Apodemus_sylvaticus", dfhab$nom_espece), ]
+dfhab_Apsy
+```
+
+
+```{r}
+data("ref_ocsge")
+dfhab_Apsy_def <- dplyr::left_join(dfhab_Apsy, ref_ocsge, by = c("code_cs" = "code_cs_"))
+```
+
+And therefore we can distinguish:
+- Non habitat area:
+```{r}
+wg = dfhab_Apsy_def$weight_global
+dfhab_Apsy_def[wg == 0,]$nomenclature
+```
+
+- Very Poor habitat:
+```{r}
+dfhab_Apsy_def[wg > 0 & wg <= 3,]$nomenclature
+```
+
+- Poor habitat:
+```{r}
+dfhab_Apsy_def[wg > 3 & wg <= 7, ]$nomenclature
+```
+
+- Good habitat:
+```{r}
+dfhab_Apsy_def[wg > 7,]$nomenclature
+```

@@ -10,3 +10,9 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
+^vignettes/Habitat\.Rmd$
+^vignettes/Example_Berisp_full\.Rmd$
+^vignettes/Tutorial\.html$
+^vignettes/Tutorial\.md$
+^vignettes/02_Using_External_Dispersal\.Rmd$
+^vignettes/02_ex_SoilTarget\.Rmd$

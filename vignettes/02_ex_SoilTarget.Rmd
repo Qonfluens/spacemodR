@@ -25,13 +25,80 @@ library(sf)
 library(terra)
 ```
 
+# Presentation of the Metaleurop Site and Data
+
+The "Metaleurop" case involves a 40 km² site in northern France centered around
+a former lead smelter. Soil levels around the plant are relatively high. 
+Below are the contamination maps for lead, zinc, and cadmium in the soil, 
+extrapolated from 595 data points.
+
+We do not show here how the extrapolation has been made.
+
+```{r soil_contam}
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+ground_pb <- load_raster_extdata("ground_concentration_pb_compressed.tif")
+ground_zn <- load_raster_extdata("ground_concentration_zn_compressed.tif")
+ground <- terra::rast(list(cd=ground_cd, pb=ground_pb, zn=ground_zn))
+
+terra::plot(ground, main="Soil Concentration (log10)")
+```
+
+
+```{r soil_contam_plot}
+ground_df <- as.data.frame(ground, xy = TRUE, na.rm = TRUE)
+
+plt_init = ggplot(data = ground_df, aes(x = x, y = y)) +
+  theme_minimal() +
+  labs(title="Concentration (lo10 scaled)", x="longitude", y="latitude") +
+  scale_fill_viridis_c()
+
+plt_init + geom_raster(aes(fill=cd))
+
+plt_init + geom_raster(aes(fill=pb))
+
+plt_init + geom_raster(aes(fill=zn))
+```
+
+
+Since 2006, a total of 1426 micro-mammals individuals (9 species) have been captured
+to measure the bioaccumulation of metals and kidneys, livers, hairs:
+
+```{r}
+data("sf_micromammals")
+trophic_cat =  ifelse(sf_micromammals$genus %in% c("crocidura", "sorex"), "insectivore", "herbivore")
+sf_micromammals$trophic = factor(trophic_cat, levels = c("herbivore", "insectivore"))
+ptsHerb = sf_micromammals[sf_micromammals$trophic=="herbivore", ]
+ptsInsect = sf_micromammals[sf_micromammals$trophic=="insectivore", ]
+
+lmH <- lm(log10(cd_WB_FW) ~ log10(cd_S), data = ptsHerb)
+lmI <- lm(log10(cd_WB_FW) ~ log10(cd_S), data = ptsInsect)
+
+ggplot(data = sf_micromammals) +
+  theme_minimal() +
+  labs(title="Cadmium (Cd): log10(Whole body) ~ log10(Soil)",
+       x="Soil concentration (log10)",
+       y="Whole body concentration (log10)") +
+  scale_x_log10() + scale_y_log10() +
+  scale_color_manual(
+    name="Trophic category",
+    values=c("#11aa44", "#aa4411")) +
+  geom_point(aes(x=cd_S, y=cd_WB_FW, color=trophic)) +
+  geom_abline(intercept=coef(lmH)[1], slope=coef(lmH)[2], color = "#11aa44", size=2) +
+  geom_abline(intercept=coef(lmI)[1], slope=coef(lmI)[2], color = "#aa4411", size=1.5) +
+  geom_abline(intercept= -1.2571, slope=0.4723, color = "red")
+```
 
 # A simple Soil - Target model Fixed individuals
 
 ```{r}
-ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-# names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
+
+unique(sf_micromammals$genus)
+
+
+
+
 names_hab = c("soil", "mamHerb", "mamInsect")
+
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)
 
@@ -67,19 +134,6 @@ kernels <- list(
 ```
 
 
-```{r}
-data("sf_micromammals")
-sf_micromammals$trophic = ifelse(sf_micromammals$genus %in% c("crocidura", "sorex"), "insectivore", "herbivore")
-ggplot(data = sf_micromammals) +
-  theme_minimal() +
-  scale_x_log10() + scale_y_log10() +
-  scale_color_manual(values=c("#aa4411", "#11aa44")) +
-  geom_point(aes(x=cd_S, y=cd_WB_FW, color=trophic)) +
-  geom_abline(intercept= -0.2, slope=0.3, color = "#aa4411" ) +
-  geom_abline(intercept= -1,  slope=0.2, color = "#11aa44" ) +
-  geom_abline(intercept= -1.2571, slope=0.4723, color = "red")
-```
-
 
 ```{r}
 simple_intakes <- intake(spcmdl_simple,
@@ -106,9 +160,6 @@ ggplot() +
 
 
 ```{r}
-ptsInsect = sf_micromammals[sf_micromammals$trophic=="insectivore", ]
-ptsHerb = sf_micromammals[sf_micromammals$trophic=="herbivore", ]
-
 predict_insect <- terra::extract(spcmdl_transfer[["mamInsect"]], ptsInsect)
 ptsInsect$predict <- predict_insect[, "mamInsect"]
 
