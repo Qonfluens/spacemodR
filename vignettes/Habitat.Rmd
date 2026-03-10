@@ -21,6 +21,10 @@ library(spacemodR)
 library(dplyr)
 ```
 
+# Weighted species habitat with OCS-GE layer
+
+## How it works:
+
 We have build a database linking OCSGE label with species label.
 
 ```{r}
@@ -57,3 +61,53 @@ dfhab_Apsy_def[wg > 3 & wg <= 7, ]$nomenclature
 ```{r}
 dfhab_Apsy_def[wg > 7,]$nomenclature
 ```
+
+## A classification of species
+
+```{r}
+dfhab_full <- dplyr::left_join(dfhab, ref_ocsge, by = c("code_cs" = "code_cs_"))
+
+dfhab_grouped <- dfhab_full %>%
+  tidyr::separate(nom_espece, into = c("genus", "epithet"), sep = "_", remove = FALSE) %>%
+  dplyr::group_by(genus, nomenclature) %>%
+  dplyr::summarise(mean_weighted = mean(weight_global, na.rm = TRUE), .groups = 'drop')
+
+dfhab_matrix <- dfhab_grouped %>%
+  tidyr::pivot_wider(names_from = nomenclature, values_from = mean_weighted, values_fill = 0) %>%
+  tibble::column_to_rownames(var = "genus")
+
+# 4. Clustering Hiérarchique (Méthode de Ward pour des groupes compacts)
+dist_matrix <- dist(dfhab_matrix, method = "euclidean")
+hc <- hclust(dist_matrix, method = "ward.D2")
+```
+
+```{r, fig.width=12, fig.height=12}
+plot(hc, main = "Dendrogram", xlab = "Genre", sub = "")
+```
+
+
+```{r, fig.width=12, fig.height=12}
+library(factoextra)
+
+plt_circ_dend = fviz_dend(hc, k = 4,                 # On suggère 4 groupes de couleurs
+          cex = 0.5,                 # Taille du texte
+          type = "circular",         # Format circulaire
+          palette = "jco",           # Palette de couleurs
+          rect = TRUE,               # Cadre autour des groupes
+          main = "Genus distance for OCS-GE layer")
+
+plt_circ_dend
+```
+
+```{r, fig.width=12, fig.height=18}
+# install.packages("pheatmap")
+library(pheatmap)
+
+pheatmap(dfhab_matrix, 
+         clustering_distance_rows = "euclidean",
+         clustering_method = "ward.D2",
+         scale = "column", # Normalise par habitat pour voir les préférences
+         color = colorRampPalette(c("white", "orange", "red"))(50),
+         main = "Preferential  OCS-GE layer per Genus (Mean weight)")
+```
+
