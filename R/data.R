@@ -32,3 +32,22 @@
 #' data(ref_ocsge)
 #' @keywords datasets
 "ref_ocsge"
+
+#' DataBase of collected MicroMammals species
+#'
+#' @usage data(sf_micromammals)
+#'
+#' @examples
+#' data(sf_micromammals)
+#' @keywords datasets
+"sf_micromammals"
+
+#' Valued weight between OCSGE layer and species
+#'
+#' @usage data(ocsge_species_dict)
+#'
+#' @examples
+#' data(ocsge_species_dict)
+#' @keywords datasets
+"ocsge_species_dict"
+

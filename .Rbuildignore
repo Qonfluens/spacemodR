@@ -16,3 +16,4 @@
 ^vignettes/Tutorial\.md$
 ^vignettes/02_Using_External_Dispersal\.Rmd$
 ^vignettes/02_ex_SoilTarget\.Rmd$
+^vignettes/Inference_Transfer\.Rmd$
