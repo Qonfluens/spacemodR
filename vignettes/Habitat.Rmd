@@ -87,27 +87,26 @@ plot(hc, main = "Dendrogram", xlab = "Genre", sub = "")
 
 
 ```{r, fig.width=12, fig.height=12}
-library(factoextra)
-
-plt_circ_dend = fviz_dend(hc, k = 4,                 # On suggère 4 groupes de couleurs
-          cex = 0.5,                 # Taille du texte
-          type = "circular",         # Format circulaire
-          palette = "jco",           # Palette de couleurs
-          rect = TRUE,               # Cadre autour des groupes
-          main = "Genus distance for OCS-GE layer")
-
-plt_circ_dend
+# library(factoextra)
+# 
+# plt_circ_dend = fviz_dend(hc, k = 4, # On suggère 4 groupes de couleurs
+#           cex = 0.5,                 # Taille du texte
+#           type = "circular",         # Format circulaire
+#           palette = "jco",           # Palette de couleurs
+#           rect = TRUE,               # Cadre autour des groupes
+#           main = "Genus distance for OCS-GE layer")
+# 
+# plt_circ_dend
 ```
 
 ```{r, fig.width=12, fig.height=18}
 # install.packages("pheatmap")
-library(pheatmap)
-
-pheatmap(dfhab_matrix, 
-         clustering_distance_rows = "euclidean",
-         clustering_method = "ward.D2",
-         scale = "column", # Normalise par habitat pour voir les préférences
-         color = colorRampPalette(c("white", "orange", "red"))(50),
-         main = "Preferential  OCS-GE layer per Genus (Mean weight)")
+# library(pheatmap)
+# pheatmap(dfhab_matrix, 
+#          clustering_distance_rows = "euclidean",
+#          clustering_method = "ward.D2",
+#          scale = "column", # Normalise par habitat pour voir les préférences
+#          color = colorRampPalette(c("white", "orange", "red"))(50),
+#          main = "Preferential  OCS-GE layer per Genus (Mean weight)")
 ```
 
