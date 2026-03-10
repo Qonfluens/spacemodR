@@ -29,10 +29,41 @@ library(tidyterra)
 library(scales)
 ```
 
+```{r echo=FALSE}
+# ADDITIONAL FUNCTION
+read_sf_safe <- function(file_path) {
+  if (file.exists(file_path)) {
+    sf_obj <- sf::read_sf(file_path)
+    return(sf_obj)
+  }
+  parent_path <- paste0("../", file_path)
+  if (file.exists(parent_path)) {
+    sf_obj <- sf::read_sf(parent_path)
+    return(sf_obj)
+  }
+  stop(paste("File not found at", file_path, "and", parent_path))
+}
+load_safe <- function(file_path) {
+  if (file.exists(file_path)) {
+    load(file_path)
+    return(TRUE)
+  }
+  parent_path <- paste0("../", file_path)
+  if (file.exists(parent_path)) {
+    load(parent_path)
+    return(TRUE)
+  }
+  warning(paste("File not found at", file_path, "or", parent_path))
+  return(FALSE)
+}
+
+```
+
+
 ```{r}
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-sf_metaleurop_2010 <- sf::read_sf("raw_data/sf_metaleurop_2006_2010.gpkg")
-sf_metaleurop_2025 <- sf::read_sf("raw_data/sf_metaleurop_2025.gpkg")
+sf_metaleurop_2010 <- read_sf_safe("raw_data/sf_metaleurop_2006_2010.gpkg")
+sf_metaleurop_2025 <- read_sf_safe("raw_data/sf_metaleurop_2025.gpkg")
 ```
 
 ```{r}
@@ -72,7 +103,7 @@ stan_data = list(
 ```{r}
 # fit_direct <- calibrate_direct(stan_data, chains=4, warmup=500, iter=1000)
 # save(fit_direct, file="raw_data/fit_direct_cd.rda")
-load("raw_data/fit_direct_cd.rda")
+load_safe("raw_data/fit_direct_cd.rda")
 ```
 
 ### Equation parameters
@@ -335,7 +366,7 @@ stan_data = list(
 ```{r}
 # fit_direct_b100 <- calibrate_direct(stan_data, chains=4, warmup=500, iter=1000)
 # save(fit_direct_b100, file="raw_data/fit_direct_b100_cd.rda")
-load("raw_data/fit_direct_b100_cd.rda")
+load_safe("raw_data/fit_direct_b100_cd.rda")
 ```
 
 ```{r}
