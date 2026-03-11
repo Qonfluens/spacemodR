@@ -34,7 +34,8 @@ Suggests:
     dplyr,
     tidyterra,
     scales,
-    purrr
+    purrr,
+    tidyr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
