@@ -1,2 +1,2 @@
-raw_data/fit_direct_cd.rda filter=lfs diff=lfs merge=lfs -text
-raw_data/fit_direct_b100_cd.rda filter=lfs diff=lfs merge=lfs -text
+raw_data/fit_direct_cd.rds filter=lfs diff=lfs merge=lfs -text
+raw_data/fit_direct_b100_cd.rds filter=lfs diff=lfs merge=lfs -text
