@@ -51,9 +51,6 @@ library(scales)
 #>     discard
 ```
 
-git lfs migrate import
-–include=“raw_data/fit_direct_cd.rda,raw_data/fit_direct_b100_cd.rda”
-
 ``` r
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 sf_metaleurop_2010 <- read_sf_safe("raw_data/sf_metaleurop_2006_2010.gpkg")

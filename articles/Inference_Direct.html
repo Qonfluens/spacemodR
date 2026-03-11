@@ -117,8 +117,6 @@
 <span><span class="co">#&gt; The following object is masked from 'package:purrr':</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     discard</span></span></code></pre></div>
-<p>git lfs migrate import
-–include=“raw_data/fit_direct_cd.rda,raw_data/fit_direct_b100_cd.rda”</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
 <span><span class="va">sf_metaleurop_2010</span> <span class="op">&lt;-</span> <span class="fu">read_sf_safe</span><span class="op">(</span><span class="st">"raw_data/sf_metaleurop_2006_2010.gpkg"</span><span class="op">)</span></span>
@@ -186,7 +184,7 @@
 <span><span class="co">#&gt; infinite values.</span></span>
 <span><span class="co">#&gt; Warning: Removed 3131 rows containing non-finite outside the scale range</span></span>
 <span><span class="co">#&gt; (`stat_density()`).</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/direct_loadparsfit-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/direct_loadparsfit-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
 <h4 id="observation-vs-prediction">Observation vs Prediction<a class="anchor" aria-label="anchor" href="#observation-vs-prediction"></a>
@@ -236,7 +234,7 @@
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">log10_cd_S</span>, y<span class="op">=</span><span class="va">log10_cd_WB_FW</span>, color<span class="op">=</span><span class="va">food</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">plt_train</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 <div class="section level3">
@@ -305,7 +303,7 @@ $</p>
 <span><span class="va">plt_full</span></span>
 <span><span class="co">#&gt; Warning: Removed 7 rows containing missing values or values outside the scale range</span></span>
 <span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level3">
 <h3 id="mapping">Mapping<a class="anchor" aria-label="anchor" href="#mapping"></a>
@@ -355,7 +353,7 @@ the landscape.</p>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"Risk\n(log10-scaled)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 <div class="section level2">
@@ -392,7 +390,7 @@ first.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"plasma"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span><span class="va">cd_S</span>, <span class="va">cd_S_collect</span>, color<span class="op">=</span><span class="va">method_collect</span><span class="op">)</span>, alpha<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_abline</a></span><span class="op">(</span>slope<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level3">
 <h3 id="compute-inference">Compute inference<a class="anchor" aria-label="anchor" href="#compute-inference"></a>
@@ -468,7 +466,7 @@ first.</p>
 <span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x<span class="op">=</span><span class="va">log10_cd_S</span>, y<span class="op">=</span><span class="va">log10_cd_WB_FW</span>, color<span class="op">=</span><span class="va">food</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">plt_train</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-20-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level3">
 <h3 id="compare-prediction-with-new-data">Compare prediction with new data<a class="anchor" aria-label="anchor" href="#compare-prediction-with-new-data"></a>
@@ -496,7 +494,7 @@ first.</p>
 <span><span class="va">plt_full</span></span>
 <span><span class="co">#&gt; Warning: Removed 7 rows containing missing values or values outside the scale range</span></span>
 <span><span class="co">#&gt; (`geom_point()`).</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-21-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level3">
 <h3 id="mapping-1">Mapping<a class="anchor" aria-label="anchor" href="#mapping-1"></a>
@@ -555,7 +553,7 @@ the landscape.</p>
 <span>  <span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="st">"Risk\n(log10-scaled)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="Inference_Direct_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 <div class="section level2">
