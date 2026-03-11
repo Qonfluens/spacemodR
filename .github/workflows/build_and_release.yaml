@@ -11,6 +11,8 @@ jobs:
     steps:
       # 1. Récupérer le code
       - uses: actions/checkout@v4
+        with:
+          lfs: true
 
       # 2. Installer R (dernière version stable)
       - name: Set up R
