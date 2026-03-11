@@ -81,7 +81,26 @@ ggplot() +
 
 ### Prepare `raster_stack`: a stack of raster for ground and habitats.
 
-#### Setting habitat from shapefiles (vector maps)
+#### About the `habitat` class
+
+What we define as `habitat` depends on the purpose of the model.
+
+There are three possible scenarios:
+
+1.  **Areas where the species cannot go**, even just to pass through
+    (physically impossible).
+2.  **Areas defined as habitat**, where the species performs the
+    specific “activity” you have defined for that habitat. This activity
+    could be “foraging habitat,” “grooming habitat,” “movement habitat,”
+    etc. The ecological question at hand determines what constitutes the
+    “habitat.”
+3.  **Other areas**: neither habitat for the defined activity nor
+    impossible for the species to be in. For example, a road is not a
+    foraging habitat for a rabbit, but rabbits can still be found on
+    roads ; these are areas where they may be present while moving from
+    one place to another.
+
+#### Setting `habitat` from shapefiles (vector maps)
 
 ``` r
 layer_CS2111 = ocsge_metaleurop[ocsge_metaleurop$code_cs == "CS2.1.1.1", ]
@@ -148,9 +167,10 @@ object, then creates a temporary habitat object with the geometries to
 be added, marking them as habitat (`habitat = TRUE`).
 
 If the initial `hab` object is empty, the new object becomes the result.
-Otherwise, the two objects are merged using `dplyr::bind_rows`, while
-preserving the habitat class. This function is particularly useful for
-dynamically expanding habitat zones in a spatial analysis.
+Otherwise, the two objects are merged using
+[`dplyr::bind_rows`](https://dplyr.tidyverse.org/reference/bind_rows.html),
+while preserving the habitat class. This function is particularly useful
+for dynamically expanding habitat zones in a spatial analysis.
 
 ``` r
 habitat_20 = habitat() |>
@@ -196,15 +216,6 @@ plot(habitat_22)
 
 ![](Tutorial_files/figure-html/plot_habitat_22-1.png)
 
-#### /! WHAT IS AN HABITAT
-
-What we consider `habitat` is defined by the purpose of the model.
-
-There is 3 situations: 1. the area where the species cannot go, even
-just passing (impossible)
-
-A raster of
-
 #### Defining raster of habitat based on a raster of the ground
 
 Here, we download a raster layer with the interpolation of the ground
@@ -245,20 +256,35 @@ plot(habitat_sol)
 
 ![](Tutorial_files/figure-html/build_habitat_sol-1.png)
 
+##### Converting Vector Landscapes to Grids with `habitat_raster`
+
+Once you have assembled your landscape polygons into a habitat object (
+named `habitat_sol` in the example), the `habitat_raster` function
+bridges the gap between vector and raster formats.
+
+It uses a reference SpatRaster (named `ground_cd` in the example) to
+establish the target grid’s resolution, extent, and projection (it does
+not use values). When executed, the function seamlessly translates your
+spatial layers into a continuous surface: favorable zones inherit their
+assigned weight values, while strict barriers (defined as non-habitat)
+are explicitly burned in as `NA`. This approach ensures that standard
+background areas remain passable (defaulting to 0), while true obstacles
+are mathematically excluded, making the final raster perfectly primed
+for downstream connectivity and dispersal modeling.
+
 ``` r
 rast_sol <- habitat_raster(ground_cd, habitat_sol)
 terra::plot(rast_sol)
 ```
 
-![](Tutorial_files/figure-html/build_raster_habitat-1.png)
+![](Tutorial_files/figure-html/unnamed-chunk-2-1.png)
 
 ``` r
-
 rast_10 <- habitat_raster(ground_cd, habitat_10)
 terra::plot(rast_10)
 ```
 
-![](Tutorial_files/figure-html/build_raster_habitat-2.png)
+![](Tutorial_files/figure-html/build_raster_habitat-1.png)
 
 ``` r
 
@@ -266,7 +292,7 @@ rast_12 <- habitat_raster(ground_cd, habitat_12)
 terra::plot(rast_12)
 ```
 
-![](Tutorial_files/figure-html/build_raster_habitat-3.png)
+![](Tutorial_files/figure-html/build_raster_habitat-2.png)
 
 ``` r
 
@@ -274,7 +300,7 @@ rast_22 <- habitat_raster(ground_cd, habitat_22)
 terra::plot(rast_22)
 ```
 
-![](Tutorial_files/figure-html/build_raster_habitat-4.png)
+![](Tutorial_files/figure-html/build_raster_habitat-3.png)
 
 #### Join all rasters with a single stack
 
@@ -347,7 +373,7 @@ color_habitat <- colorRampPalette(c("white", "#169E19"))(255)
 terra::plot(spcmdl_habitat, col=color_habitat)
 ```
 
-![](Tutorial_files/figure-html/unnamed-chunk-3-1.png)
+![](Tutorial_files/figure-html/unnamed-chunk-4-1.png)
 
 ## Spacemodel for Dispersal
 
@@ -557,4 +583,4 @@ terra::plot(r_check_ecossl_risk,
             col = cols_risk)
 ```
 
-![](Tutorial_files/figure-html/unnamed-chunk-5-1.png)
+![](Tutorial_files/figure-html/unnamed-chunk-6-1.png)

@@ -2,11 +2,13 @@ pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
+  02_ex_SoilTarget: 02_ex_SoilTarget.html
+  02_Using_External_Dispersal: 02_Using_External_Dispersal.html
   Example_Berisp_full: Example_Berisp_full.html
-  Example_Berisp_simple: Example_Berisp_simple.html
+  Habitat: Habitat.html
+  Inference_Direct: Inference_Direct.html
   Tutorial: Tutorial.html
-  Using_External_Dispersal: Using_External_Dispersal.html
-last_built: 2026-02-16T09:28Z
+last_built: 2026-03-11T13:34Z
 urls:
   reference: https://qonfluens.github.io/spacemodR/reference
   article: https://qonfluens.github.io/spacemodR/articles

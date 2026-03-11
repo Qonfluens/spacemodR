@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping • spacemodR</title>
+<title>Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk • spacemodR</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping">
-<meta name="description" content="A set of tools dedicated to modeling trophic transfer based on an initial ground raster. It provides a directed acyclic graph structure for a set of rasters representing the flow of elements (e.g., food, energy, contaminants). It also includes tools for working with dispersal algorithms, enabling the combination of flux data with population movement.">
-<meta property="og:description" content="A set of tools dedicated to modeling trophic transfer based on an initial ground raster. It provides a directed acyclic graph structure for a set of rasters representing the flow of elements (e.g., food, energy, contaminants). It also includes tools for working with dispersal algorithms, enabling the combination of flux data with population movement.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk">
+<meta name="description" content="A set of tools dedicated to modeling food web transfer based on an initial ground raster. It provides a directed acyclic graph structure for a set of rasters representing the flow of elements (e.g., food, energy, contaminants). It also includes tools for working with dispersal algorithms, enabling the combination of flux data with population movement.">
+<meta property="og:description" content="A set of tools dedicated to modeling food web transfer based on an initial ground raster. It provides a directed acyclic graph structure for a set of rasters representing the flow of elements (e.g., food, energy, contaminants). It also includes tools for working with dispersal algorithms, enabling the combination of flux data with population movement.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -35,10 +35,12 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/Example_Berisp_full.html">Example_Berisp</a></li>
-    <li><a class="dropdown-item" href="articles/Example_Berisp_simple.html">Example_Beris_simple</a></li>
+<li><a class="dropdown-item" href="articles/02_ex_SoilTarget.html">Example_Beris_simple</a></li>
+    <li><a class="dropdown-item" href="articles/02_Using_External_Dispersal.html">Using_External_Dispersal</a></li>
+    <li><a class="dropdown-item" href="articles/Example_Berisp_full.html">Example_Berisp</a></li>
+    <li><a class="dropdown-item" href="articles/Habitat.html">Habitat</a></li>
+    <li><a class="dropdown-item" href="articles/Inference_Direct.html">Inference_Transfer</a></li>
     <li><a class="dropdown-item" href="articles/Tutorial.html">Tutorial</a></li>
-    <li><a class="dropdown-item" href="articles/Using_External_Dispersal.html">Using_External_Dispersal</a></li>
   </ul>
 </li>
       </ul>
@@ -64,6 +66,12 @@
 </h2>
 <p>The package is automatically built via GitHub Actions. You can install it by retrieving the archive generated by the continuous integration system.</p>
 <div class="section level3">
+<h3 id="note-about-tracking-big-files-with-git">Note about tracking big files with git<a class="anchor" aria-label="anchor" href="#note-about-tracking-big-files-with-git"></a>
+</h3>
+<p>To git track big files, we use <code>git lfs</code>. Before using <code>git add</code> for a specifi file, we have to <code>git lfs track</code> it like this:</p>
+<pre><code>git lfs track "raw_data/new_fit.rda"</code></pre>
+</div>
+<div class="section level3">
 <h3 id="via-github-action-artifact">Via GitHub Action Artifact<a class="anchor" aria-label="anchor" href="#via-github-action-artifact"></a>
 </h3>
 <p>The <code>.github/workflows/build_and_release.yaml</code> workflow is configured to build the package and check its integrity on every push to the <code>main</code> branch. To install the latest version:</p>
@@ -74,7 +82,7 @@
 <li>Unzip the file to obtain the <code>.tar.gz</code> source file.</li>
 <li>Install the package in R using the following command:</li>
 </ol>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Replace the path with the location of your downloaded file</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"path/to/spacemodR_0.1.0.tar.gz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span></code></pre></div>
 <p>Note: Ensure that system dependencies (GDAL, PROJ, GEOS) are installed, as the package depends on <code>sf</code> and <code>terra</code>.</p>
@@ -93,7 +101,14 @@
 <p>Go to <code>http://localhost:8787</code>, where user is <code>rstudio</code> and password: <code>mdp</code>.</p>
 </div>
 
-  </main><aside class="col-md-3"><div class="license">
+  </main><aside class="col-md-3"><div class="links">
+<h2 data-toc-skip>Links</h2>
+<ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=spacemodR" class="external-link">View on CRAN</a></li>
+</ul>
+</div>
+
+<div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
 <li><a href="LICENSE.html">Full license</a></li>

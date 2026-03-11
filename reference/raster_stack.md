@@ -36,7 +36,7 @@ with an error.
 ``` r
 # Example with terra rasters
 library(terra)
-#> terra 1.8.93
+#> terra 1.9.1
 r1 <- rast(nrows=10, ncols=10, vals=1:100)
 r2 <- rast(nrows=10, ncols=10, vals=101:200)
 raster_stack(list(r1, r2), c("layer1", "layer2"))
