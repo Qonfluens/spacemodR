@@ -1,6 +1,8 @@
 ---
 title: "Inference_Transfer"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
 vignette: >
   %\VignetteIndexEntry{Inference_Transfer}
   %\VignetteEncoding{UTF-8}
@@ -12,7 +14,9 @@ editor_options:
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width=10,
+  fig.height=5
 )
 ```
 
@@ -56,8 +60,6 @@ load_safe <- function(file_path) {
 }
 
 ```
-
-git lfs migrate import --include="raw_data/fit_direct_cd.rda,raw_data/fit_direct_b100_cd.rda"
 
 
 ```{r}
