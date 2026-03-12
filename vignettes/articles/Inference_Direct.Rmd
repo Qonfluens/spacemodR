@@ -36,27 +36,22 @@ library(scales)
 ```{r echo=FALSE}
 # ADDITIONAL FUNCTION
 read_sf_safe <- function(file_path) {
-  if (file.exists(file_path)) {
-    sf_obj <- sf::read_sf(file_path)
-    return(sf_obj)
+  paths <- c("", "../", "../../") |> paste0(file_path)
+  valid_path <- paths[file.exists(paths)][1]
+  if (!is.na(valid_path)) {
+    return(sf::read_sf(valid_path))
   }
-  parent_path <- paste0("../", file_path)
-  if (file.exists(parent_path)) {
-    sf_obj <- sf::read_sf(parent_path)
-    return(sf_obj)
-  }
-  stop(paste("File not found at", file_path, "and", parent_path))
+  warning("File not found at: ", paste(paths, collapse = " OR "))
+  return(NULL)
 }
 load_safe <- function(file_path) {
-  if (file.exists(file_path)) {
-    return(readRDS(file_path))
+  paths <- c("", "../", "../../") |> paste0(file_path)
+  valid_path <- paths[file.exists(paths)][1]
+  if (!is.na(valid_path)) {
+    return(readRDS(valid_path))
   }
-  parent_path <- paste0("../", file_path)
-  if (file.exists(parent_path)) {
-    return(readRDS(parent_path))
-  }
-  warning(paste("File not found at", file_path, "or", parent_path))
-  return(NULL) 
+  warning("File not found at: ", paste(paths, collapse = " OR "))
+  return(NULL)
 }
 
 ```
