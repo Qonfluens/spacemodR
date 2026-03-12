@@ -95,13 +95,8 @@ ggplot(data = sf_micromammals) +
 ## A simple Soil - Target model Fixed individuals
 
 ``` r
-
 unique(sf_micromammals$genus)
 #> [1] "crocidura" "apodemus"  "myodes"    "microtus"  "sorex"
-
-
-
-
 names_hab = c("soil", "mamHerb", "mamInsect")
 
 list_habitat <- lapply(names_hab, function(i) ground_cd)

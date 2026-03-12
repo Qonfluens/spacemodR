@@ -146,13 +146,8 @@ livers, hairs:</p>
 <h2 id="a-simple-soil---target-model-fixed-individuals">A simple Soil - Target model Fixed individuals<a class="anchor" aria-label="anchor" href="#a-simple-soil---target-model-fixed-individuals"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sf_micromammals</span><span class="op">$</span><span class="va">genus</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">sf_micromammals</span><span class="op">$</span><span class="va">genus</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "crocidura" "apodemus"  "myodes"    "microtus"  "sorex"</span></span>
-<span></span>
-<span></span>
-<span></span>
-<span></span>
 <span><span class="va">names_hab</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamHerb"</span>, <span class="st">"mamInsect"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">list_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">names_hab</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="va">ground_cd</span><span class="op">)</span></span>
