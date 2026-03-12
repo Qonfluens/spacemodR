@@ -2,3 +2,24 @@ url: https://qonfluens.github.io/spacemodR/
 template:
   bootstrap: 5
 
+navbar:
+  structure:
+    left:  [intro, reference, tutorials, examples, news]
+    right: [github]
+  components:
+    tutorials:
+      text: Tutorials
+      menu:
+        - text: "Getting Started"
+          href: articles/Tutorial.html
+        - text: "Habitat Modeling"
+          href: articles/Habitat.html
+    examples:
+      text: Examples
+      menu:
+        - text: "Direct Inference"
+          href: articles/Inference_Direct.html
+        - text: "Soil Target Analysis"
+          href: articles/02_ex_SoilTarget.html
+        - text: "External Dispersal"
+          href: articles/02_Using_External_Dispersal.html
