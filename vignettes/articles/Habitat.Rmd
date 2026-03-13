@@ -123,7 +123,17 @@ We will now visualize the spatial distribution of these metrics.
 We produce four maps focusing on Global Weight, Foraging Weight, 
 Landscape Resistance, and finally the standard OCS-GE Land Cover.
 
-```{r mouse_staticmap}
+```{r mouse_staticmap, echo=FALSE}
+# 4. Map: OCS-GE Nomenclature with official colors
+# Create a named vector for the manual color scale
+ocsge_colors <- setNames(ref_ocsge$couleur, ref_ocsge$nomenclature)
+p0 <- ggplot(sf_Apsy) +
+  geom_sf(aes(fill = nomenclature), color = NA) +
+  scale_fill_manual(values = ocsge_colors, name = "OCS-GE") +
+  theme_minimal() +
+  labs(title = "Land Cover (OCS-GE Nomenclature)")
+
+
 # 1. Map: Global Weight
 p1 <- ggplot(sf_Apsy) +
   geom_sf(aes(fill = weight_global), color = NA) +
@@ -145,21 +155,11 @@ p3 <- ggplot(sf_Apsy) +
   theme_minimal() +
   labs(title = "Apodemus sylvaticus - Movement Resistance")
 
-# 4. Map: OCS-GE Nomenclature with official colors
-# Create a named vector for the manual color scale
-ocsge_colors <- setNames(ref_ocsge$couleur, ref_ocsge$nomenclature)
-
-p4 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = nomenclature), color = NA) +
-  scale_fill_manual(values = ocsge_colors, name = "OCS-GE") +
-  theme_minimal() +
-  labs(title = "Land Cover (OCS-GE Nomenclature)")
-
 # Print maps
+p0
 p1
 p2
 p3
-p4
 ```
 
 ## Interactive Synthesis with Leaflet
@@ -168,7 +168,7 @@ To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
 interactive leaflet map. You can toggle the layers in the top right corner.
 
-```{r leaflet-apsy, fig.width=9, fig.height=6}
+```{r leaflet-apsy, fig.width=9, fig.height=6, echo=FALSE}
 # Transform to WGS84 for Leaflet compatibility
 sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
 
