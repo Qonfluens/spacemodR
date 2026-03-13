@@ -190,7 +190,9 @@ sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
 pal_wg <- colorNumeric("YlGn", domain = sf_Apsy_wgs84$weight_global, na.color = "transparent")
 pal_wf <- colorNumeric("Blues", domain = sf_Apsy_wgs84$weight_foraging, na.color = "transparent")
 pal_res <- colorNumeric("Reds", domain = sf_Apsy_wgs84$resistance, na.color = "transparent")
-pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, domain = ref_ocsge$nomenclature)
+
+# Mapping strict pour Leaflet basé sur ref_ocsge
+pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, levels = ref_ocsge$nomenclature)
 
 leaflet(sf_Apsy_wgs84) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
@@ -224,7 +226,7 @@ leaflet(sf_Apsy_wgs84) %>%
     baseGroups = c("OCS-GE", "Global Weight", "Foraging Weight", "Resistance"),
     options = layersControlOptions(collapsed = FALSE)
   ) %>%
-  addLegend(pal = pal_ocsge, values = ~nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
+  addLegend(pal = pal_ocsge, values = ref_ocsge$nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
 ```
 
 ## Multi-species Interactive Synthesis

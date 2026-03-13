@@ -1,4 +1,4 @@
-# Inference_Transfer
+# Inference Direct
 
 ``` r
 library(spacemodR)

@@ -7,5 +7,6 @@
 - [Example_Berisp](https://qonfluens.github.io/spacemodR/articles/Example_Berisp_full.md):
 - [Habitat Analysis and
   Visualization](https://qonfluens.github.io/spacemodR/articles/Habitat.md):
-- [Inference_Transfer](https://qonfluens.github.io/spacemodR/articles/Inference_Direct.md):
+- [Inference
+  Direct](https://qonfluens.github.io/spacemodR/articles/Inference_Direct.md):
 - [Tutorial](https://qonfluens.github.io/spacemodR/articles/Tutorial.md):
