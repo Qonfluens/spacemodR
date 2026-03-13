@@ -1,8 +1,8 @@
 ---
-title: "Habitat"
+title: "Habitat Analysis and Visualization"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Habitat}
+  %\VignetteIndexEntry{Habitat Analysis and Visualization}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -12,101 +12,305 @@ editor_options:
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE
 )
 ```
+
+# Introduction
+
+In this vignette, we explore the database linking OCS-GE
+(French GIS layer for Occupation du Sol à Grande Échelle) 
+labels with species labels.
+
+We will analyze how different land cover types act as habitats with
+varying qualities or resistances for different species,
+starting with the Wood mouse (Apodemus sylvaticus).
 
 ```{r setup}
 library(spacemodR)
 library(dplyr)
+library(ggplot2)
+library(sf)
+library(leaflet)
+library(patchwork)
 ```
 
-# Weighted species habitat with OCS-GE layer
+# Weighted species habitat with OCS-GE layer for *Apodemus sylvaticus*
 
-## How it works:
+First, we load the necessary datasets provided by spacemodR:
 
-We have build a database linking OCSGE label with species label.
+1. The species dictionary assigning weights to land cover codes.
+2. The OCS-GE nomenclature reference (containing names and specific hex colors).
+3. The spatial layer for OCS-GE (here, we use the ocsge_metaleurop dataset as our base map).
 
-```{r}
+
+```{r load_data}
+# Load the species dict and reference tables
 data("ocsge_species_dict")
-dfhab <- ocsge_species_dict
-dfhab_Apsy <- dfhab[grepl("Apodemus_sylvaticus", dfhab$nom_espece), ]
-dfhab_Apsy
-```
-
-
-```{r}
 data("ref_ocsge")
-dfhab_Apsy_def <- dplyr::left_join(dfhab_Apsy, ref_ocsge, by = c("code_cs" = "code_cs_"))
+
+# Load spatial data
+data("ocsge_metaleurop") 
+sf_ocsge <- ocsge_metaleurop
 ```
 
-And therefore we can distinguish:
-- Non habitat area:
-```{r}
-wg = dfhab_Apsy_def$weight_global
-dfhab_Apsy_def[wg == 0,]$nomenclature
+We filter our species dictionary for *Apodemus sylvaticus* and join it with the 
+reference nomenclature to link the OCS-GE codes to their descriptive labels and predefined colors.
+
+```{r clean_data}
+# Filter for Apodemus sylvaticus
+dfhab_Apsy <- ocsge_species_dict[
+  grepl("Apodemus_sylvaticus",ocsge_species_dict$nom_espece, ignore.case = TRUE), 
+  ]
+
+# Join ref_ocsge with the species dictionary. 
+# ref_ocsge$code_cs_ (with spaces) matches ocsge_species_dict$code_cs
+df_merged_Apsy <- ref_ocsge %>%
+  dplyr::left_join(dfhab_Apsy, by = c("code_cs_" = "code_cs"))
+
+# Join with the spatial sf object. Assuming sf_ocsge uses 'code_cs' (without spaces)
+sf_Apsy <- sf_ocsge %>%
+  dplyr::left_join(df_merged_Apsy, by = "code_cs")
 ```
 
-- Very Poor habitat:
-```{r}
-dfhab_Apsy_def[wg > 0 & wg <= 3,]$nomenclature
+## Understanding Habitat Values
+
+By examining the weight_global (wg), we can classify the landscape into 
+different habitat qualities for the species:
+
+- Non-habitat area (wg = 0):
+
+```{r ex_nonhabitat}
+df_merged_Apsy %>% 
+  filter(weight_global == 0) %>%
+  pull(nomenclature) %>%
+  unique()
 ```
 
-- Poor habitat:
-```{r}
-dfhab_Apsy_def[wg > 3 & wg <= 7, ]$nomenclature
+- Very Poor habitat (0 < wg <= 3):
+```{r ex_verypoorhabitat}
+df_merged_Apsy %>% 
+  filter(weight_global > 0, weight_global <= 3) %>% 
+  pull(nomenclature) %>% 
+  unique()
 ```
 
-- Good habitat:
-```{r}
-dfhab_Apsy_def[wg > 7,]$nomenclature
+- Poor habitat (3 < wg <= 7):
+
+```{r ex_poorhabitat}
+df_merged_Apsy %>% 
+  filter(weight_global > 7) %>% 
+  pull(nomenclature) %>% 
+  unique()
 ```
 
-## A classification of species
+- Good habitat (wg > 7):
 
-```{r}
-dfhab_full <- dplyr::left_join(dfhab, ref_ocsge, by = c("code_cs" = "code_cs_"))
-
-dfhab_grouped <- dfhab_full %>%
-  tidyr::separate(nom_espece, into = c("genus", "epithet"), sep = "_", remove = FALSE) %>%
-  dplyr::group_by(genus, nomenclature) %>%
-  dplyr::summarise(mean_weighted = mean(weight_global, na.rm = TRUE), .groups = 'drop')
-
-dfhab_matrix <- dfhab_grouped %>%
-  tidyr::pivot_wider(names_from = nomenclature, values_from = mean_weighted, values_fill = 0) %>%
-  tibble::column_to_rownames(var = "genus")
-
-# 4. Clustering Hiérarchique (Méthode de Ward pour des groupes compacts)
-dist_matrix <- dist(dfhab_matrix, method = "euclidean")
-hc <- hclust(dist_matrix, method = "ward.D2")
+```{r ex_goodhabitat}
+df_merged_Apsy %>% 
+  filter(weight_global > 7) %>% 
+  pull(nomenclature) %>% 
+  unique()
 ```
 
-```{r, fig.width=12, fig.height=12}
-plot(hc, main = "Dendrogram", xlab = "Genre", sub = "")
+## Static Mapping with ggplot2
+
+We will now visualize the spatial distribution of these metrics. 
+We produce four maps focusing on Global Weight, Foraging Weight, 
+Landscape Resistance, and finally the standard OCS-GE Land Cover.
+
+```{r mouse_staticmap}
+# 1. Map: Global Weight
+p1 <- ggplot(sf_Apsy) +
+  geom_sf(aes(fill = weight_global), color = NA) +
+  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Global\nWeight") +
+  theme_minimal() +
+  labs(title = "Apodemus sylvaticus - Global Habitat Weight")
+
+# 2. Map: Foraging Weight
+p2 <- ggplot(sf_Apsy) +
+  geom_sf(aes(fill = weight_foraging), color = NA) +
+  scale_fill_gradient(low = "#f7fbff", high = "#08306b", na.value = "transparent", name = "Foraging\nWeight") +
+  theme_minimal() +
+  labs(title = "Apodemus sylvaticus - Foraging Weight")
+
+# 3. Map: Resistance
+p3 <- ggplot(sf_Apsy) +
+  geom_sf(aes(fill = resistance), color = NA) +
+  scale_fill_gradient(low = "#fff5f0", high = "#67000d", na.value = "transparent", name = "Resistance") +
+  theme_minimal() +
+  labs(title = "Apodemus sylvaticus - Movement Resistance")
+
+# 4. Map: OCS-GE Nomenclature with official colors
+# Create a named vector for the manual color scale
+ocsge_colors <- setNames(ref_ocsge$couleur, ref_ocsge$nomenclature)
+
+p4 <- ggplot(sf_Apsy) +
+  geom_sf(aes(fill = nomenclature), color = NA) +
+  scale_fill_manual(values = ocsge_colors, name = "OCS-GE") +
+  theme_minimal() +
+  labs(title = "Land Cover (OCS-GE Nomenclature)")
+
+# Print maps
+p1
+p2
+p3
+p4
 ```
 
+## Interactive Synthesis with Leaflet
 
-```{r, fig.width=12, fig.height=12}
-# library(factoextra)
-# 
-# plt_circ_dend = fviz_dend(hc, k = 4, # On suggère 4 groupes de couleurs
-#           cex = 0.5,                 # Taille du texte
-#           type = "circular",         # Format circulaire
-#           palette = "jco",           # Palette de couleurs
-#           rect = TRUE,               # Cadre autour des groupes
-#           main = "Genus distance for OCS-GE layer")
-# 
-# plt_circ_dend
+To better explore the local variations and overlay different habitat
+parameters for *Apodemus sylvaticus*, we combine them into a single
+interactive leaflet map. You can toggle the layers in the top right corner.
+
+```{r mouse_leaflet}
+# Transform to WGS84 for Leaflet compatibility
+sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
+
+# Define color palettes
+pal_wg <- colorNumeric("YlGn", domain = sf_Apsy_wgs84$weight_global, na.color = "transparent")
+pal_wf <- colorNumeric("Blues", domain = sf_Apsy_wgs84$weight_foraging, na.color = "transparent")
+pal_res <- colorNumeric("Reds", domain = sf_Apsy_wgs84$resistance, na.color = "transparent")
+pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, domain = ref_ocsge$nomenclature)
+
+leaflet(sf_Apsy_wgs84) %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  
+  # Layer: OCS-GE
+  addPolygons(
+    fillColor = ~pal_ocsge(nomenclature), color = "white", weight = 0.5, fillOpacity = 0.7,
+    group = "OCS-GE", label = ~paste(nomenclature)
+  ) %>%
+  
+  # Layer: Global Weight
+  addPolygons(
+    fillColor = ~pal_wg(weight_global), color = NA, fillOpacity = 0.7,
+    group = "Global Weight", label = ~paste("Global Weight:", weight_global)
+  ) %>%
+  
+  # Layer: Foraging
+  addPolygons(
+    fillColor = ~pal_wf(weight_foraging), color = NA, fillOpacity = 0.7,
+    group = "Foraging Weight", label = ~paste("Foraging:", weight_foraging)
+  ) %>%
+  
+  # Layer: Resistance
+  addPolygons(
+    fillColor = ~pal_res(resistance), color = NA, fillOpacity = 0.7,
+    group = "Resistance", label = ~paste("Resistance:", resistance)
+  ) %>%
+  
+  # Controls
+  addLayersControl(
+    baseGroups = c("OCS-GE", "Global Weight", "Foraging Weight", "Resistance"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>%
+  addLegend(pal = pal_ocsge, values = ~nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
 ```
 
-```{r, fig.width=12, fig.height=18}
-# install.packages("pheatmap")
-# library(pheatmap)
-# pheatmap(dfhab_matrix, 
-#          clustering_distance_rows = "euclidean",
-#          clustering_method = "ward.D2",
-#          scale = "column", # Normalise par habitat pour voir les préférences
-#          color = colorRampPalette(c("white", "orange", "red"))(50),
-#          main = "Preferential  OCS-GE layer per Genus (Mean weight)")
+# Multi-species Interactive Synthesis
+
+Different species interact with the landscape in radically different ways. 
+Below, we create a function to automatically generate the interactive 
+Leaflet synthesis for any given species, allowing us to rapidly compare their habitat preferences.
+
+```{r multisp_plot_fct}
+plot_species_ggplot <- function(species_pattern) {
+  
+  # Find matching species in dict
+  matched <- ocsge_species_dict[grepl(species_pattern, ocsge_species_dict$nom_espece, ignore.case = TRUE), ]
+  
+  if(nrow(matched) == 0) {
+    message(paste("No data found for", species_pattern))
+    return(NULL)
+  }
+  
+  # Take the first match if multiple exist
+  sp_target <- matched$nom_espece[1]
+  df_sp <- matched[matched$nom_espece == sp_target, ]
+  
+  # Join data
+  df_merged <- ref_ocsge %>% dplyr::left_join(df_sp, by = c("code_cs_" = "code_cs"))
+  sf_merged <- sf_ocsge %>% dplyr::left_join(df_merged, by = "code_cs")
+  # 1. Map: Global Weight
+  p1 <- ggplot(sf_merged) +
+    geom_sf(aes(fill = weight_global), color = NA) +
+    scale_fill_distiller(palette = "YlGn", direction = 1, na.value = "transparent", name = "Score") +
+    theme_void() +
+    labs(subtitle = "Global Weight") +
+    theme(plot.subtitle = element_text(hjust = 0.5))
+  
+  # 2. Map: Foraging Weight
+  p2 <- ggplot(sf_merged) +
+    geom_sf(aes(fill = weight_foraging), color = NA) +
+    scale_fill_distiller(palette = "Blues", direction = 1, na.value = "transparent", name = "Score") +
+    theme_void() +
+    labs(subtitle = "Foraging Weight") +
+    theme(plot.subtitle = element_text(hjust = 0.5))
+  
+  # 3. Map: Resistance
+  p3 <- ggplot(sf_merged) +
+    geom_sf(aes(fill = resistance), color = NA) +
+    scale_fill_distiller(palette = "Reds", direction = 1, na.value = "transparent", name = "Score") +
+    theme_void() +
+    labs(subtitle = "Resistance") +
+    theme(plot.subtitle = element_text(hjust = 0.5))
+  
+  # Combine the 3 plots side-by-side using patchwork
+  combined_plot <- p1 + p2 + p3 + 
+    patchwork::plot_annotation(
+      title = paste("Habitat analysis for:", sp_target),
+      theme = theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
+    )
+  
+  return(combined_plot)
+}
 ```
 
+## Carabidae (Ground Beetle)
+
+```{r plt_carab}
+plot_species_ggplot("Carabus")
+```
+
+## Apoidea (Bee)
+
+```{r plt_bees}
+# Example using Apis or Bombus
+plot_species_ggplot("Apis|Bombus")
+```
+
+## Turdus merula (Blackbird)
+
+```{r plt_birdturdus}
+plot_species_ggplot("Turdus_merula")
+```
+
+## Passer domesticus (House Sparrow)
+
+```{r plt_birdpasser}
+plot_species_ggplot("Passer_domesticus")
+```
+
+## Poaceae (Grasses)
+
+```{r plt_veg}
+plot_species_ggplot("Poaceae")
+```
+
+## Other Small Mammals (Sorex, Crocidura, Microtus arvalis)
+
+```{r plt_sorex}
+plot_species_ggplot("Sorex")
+```
+
+```{r plt_crocidura}
+plot_species_ggplot("Crocidura")
+```
+
+```{r plt_microtus}
+plot_species_ggplot("Microtus_arvalis")
+```

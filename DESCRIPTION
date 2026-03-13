@@ -35,7 +35,9 @@ Suggests:
     tidyterra,
     scales,
     purrr,
-    tidyr
+    tidyr,
+    leaflet,
+    patchwork
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
