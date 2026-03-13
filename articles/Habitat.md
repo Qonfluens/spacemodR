@@ -119,61 +119,7 @@ We will now visualize the spatial distribution of these metrics. We
 produce four maps focusing on Global Weight, Foraging Weight, Landscape
 Resistance, and finally the standard OCS-GE Land Cover.
 
-``` r
-# 1. Map: Global Weight
-p1 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = weight_global), color = NA) +
-  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Global\nWeight") +
-  theme_minimal() +
-  labs(title = "Apodemus sylvaticus - Global Habitat Weight")
-
-# 2. Map: Foraging Weight
-p2 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = weight_foraging), color = NA) +
-  scale_fill_gradient(low = "#f7fbff", high = "#08306b", na.value = "transparent", name = "Foraging\nWeight") +
-  theme_minimal() +
-  labs(title = "Apodemus sylvaticus - Foraging Weight")
-
-# 3. Map: Resistance
-p3 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = resistance), color = NA) +
-  scale_fill_gradient(low = "#fff5f0", high = "#67000d", na.value = "transparent", name = "Resistance") +
-  theme_minimal() +
-  labs(title = "Apodemus sylvaticus - Movement Resistance")
-
-# 4. Map: OCS-GE Nomenclature with official colors
-# Create a named vector for the manual color scale
-ocsge_colors <- setNames(ref_ocsge$couleur, ref_ocsge$nomenclature)
-
-p4 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = nomenclature), color = NA) +
-  scale_fill_manual(values = ocsge_colors, name = "OCS-GE") +
-  theme_minimal() +
-  labs(title = "Land Cover (OCS-GE Nomenclature)")
-
-# Print maps
-p1
-```
-
-![](Habitat_files/figure-html/mouse_staticmap-1.png)
-
-``` r
-p2
-```
-
-![](Habitat_files/figure-html/mouse_staticmap-2.png)
-
-``` r
-p3
-```
-
-![](Habitat_files/figure-html/mouse_staticmap-3.png)
-
-``` r
-p4
-```
-
-![](Habitat_files/figure-html/mouse_staticmap-4.png)
+![](Habitat_files/figure-html/mouse_staticmap-1.png)![](Habitat_files/figure-html/mouse_staticmap-2.png)![](Habitat_files/figure-html/mouse_staticmap-3.png)![](Habitat_files/figure-html/mouse_staticmap-4.png)
 
 ### Interactive Synthesis with Leaflet
 
@@ -181,53 +127,6 @@ To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
 interactive leaflet map. You can toggle the layers in the top right
 corner.
-
-``` r
-# Transform to WGS84 for Leaflet compatibility
-sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
-
-# Define color palettes
-pal_wg <- colorNumeric("YlGn", domain = sf_Apsy_wgs84$weight_global, na.color = "transparent")
-pal_wf <- colorNumeric("Blues", domain = sf_Apsy_wgs84$weight_foraging, na.color = "transparent")
-pal_res <- colorNumeric("Reds", domain = sf_Apsy_wgs84$resistance, na.color = "transparent")
-
-# Mapping strict pour Leaflet basé sur ref_ocsge
-pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, levels = ref_ocsge$nomenclature)
-
-leaflet(sf_Apsy_wgs84) %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
-  
-  # Layer: OCS-GE
-  addPolygons(
-    fillColor = ~pal_ocsge(nomenclature), color = "white", weight = 0.5, fillOpacity = 0.7,
-    group = "OCS-GE", label = ~paste(nomenclature)
-  ) %>%
-  
-  # Layer: Global Weight
-  addPolygons(
-    fillColor = ~pal_wg(weight_global), color = NA, fillOpacity = 0.7,
-    group = "Global Weight", label = ~paste("Global Weight:", weight_global)
-  ) %>%
-  
-  # Layer: Foraging
-  addPolygons(
-    fillColor = ~pal_wf(weight_foraging), color = NA, fillOpacity = 0.7,
-    group = "Foraging Weight", label = ~paste("Foraging:", weight_foraging)
-  ) %>%
-  
-  # Layer: Resistance
-  addPolygons(
-    fillColor = ~pal_res(resistance), color = NA, fillOpacity = 0.7,
-    group = "Resistance", label = ~paste("Resistance:", resistance)
-  ) %>%
-  
-  # Controls
-  addLayersControl(
-    baseGroups = c("OCS-GE", "Global Weight", "Foraging Weight", "Resistance"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) %>%
-  addLegend(pal = pal_ocsge, values = ref_ocsge$nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
-```
 
 ## Multi-species Interactive Synthesis
 
