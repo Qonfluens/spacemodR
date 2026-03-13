@@ -113,7 +113,7 @@ df_merged_Apsy %>%
 #> [5] "Formations herbacées"
 ```
 
-### Static Mapping with ggplot2
+### Static Mapping
 
 We will now visualize the spatial distribution of these metrics. We
 produce four maps focusing on Global Weight, Foraging Weight, Landscape
@@ -121,7 +121,7 @@ Resistance, and finally the standard OCS-GE Land Cover.
 
 ![](Habitat_files/figure-html/mouse_staticmap-1.png)![](Habitat_files/figure-html/mouse_staticmap-2.png)![](Habitat_files/figure-html/mouse_staticmap-3.png)![](Habitat_files/figure-html/mouse_staticmap-4.png)
 
-### Interactive Synthesis with Leaflet
+### Interactive Synthesis
 
 To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
@@ -188,21 +188,6 @@ plot_species_ggplot <- function(species_pattern) {
 }
 ```
 
-### Carabidae (Ground Beetle)
-
-``` r
-plot_species_ggplot("Carabus")
-#> NULL
-```
-
-### Apoidea (Bee)
-
-``` r
-# Example using Apis or Bombus
-plot_species_ggplot("Apis|Bombus")
-#> NULL
-```
-
 ### Turdus merula (Blackbird)
 
 ``` r
@@ -218,13 +203,6 @@ plot_species_ggplot("Passer_domesticus")
 ```
 
 ![](Habitat_files/figure-html/plt_birdpasser-1.png)
-
-### Poaceae (Grasses)
-
-``` r
-plot_species_ggplot("Poaceae")
-#> NULL
-```
 
 ### Other Small Mammals (Sorex, Crocidura, Microtus arvalis)
 
