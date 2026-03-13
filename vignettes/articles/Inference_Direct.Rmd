@@ -1,5 +1,5 @@
 ---
-title: "Inference_Transfer"
+title: "Inference Direct"
 output: 
   rmarkdown::html_vignette:
     toc: true
