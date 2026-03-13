@@ -117,7 +117,7 @@ df_merged_Apsy %>%
   unique()
 ```
 
-## Static Mapping with ggplot2
+## Static Mapping
 
 We will now visualize the spatial distribution of these metrics. 
 We produce four maps focusing on Global Weight, Foraging Weight, 
@@ -162,7 +162,7 @@ p2
 p3
 ```
 
-## Interactive Synthesis with Leaflet
+## Interactive Synthesis
 
 To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
@@ -274,19 +274,6 @@ plot_species_ggplot <- function(species_pattern) {
 }
 ```
 
-## Carabidae (Ground Beetle)
-
-```{r plt_carab}
-plot_species_ggplot("Carabus")
-```
-
-## Apoidea (Bee)
-
-```{r plt_bees}
-# Example using Apis or Bombus
-plot_species_ggplot("Apis|Bombus")
-```
-
 ## Turdus merula (Blackbird)
 
 ```{r plt_birdturdus}
@@ -297,12 +284,6 @@ plot_species_ggplot("Turdus_merula")
 
 ```{r plt_birdpasser}
 plot_species_ggplot("Passer_domesticus")
-```
-
-## Poaceae (Grasses)
-
-```{r plt_veg}
-plot_species_ggplot("Poaceae")
 ```
 
 ## Other Small Mammals (Sorex, Crocidura, Microtus arvalis)
