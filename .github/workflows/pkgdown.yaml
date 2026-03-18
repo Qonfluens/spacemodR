@@ -13,7 +13,6 @@ on:
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
-    # Cette permission est nécessaire pour que l'action puisse pousser sur la branche gh-pages
     permissions:
       contents: write
 
