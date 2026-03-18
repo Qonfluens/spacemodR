@@ -1,7 +1,10 @@
-# Example_Berisp
+# Berisp-like: a trophic model of contamination
 
 ``` r
 library(spacemodR)
+library(rstan)
+library(dplyr)
+library(terra)
 ```
 
 ## Define a Spacemodel
@@ -10,7 +13,7 @@ library(spacemodR)
 
 ``` r
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
+names_hab = c("soil", "plant", "earthwom", "carabid", "mamHerb", "mamInsect")
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)
 
@@ -23,89 +26,51 @@ terra::plot(stack_habitat)
 
 ``` r
 trophic_df <- trophic() |>
-  add_link("soil", "plant") |>
-  add_link("soil", "invert") |>
-  add_link("soil", "mamHerb") |>
-  add_link("soil", "mamInsect") |>
-  add_link("soil", "birdInsect")
+  add_link("soil", "plant", 1) |>
+  add_link("soil", "earthwom", 1) |>
+  add_link("soil", "carabid", 1) |>
+  # mamHerb
+  add_link("soil", "mamHerb", 2/100) |>
+  add_link("plant", "mamHerb", 90/100) |>
+  add_link("earthwom", "mamHerb", 4/100) |>
+  add_link("carabid", "mamHerb", 4/100) |>
+  # mamInsect
+  add_link("soil", "mamInsect", 2/100) |>
+  add_link("earthwom", "mamInsect", 49/100) |>
+  add_link("carabid", "mamInsect", 49/100)
 ```
 
-## Fixed species
+``` r
+plot(trophic_df)
+```
 
-### Contamination of earthworm
+![](Example_Berisp_full_files/figure-html/unnamed-chunk-4-1.png)
+
+## Contaminantion by Cadmium
+
+### Vegetation
+
+### Earthworm
 
 For Cadmium, the equation is given by (Ma et al., 2004):
 
 $$\log C_{earthworm} = a + b \times \log C_{soil} + c \times \log OM + d \times pH$$
 
-For Zinc and Arsenic, equation si given by:
-
-$$\log C_{earthworm} = a + b \times \log C_{soil} + d \times pH$$
+### Carabid
 
 ``` r
-feq1 = function(Csoil,OM,pH,a,b,c,d){
-  a+b*log(x)+c*log(OM)+d*pH
-}
-crt_feq1 <- function(a, b, c, d) {
-  function(Csoil, OM, pH) {
-    feq1(Csoil, OM, pH, a, b, c, d)
-  }
-}
-
-soil_earthworm <- list(
-  c(substance = "cadmium", from = "soil", to = "earthworm",
-    flux = crt_feq1(a=2.92,  b=0.747,  c=-0.5336, d=-0.2101)),
-  c(substance = "zinc",    from = "soil", to = "earthworm",
-    flux = crt_feq1(a=4.453, b=0.234,  c=0.0,     d=-0.12845)),
-  c(substance = "arsenic", from = "soil", to = "earthworm",
-    flux = crt_feq1(a=0.341, b=1.0908, c=0.0,     d=-0.41611))
-)
-df <- as.data.frame(do.call(rbind, soil_earthworm), stringsAsFactors = FALSE)
-
-print(df)
-#>   substance from        to
-#> 1   cadmium soil earthworm
-#> 2      zinc soil earthworm
-#> 3   arsenic soil earthworm
-#>                                                                   flux
-#> 1 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
-#> 2 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
-#> 3 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
+inter_carab = -1
+slope_carab = 0.6
 ```
 
-### Vegetation
+### Transfer of food
 
-``` r
-feq1 = function(Csoil,OM,pH,a,b,c,d){
-  a+b*log(x)+c*log(OM)+d*pH
-}
-crt_feq1 <- function(a, b, c, d) {
-  function(Csoil, OM, pH) {
-    feq1(Csoil, OM, pH, a, b, c, d)
-  }
-}
+$$C = \frac{1}{b} \times \frac{food \times C_{food} \times c_{up}}{C_{out}}\left( 1 - \exp^{- c_{out} \times a} \right)$$
+where:
 
-soil_earthworm <- list(
-  c(substance = "cadmium", from = "soil", to = "earthworm",
-    flux = crt_feq1(a=2.92,  b=0.747,  c=-0.5336, d=-0.2101)),
-  c(substance = "zinc",    from = "soil", to = "earthworm",
-    flux = crt_feq1(a=4.453, b=0.234,  c=0.0,     d=-0.12845)),
-  c(substance = "arsenic", from = "soil", to = "earthworm",
-    flux = crt_feq1(a=0.341, b=1.0908, c=0.0,     d=-0.41611))
-)
-df <- as.data.frame(do.call(rbind, soil_earthworm), stringsAsFactors = FALSE)
-
-print(df)
-#>   substance from        to
-#> 1   cadmium soil earthworm
-#> 2      zinc soil earthworm
-#> 3   arsenic soil earthworm
-#>                                                                   flux
-#> 1 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
-#> 2 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
-#> 3 function (Csoil, OM, pH) , {,     feq1(Csoil, OM, pH, a, b, c, d), }
-```
-
-## Fixed Species
-
-### Cadmium
+- $b$: average individual biomass $\lbrack g\rbrack$,
+- $c_{up}$: assimilation efficiency of food $\lbrack n.d.\rbrack$,
+- $c_{out}$: excretion rate of food,
+  $\left\lbrack day^{- 1} \right\rbrack$
+- $a$: average age $\lbrack day\rbrack$,
+- $food$: amount of food ingested $\lbrack g\rbrack$.

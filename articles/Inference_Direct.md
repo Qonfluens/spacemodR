@@ -1,71 +1,196 @@
-# Inference Direct
+# Calibration of Transfer Models
+
+    #> Loading required package: StanHeaders
+    #> 
+    #> rstan version 2.32.7 (Stan version 2.32.2)
+    #> For execution on a local, multicore CPU with excess RAM we recommend calling
+    #> options(mc.cores = parallel::detectCores()).
+    #> To avoid recompilation of unchanged Stan programs, we recommend calling
+    #> rstan_options(auto_write = TRUE)
+    #> For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
+    #> change `threads_per_chain` option:
+    #> rstan_options(threads_per_chain = 1)
+    #> 
+    #> Attaching package: 'dplyr'
+    #> The following objects are masked from 'package:stats':
+    #> 
+    #>     filter, lag
+    #> The following objects are masked from 'package:base':
+    #> 
+    #>     intersect, setdiff, setequal, union
+    #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
+    #> terra 1.9.1
+    #> 
+    #> Attaching package: 'terra'
+    #> The following object is masked from 'package:rstan':
+    #> 
+    #>     extract
+    #> 
+    #> Attaching package: 'tidyterra'
+    #> The following object is masked from 'package:stats':
+    #> 
+    #>     filter
+    #> 
+    #> Attaching package: 'scales'
+    #> The following object is masked from 'package:terra':
+    #> 
+    #>     rescale
+    #> The following object is masked from 'package:purrr':
+    #> 
+    #>     discard
+    #> 
+    #> Attaching package: 'patchwork'
+    #> The following object is masked from 'package:terra':
+    #> 
+    #>     area
+
+## Transfer model
+
+For the inference of transfer model, we use Bayesian Multiple Linear
+Regression model using Stan code.
+
+### Simple model
+
+The likelihood is defined as:
+
+$$y_{i} \sim \mathcal{N}\left( \mu_{i},\sigma^{2} \right)$$
+
+$$\mu_{i} = \beta_{0} + \beta_{1}x_{i} + \beta_{\text{cat}}\left\lbrack x\_ cat_{i} \right\rbrack$$
+Where:
+
+- $\beta_{0}$ is the global intercept.
+- $\beta_{1}$ is the slope coefficient for the continuous variable $x$.
+- $\beta_{\text{cat}}\left\lbrack x\_ cat_{i} \right\rbrack$ is the
+  specific coefficient (effect) associated with the category to which
+  observation $i$ belongs.
+- $\sigma$ is the standard deviation of the error term (residuals).
+
+The model specifies weakly informative priors for its parameters to
+regularize the inferences without overly constraining the data:
+
+- Intercept: $\beta_{0} \sim \mathcal{N}(0,10)$
+- Continuous Slope: $\beta_{1} \sim \mathcal{N}(0,10)$
+- Categorical Coefficients: $\beta_{\text{cat}} \sim \mathcal{N}(0,10)$
+  for each of the $K$ categories.
+- Error Standard Deviation: $\sigma \sim \text{Half-Cauchy}(0,5)$.
+  Because $\sigma$ is constrained to be strictly positive
+  (`real<lower=0> sigma;`) , the Cauchy prior automatically becomes a
+  truncated Half-Cauchy distribution.
+
+Based on the structure of the likelihood function, this model makes the
+following classical linear regression assumptions:
+
+- Linearity: The relationship between the continuous predictor $x$ and
+  the mean of the response $y$ is strictly linear.
+- Additivity (No Interactions): The effect of the continuous variable
+  ($x$) and the categorical variable ($x_{cat}$) are purely additive.
+  The slopes are assumed to be identical across all categories; only the
+  intercepts vary (parallel lines model).
+- Normality of Errors: The residuals (the differences between observed
+  and predicted values) are normally distributed.
+- Homoscedasticity (Constant Variance): The standard deviation of the
+  error term, $\sigma$, is assumed to be constant across all values of
+  $x$ and across all $K$ categories.
+- Independence: Each observation $i$ is conditionally independent given
+  the parameters.
+
+## Direct fix-point model of Soil-Organism
+
+### Inference for Vegetation and Earthworm
+
+For both species, we assumed a direct link:
+
+$$\log_{10}\left( C_{internal} \right) = \beta_{0} + \beta_{1}\log_{10}\left( C_{soil} \right)$$
+
+#### Vegetation
+
+![](Inference_Direct_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
-library(spacemodR)
-# Additional package for further analysis
-library(rstan)
-#> Loading required package: StanHeaders
-#> 
-#> rstan version 2.32.7 (Stan version 2.32.2)
-#> For execution on a local, multicore CPU with excess RAM we recommend calling
-#> options(mc.cores = parallel::detectCores()).
-#> To avoid recompilation of unchanged Stan programs, we recommend calling
-#> rstan_options(auto_write = TRUE)
-#> For within-chain threading using `reduce_sum()` or `map_rect()` Stan functions,
-#> change `threads_per_chain` option:
-#> rstan_options(threads_per_chain = 1)
-library(ggplot2)
-library(dplyr)
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
-library(purrr)
-library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
-library(terra)
-#> terra 1.9.1
-#> 
-#> Attaching package: 'terra'
-#> The following object is masked from 'package:rstan':
-#> 
-#>     extract
-library(tidyterra)
-#> 
-#> Attaching package: 'tidyterra'
-#> The following object is masked from 'package:stats':
-#> 
-#>     filter
-library(scales)
-#> 
-#> Attaching package: 'scales'
-#> The following object is masked from 'package:terra':
-#> 
-#>     rescale
-#> The following object is masked from 'package:purrr':
-#> 
-#>     discard
+stan_data = list(
+  N = nrow(bappet_cd),
+  x = bappet_cd$log10_media_mean,
+  y = bappet_cd$log10_plant_mean,
+  M = 100,
+  x_sim = seq(-2, 3, length.out=100)
+)
 ```
 
 ``` r
-ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-sf_metaleurop_2010 <- read_sf_safe("raw_data/sf_metaleurop_2006_2010.gpkg")
-sf_metaleurop_2025 <- read_sf_safe("raw_data/sf_metaleurop_2025.gpkg")
+# fit_simple_veg_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
+# saveRDS(fit_simple_veg_cd, file="raw_data/fit_simple_veg_cd.rds")
+fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
 ```
+
+![](Inference_Direct_files/figure-html/unnamed-chunk-5-1.png)
+
+``` r
+arr_sim <- rstan::extract(fit_simple_veg_cd, "y_sim")[[1]]
+```
+
+``` r
+quants <- c(0.025, 0.5, 0.975)
+q_mat <- apply(arr_sim, 2, quantile, probs = quants)
+df_sim <- q_mat %>%
+  t() %>%
+  as.data.frame() %>%
+  mutate(
+    var_id = 1:n(),
+    x_sim = stan_data$x_sim
+  )
+```
+
+![](Inference_Direct_files/figure-html/unnamed-chunk-8-1.png)
+
+#### Earthworm
+
+``` r
+data("earthworm_cd")
+
+stan_data = list(
+  N = nrow(earthworm_cd),
+  x = earthworm_cd$log10_cd_soil,
+  y = earthworm_cd$log10_cd_worm,
+  M = 100,
+  x_sim = seq(-2, 3, length.out=100)
+)
+```
+
+``` r
+# fit_simple_worm_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
+# saveRDS(fit_simple_worm_cd, file="raw_data/fit_simple_worm_cd.rds")
+fit_simple_worm_cd <- load_safe("raw_data/fit_simple_worm_cd.rds")
+```
+
+![](Inference_Direct_files/figure-html/unnamed-chunk-11-1.png)
+
+``` r
+arr_sim <- rstan::extract(fit_simple_worm_cd, "y_sim")[[1]]
+```
+
+``` r
+quants <- c(0.025, 0.5, 0.975)
+q_mat <- apply(arr_sim, 2, quantile, probs = quants)
+df_sim <- q_mat %>%
+  t() %>%
+  as.data.frame() %>%
+  mutate(
+    var_id = 1:n(),
+    x_sim = stan_data$x_sim
+  )
+```
+
+![](Inference_Direct_files/figure-html/unnamed-chunk-14-1.png)
+
+### Inference for Micro-Mammals
 
 ``` r
 data(sf_micromammals)
-
 # ADD LOG_10 COLUMNS
 sf_train <- sf_micromammals |>
   dplyr::mutate(
     log10_cd_S = log10(cd_S),
     log10_cd_WB_FW = log10(cd_WB_FW))
-
 # ADD GROUP HERBIVOE vs INSECTIVORE
 lookup_table = data.frame(
     group = c('shrew', 'mouse', 'vole'),
@@ -73,10 +198,6 @@ lookup_table = data.frame(
     food_cat_num = c(2,1,1))
 sf_train = dplyr::left_join(sf_train, lookup_table, by='group')
 ```
-
-## Direct fix-point model of Soil-Organism
-
-### Inference
 
 ``` r
 stan_data = list(
@@ -133,56 +254,9 @@ ggplot(data=df_pars) +
 arr_sim <- rstan::extract(fit_direct, "y_sim")[[1]]
 ```
 
-``` r
-categories <- c("herbivore", "insectivore")
-quants <- c(0.025, 0.5, 0.975) # Modifie avec les quantiles que tu souhaites
-df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
-  mat <- arr_sim[, , i]
-  q_mat <- apply(mat, 2, quantile, probs = quants)
-  q_mat %>%
-    t() %>%
-    as.data.frame() %>%
-    mutate(
-      var_id = 1:n(),
-      x_sim = stan_data$x_sim,
-      categorie = categories[i]
-    )
-})
-```
+![](Inference_Direct_files/figure-html/pltSim_direct-1.png)
 
-``` r
-plt_sim <- ggplot() +
-  theme_minimal() +
-  scale_color_manual(values = c("#22aa33", "#aa2233")) +
-  scale_fill_manual(values = c("#22aa33", "#aa2233")) +
-  labs(
-    x = "Soil Concentration (Cd) [log10 µg/g]",
-    y = "Whole Body Concentration (Cd) [log10 µg/g]",
-    color = "Food / Categorie", # Unifie les légendes
-    fill = "Food / Categorie"
-  ) +
-  geom_ribbon(
-    data = df_sim,
-    aes(x = x_sim, ymin = `2.5%`, ymax = `97.5%`, fill = categorie), 
-    alpha = 0.25 
-  ) +
-  geom_line(
-    data = df_sim,
-    aes(x = x_sim, y = `50%`, color = categorie),
-    linewidth = 1
-  )
-
-plt_train <- plt_sim +
-  geom_point(
-    data=sf_train,
-    aes(x=log10_cd_S, y=log10_cd_WB_FW, color=food)
-  )
-plt_train
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-7-1.png)
-
-### Predictive Test
+#### Predictive Test
 
 The Cd concentration in body, dry weight, µg.g-1, is calculated from
 dat\*a measured using equation given in Veltman et al. 2007 in
@@ -228,94 +302,15 @@ sf_test$log10_cd_S_meanLine <- val_mean_trapline[, 2]
 
 Big points are
 
-``` r
-sf_full <- data.frame(
-  food =           c(sf_train$food, sf_test$food),
-  set =            c(rep("train", nrow(sf_train)), rep("test", nrow(sf_test))),
-  log10_cd_S =     c(sf_train$log10_cd_S, sf_test$log10_cd_S_meanLine),
-  log10_cd_WB_FW = c(sf_train$log10_cd_WB_FW, sf_test$log10_cd_WB_FW)
-)
-sf_full$set <- factor(sf_full$set, levels = c("train", "test"))
+    #> Warning: Removed 7 rows containing missing values or values outside the scale range
+    #> (`geom_point()`).
 
-plt_full <- plt_sim +
-  geom_point(
-    data = subset(sf_full, set == "train"),
-    aes(x = log10_cd_S, y = log10_cd_WB_FW, color = food),
-    shape = 16, alpha = 0.4, size = 1.5
-  ) +
-  geom_point(
-    data = subset(sf_full, set == "test"),
-    aes(x = log10_cd_S, y = log10_cd_WB_FW, fill = food),
-    shape = 21, color = "black", stroke = 0.8, size = 2.5
-  )
-plt_full
-#> Warning: Removed 7 rows containing missing values or values outside the scale range
-#> (`geom_point()`).
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-10-1.png)
-
-### Mapping
-
-Here we are going to compute the map of predicted concentration over the
-landscape.
-
-Let first recapture the value of median:
-
-``` r
-dp_q50 <- df_pars %>%
-  dplyr::group_by(par) %>%
-  dplyr::summarise(median_value = median(value, na.rm=TRUE))
-
-ls_q50 <- setNames(as.list(dp_q50$median_value), dp_q50$par)
-```
-
-``` r
-names_hab = c("soil", "herbivore", "insectivore")
-list_habitat <- lapply(names_hab, function(i) ground_cd)
-stack_habitat <- raster_stack(list_habitat, names_hab)
-trophic_df <- trophic() |>
-  add_link("soil", "herbivore") |>
-  add_link("soil", "insectivore")
-spcmdl_direct <- spacemodel(stack_habitat, trophic_df)
-
-direct_kernels <- list(soil = NA, herbivore = NA, insectivore = NA)
-
-direct_intakes <- intake(spcmdl_direct,
-  "soil -> herbivore"       = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x,  
-  "soil -> insectivore"     = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
-
-spcmdl_direct_risk <- transfer(
-  spcmdl_direct,
-  direct_kernels,
-  direct_intakes,
-  exposure_weighting="potential")
-```
-
-``` r
-r_risk = 10^spcmdl_direct_risk
-ggplot() +
-  geom_spatraster(data = r_risk) +
-  facet_wrap(~lyr) +
-  scale_fill_viridis_c(
-    option = "magma",
-    trans = "log10", # C'est ici que la magie opère
-    labels = label_log(), # Affiche 10^1, 10^2, etc.
-    na.value = "transparent"
-  ) +
-  theme_minimal() +
-  labs(fill = "Risk\n(log10-scaled)")
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-13-1.png)
+![](Inference_Direct_files/figure-html/unnamed-chunk-21-1.png)
 
 ## Direct dist-buffer model of Soil-Organism
 
-The idea here is to consider a buffer around the traplines. Let 100m
-first.
+For moving organism as micro-mammals, the idea here is to consider a
+buffer around the traplines. Let 100m first.
 
 ### Collect Buffer mean Value
 
@@ -334,22 +329,7 @@ sf_train_b100$log10_cd_S_meanLine <- val_mean_trapline[, 2]
 sf_train_b100$log10_cd_S_meanb100 <- val_mean_b100[, 2]
 ```
 
-``` r
-melt_b100 <- sf_train_b100 %>%
-  sf::st_drop_geometry() %>%
-  tidyr::pivot_longer(
-    cols=c("log10_cd_S_centroid", "log10_cd_S_meanLine", "log10_cd_S_meanb100",),
-    values_to = "cd_S_collect", names_to = "method_collect")
-
-ggplot(data=melt_b100) +
-  theme_minimal() +
-  scale_x_log10() +
-  scale_color_viridis_d(option = "plasma") +
-  geom_point(aes(cd_S, cd_S_collect, color=method_collect), alpha=0.5) +
-  geom_abline(slope=1)
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-15-1.png)
+![](Inference_Direct_files/figure-html/unnamed-chunk-23-1.png)
 
 ### Compute inference
 
@@ -386,55 +366,7 @@ fit_direct_b100 <- load_safe("raw_data/fit_direct_b100_cd.rds")
 arr_sim_b100 <- rstan::extract(fit_direct_b100, "y_sim")[[1]]
 ```
 
-``` r
-arr_sim <- arr_sim_b100
-categories <- c("herbivore", "insectivore")
-quants <- c(0.025, 0.5, 0.975) # Modifie avec les quantiles que tu souhaites
-df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
-  mat <- arr_sim[, , i]
-  q_mat <- apply(mat, 2, quantile, probs = quants)
-  q_mat %>%
-    t() %>%
-    as.data.frame() %>%
-    mutate(
-      var_id = 1:n(),
-      x_sim = stan_data$x_sim,
-      categorie = categories[i]
-    )
-})
-```
-
-``` r
-plt_sim <- ggplot() +
-  theme_minimal() +
-  scale_color_manual(values = c("#22aa33", "#aa2233")) +
-  scale_fill_manual(values = c("#22aa33", "#aa2233")) +
-  labs(
-    x = "Soil Concentration (Cd) [log10 µg/g]",
-    y = "Whole Body Concentration (Cd) [log10 µg/g]",
-    color = "Food / Categorie", # Unifie les légendes
-    fill = "Food / Categorie"
-  ) +
-  geom_ribbon(
-    data = df_sim,
-    aes(x = x_sim, ymin = `2.5%`, ymax = `97.5%`, fill = categorie), 
-    alpha = 0.25 
-  ) +
-  geom_line(
-    data = df_sim,
-    aes(x = x_sim, y = `50%`, color = categorie),
-    linewidth = 1
-  )
-
-plt_train <- plt_sim +
-  geom_point(
-    data=sf_train,
-    aes(x=log10_cd_S, y=log10_cd_WB_FW, color=food)
-  )
-plt_train
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-20-1.png)
+![](Inference_Direct_files/figure-html/unnamed-chunk-28-1.png)
 
 ### Compare prediction with new data
 
@@ -463,7 +395,7 @@ plt_full
 #> (`geom_point()`).
 ```
 
-![](Inference_Direct_files/figure-html/unnamed-chunk-21-1.png)
+![](Inference_Direct_files/figure-html/unnamed-chunk-29-1.png)
 
 ### Mapping
 
@@ -514,21 +446,10 @@ spcmdl_direct_risk <- transfer(
   exposure_weighting="potential")
 ```
 
-``` r
-r_risk = 10^spcmdl_direct_risk
-ggplot() +
-  geom_spatraster(data = r_risk) +
-  facet_wrap(~lyr) +
-  scale_fill_viridis_c(
-    option = "magma",
-    trans = "log10", # C'est ici que la magie opère
-    labels = label_log(), # Affiche 10^1, 10^2, etc.
-    na.value = "transparent"
-  ) +
-  theme_minimal() +
-  labs(fill = "Risk\n(log10-scaled)")
-```
-
-![](Inference_Direct_files/figure-html/unnamed-chunk-24-1.png)
+![](Inference_Direct_files/figure-html/directBuffer_map-1.png)
 
 ## Direct kernel-buffer model of Soil-Organism
+
+``` r
+data("ocsge_species_dict")
+```

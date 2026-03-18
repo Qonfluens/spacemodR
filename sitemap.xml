@@ -2,11 +2,10 @@
 <url><loc>https://qonfluens.github.io/spacemodR/404.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/LICENSE-text.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/LICENSE.html</loc></url>
-<url><loc>https://qonfluens.github.io/spacemodR/articles/02_Using_External_Dispersal.html</loc></url>
-<url><loc>https://qonfluens.github.io/spacemodR/articles/02_ex_SoilTarget.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Example_Berisp_full.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Inference_Direct.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/articles/Omniscape_Connectivity.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Tutorial.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/index.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/authors.html</loc></url>
@@ -14,12 +13,15 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_link.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_nohabitat.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/bappet_cd.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/calibrate_direct.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/calibrate_simple.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/calibrate_trophic.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_dispersal.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_kernel.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_levels.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/dispersal.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/earthworm_cd.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/flux.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/get_departements_for_roi.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.html</loc></url>
@@ -28,6 +30,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/index.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/intake.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/is_cyclic.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/join_ocsge_species.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/load_raster_extdata.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/lower_neighbors.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/normalize_weights.html</loc></url>
@@ -35,6 +38,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ocsge_species_dict.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/plot.habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/plot.trophic_tbl.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/plot_species_habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/raster_stack.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ref_ocsge.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/roi_metaleurop.html</loc></url>

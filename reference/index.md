@@ -8,8 +8,12 @@
   : Add links to a trophic table
 - [`add_nohabitat()`](https://qonfluens.github.io/spacemodR/reference/add_nohabitat.md)
   : Add non-habitat zones to a Habitat object
+- [`bappet_cd`](https://qonfluens.github.io/spacemodR/reference/bappet_cd.md)
+  : Data concentration Cd Soil - Veetation extracted from BAPPET
 - [`calibrate_direct()`](https://qonfluens.github.io/spacemodR/reference/calibrate_direct.md)
   : Calibrate direct transfer model
+- [`calibrate_simple()`](https://qonfluens.github.io/spacemodR/reference/calibrate_simple.md)
+  : Calibrate simple transfer model
 - [`calibrate_trophic()`](https://qonfluens.github.io/spacemodR/reference/calibrate_trophic.md)
   : Calibrate trophic transfer model
 - [`compute_dispersal()`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
@@ -18,6 +22,8 @@
   : Create a 2D Gaussian motion kernel as a SpatRaster
 - [`dispersal()`](https://qonfluens.github.io/spacemodR/reference/dispersal.md)
   : Disperse a species or variable over the landscape
+- [`earthworm_cd`](https://qonfluens.github.io/spacemodR/reference/earthworm_cd.md)
+  : Data concentration Cd Soil - Earthworm
 - [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) :
   Apply trophic flux from a resource layer
 - [`get_departements_for_roi()`](https://qonfluens.github.io/spacemodR/reference/get_departements_for_roi.md)
@@ -32,6 +38,8 @@
   : Constructor for Intake Parameters
 - [`is_cyclic()`](https://qonfluens.github.io/spacemodR/reference/is_cyclic.md)
   : Test if a directed graph is cyclic
+- [`join_ocsge_species()`](https://qonfluens.github.io/spacemodR/reference/join_ocsge_species.md)
+  : Join OCSGE Spatial Data with Species Traits
 - [`load_raster_extdata()`](https://qonfluens.github.io/spacemodR/reference/load_raster_extdata.md)
   : load raster file from internal data
 - [`lower_neighbors()`](https://qonfluens.github.io/spacemodR/reference/lower_neighbors.md)
@@ -46,6 +54,8 @@
   : Plot a Habitat object
 - [`plot(`*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.trophic_tbl.md)
   : Plot a trophic table
+- [`plot_species_habitat()`](https://qonfluens.github.io/spacemodR/reference/plot_species_habitat.md)
+  : Plot Habitat Suitability Maps from OCSGE Data
 - [`raster_stack()`](https://qonfluens.github.io/spacemodR/reference/raster_stack.md)
   : Create a RasterStack from a list of rasters and names
 - [`ref_ocsge`](https://qonfluens.github.io/spacemodR/reference/ref_ocsge.md)
