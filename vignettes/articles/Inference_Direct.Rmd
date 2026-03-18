@@ -31,6 +31,7 @@ library(sf)
 library(terra)
 library(tidyterra)
 library(scales)
+library(patchwork)
 ```
 
 # Transfer model
@@ -116,19 +117,7 @@ ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 ### Vegetation
 
 ```{r, echo=FALSE}
-bappet_cd <- read.csv("raw_data/BAPPET.csv", dec=",") %>%
-  dplyr::mutate(
-    log10_plant_mean=log10(as.numeric(gsub(",", ".", plant_mean))),
-    log10_media_mean=log10(as.numeric(gsub(",", ".", media_mean)))) %>%
-  dplyr::filter(
-    extraction %in% c("Totale", "Pseudo-totale"),
-    etm == "Cd",
-    !is.na(log10_media_mean),
-    !is.na(log10_plant_mean),
-    !is.infinite(log10_media_mean),
-    !is.infinite(log10_plant_mean),
-    media == "Sol (mg/kg)"
-    )
+data("bappet_cd")
 
 ggplot(data=bappet_cd) +
   theme_minimal() +
@@ -215,24 +204,20 @@ plt_train
 ### Earthworm
 
 ```{r}
-Cd_earthworm <- read.csv("raw_data/Cd_Sample1998_earthworm.csv") %>%
-  mutate(
-    log10_cd_soil = log10(soil.concentration..mg.kg.dry.wt..),
-    log10_cd_worm = log10(earthworm.concentration..mg.kg.dry.wt..),
-  )
+data("earthworm_cd")
 
 stan_data = list(
-  N = nrow(Cd_earthworm),
-  x = Cd_earthworm$log10_cd_soil,
-  y = Cd_earthworm$log10_cd_worm,
+  N = nrow(earthworm_cd),
+  x = earthworm_cd$log10_cd_soil,
+  y = earthworm_cd$log10_cd_worm,
   M = 100,
   x_sim = seq(-2, 3, length.out=100)
 )
 ```
 
 ```{r}
-fit_simple_worm_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
-saveRDS(fit_simple_worm_cd, file="raw_data/fit_simple_worm_cd.rds")
+# fit_simple_worm_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
+# saveRDS(fit_simple_worm_cd, file="raw_data/fit_simple_worm_cd.rds")
 fit_simple_worm_cd <- load_safe("raw_data/fit_simple_worm_cd.rds")
 ```
 
@@ -288,7 +273,7 @@ plt_sim <- ggplot() +
 
 plt_train <- plt_sim +
   geom_point(
-    data=Cd_earthworm,
+    data=earthworm_cd,
     aes(x=log10_cd_soil, y=log10_cd_worm)
   )
 plt_train
