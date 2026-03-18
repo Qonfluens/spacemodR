@@ -12,7 +12,11 @@ editor_options:
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.width=10,
+  fig.height=5,
+  warning = FALSE,
+  message = FALSE
 )
 ```
 
@@ -90,8 +94,8 @@ Indeedn, if an optimal habitat is $1$ and the worst barrier is only $5$,
 `Omniscape` will barely notice the barrier and will simulate animals 
 walking almost in straight lines!
 
-A good practice would is to convert the linear scale $1$ to $10$ in an
-exponential scale $1$ to $1000$ (e.g. $y = 10^{(x-1)/3}$).
+A good practice would is to convert the linear scale $0$ to $10$ in an
+exponential scale $1$ to $1000$ (e.g. `10^( (log10(1000) / 10) * x )`.
 
 ## The Algorithm
 
@@ -142,43 +146,40 @@ You get a map showing where the animals go. A pixel with high current means
 Then using `spacemodR::transfer`, we can compute the `exposure` and diffusion
 of the contaminant in population.
 
-# Initialize Julia (Required at the start of the session)
+# Example of habitat and resistance
 
-```{r setup_julia, eval=FALSE}
-library(JuliaCall)
-julia_setup(install=FALSE)
-```
-
-
-## Example of habitat and resistance
-
-```{r, echo=FALSE, eval=FALSE}
+```{r, eval=FALSE}
 # setup Matrix size
-n_row <- 20
-n_col <- 20
+n_row <- 100
+n_col <- 100
 #  MATRIX of habitat (Source Strength)
 mat_habitat <- matrix(0, nrow = n_row, ncol = n_col)
-mat_habitat[2:6, 2:6] <- 100
-mat_habitat[15:18, 15:18] <- 20
+mat_habitat[10:20, 10:20] <- 100
+mat_habitat[75:90, 75:90] <- 20
 rast_habitat <- terra::rast(mat_habitat)
 names(rast_habitat) <- "population"
 
 # MATRICE Of RESISTANCE
 mat_resistance <- matrix(1, nrow = n_row, ncol = n_col)
-mat_resistance[, 10:11] <- 100
-mat_resistance[10:12, 10:11] <- 1
-mat_resistance[15:20, 1:5] <- NA
+mat_resistance[, 50:60] <- 1000
+mat_resistance[50:60, 50:60] <- 1
+mat_resistance[75:100, 10:50] <- NA
 rast_resistance <- terra::rast(mat_resistance)
 names(rast_resistance) <- "resistance"
 
 # SAVE RASTER FILE
+terra::writeRaster(rast_habitat, "inst/extdata/example_habitat.tif", overwrite = TRUE)
+terra::writeRaster(rast_resistance, "inst/extdata/example_resistance.tif", overwrite = TRUE)
 terra::writeRaster(rast_habitat, "julia_run/example_habitat.tif", overwrite = TRUE)
 terra::writeRaster(rast_resistance, "julia_run/example_resistance.tif", overwrite = TRUE)
 ```
 
+```{r, echo=FALSE}
+rast_habitat <- load_raster_extdata("example_habitat.tif")
+rast_resistance <- load_raster_extdata("example_resistance.tif")
+```
+
 ```{r}
-rast_habitat <- terra::rast("julia_run/example_habitat.tif")
-rast_resistance <- terra::rast("julia_run/example_resistance.tif")
 # VIZUALIZE
 par(mfrow = c(1, 2))
 terra::plot(rast_habitat, main = "Habitat (Sources)", col = c("white", "green", "darkgreen"))
@@ -199,14 +200,18 @@ dispersed_map <- compute_dispersal(
   method = "omniscape",
   options = list(
     resistance = rast_resistance,
-    radius = 5 # small radius for this little matrix
+    radius = 25 # small radius for this little matrix
   )
 )
 ```
 
+```{r, echo=FALSE}
+# dispersed_map <- readRDS("julia_run/dispersed_map.rds")
+# terra::writeRaster(dispersed_map, "julia_run/dispersed_example.tif", overwrite = TRUE)
+dispersed_map <- load_raster_extdata("dispersed_example_150.tif")
+```
 
 ```{r show_map}
-dispersed_map <- readRDS("julia_run/dispersed_map.rds")
 plot(dispersed_map)
 ```
 
@@ -270,7 +275,7 @@ docker build -t spacemodr .
 
 Now, execute the R script inside the container. 
 We map our local julia_run directory to `/julia_run` inside the container.
-Notice how we pass the file paths and the radius ($5$) at the very end of the command:
+Notice how we pass the file paths and the radius ($30$) at the very end of the command:
 
 ```{bash, eval=FALSE}
 docker run --rm \
@@ -278,7 +283,8 @@ docker run --rm \
   spacemodr Rscript /julia_run/run_dispersal.R \
   /julia_run/example_habitat.tif \
   /julia_run/example_resistance.tif \
-  5
+  150 \
+  dispersed_example_150
 ```
 
 *Note: if you need interactive mode to debug, try:*
@@ -288,7 +294,7 @@ docker run --rm -it -v "$(pwd)/julia_run:/julia_run" spacemodr bash
 # check files exist then
 ls -l /julia_run
 # run Rscript command
-Rscript /julia_run/run_dispersal.R /julia_run/example_habitat.tif /julia_run/example_resistance.tif 5
+Rscript /julia_run/run_dispersal.R /julia_run/example_habitat.tif /julia_run/example_resistance.tif 30 dispersed_example_30
 ```
 
 5. Retrieve the Data

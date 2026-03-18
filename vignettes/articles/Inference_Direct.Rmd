@@ -148,7 +148,7 @@ stan_data = list(
 )
 ```
 
-```{r direct_loadfit}
+```{r direct_loadfit_veg}
 # fit_simple_veg_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_simple_veg_cd, file="raw_data/fit_simple_veg_cd.rds")
 fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
@@ -331,7 +331,7 @@ stan_data = list(
 ```
 
 
-```{r direct_loadfit}
+```{r direct_loadfit_mam}
 # fit_direct <- calibrate_direct(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_direct, file="raw_data/fit_direct_cd.rds")
 fit_direct <- load_safe("raw_data/fit_direct_cd.rds")
@@ -687,12 +687,6 @@ map_directBuffer <- ggplot() +
   theme_minimal() +
   labs(fill = "Concentration Cd \n direct buffer burden \n(log10-scaled)")
 map_directBuffer
-```
-
-That we can compared with previous model
-
-```{r, echo=FALSE}
-map_directFix
 ```
 
 # Direct kernel-buffer model of Soil-Organism

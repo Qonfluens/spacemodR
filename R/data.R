@@ -51,3 +51,20 @@
 #' @keywords datasets
 "ocsge_species_dict"
 
+#' Data concentration Cd Soil - Veetation extracted from BAPPET
+#'
+#' @usage data(bappet_cd)
+#'
+#' @examples
+#' data(bappet_cd)
+#' @keywords datasets
+"bappet_cd"
+
+#' Data concentration Cd Soil - Earthworm
+#'
+#' @usage data(earthworm_cd)
+#'
+#' @examples
+#' data(earthworm_cd)
+#' @keywords datasets
+"earthworm_cd"
