@@ -13,10 +13,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 
 RcppExport SEXP _rcpp_module_boot_stan_fit4stan_code_direct_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4stan_code_simple_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4stan_code_trophic_mod();
 
 static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4stan_code_direct_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4stan_code_direct_mod, 0},
+    {"_rcpp_module_boot_stan_fit4stan_code_simple_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4stan_code_simple_mod, 0},
     {"_rcpp_module_boot_stan_fit4stan_code_trophic_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4stan_code_trophic_mod, 0},
     {NULL, NULL, 0}
 };

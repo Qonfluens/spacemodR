@@ -1,4 +1,4 @@
-# 1. On part d'une image R officielle qui a déjà GDAL, PROJ, et RStudio installés
+# 1. R officielle with GDAL, PROJ, et RStudio
 FROM rocker/geospatial:latest
 
 # 2. Installation des dépendances système supplémentaires si besoin
@@ -21,8 +21,21 @@ ENV JULIA_BINDIR=/opt/julia/bin
 # 5. Pré-installation du paquet R JuliaCall
 RUN R -e "install.packages('JuliaCall')"
 
-# 6. (Optionnel) Pré-installation des paquets Julia pour gagner du temps au lancement
-# On crée un dossier global pour les paquets Julia accessible à tous
+# 6. Pré-installation des paquets Julia pour gagner du temps au lancement
 ENV JULIA_DEPOT_PATH=/opt/julia_depot
 RUN mkdir -p $JULIA_DEPOT_PATH && chmod 777 $JULIA_DEPOT_PATH
 RUN julia -e 'import Pkg; Pkg.add("RCall"); Pkg.add("Omniscape"); Pkg.add("GDAL"); Pkg.build("RCall")'
+
+# 7. Copy the local package code into the Docker image
+COPY DESCRIPTION /build/spacemodR/DESCRIPTION
+RUN R -e "remotes::install_deps('/build/spacemodR', dependencies = TRUE)"
+COPY . /build/spacemodR
+RUN R -e "remotes::install_local('/build/spacemodR', dependencies = FALSE)"
+RUN rm -rf /build/spacemodR
+
+# 8. Install spacemodR and its R dependencies
+# We use remotes::install_local (already included in rocker/geospatial)
+RUN R -e "remotes::install_local('/build/spacemodR', dependencies = TRUE)"
+
+# 9. Clean up the build directory to keep the image size small
+RUN rm -rf /build/spacemodR

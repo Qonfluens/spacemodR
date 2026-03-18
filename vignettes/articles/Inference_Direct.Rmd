@@ -1,5 +1,5 @@
 ---
-title: "Inference Direct"
+title: "Calibration of Transfer Models"
 output: 
   rmarkdown::html_vignette:
     toc: true
@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+```{r setup, echo=FALSE}
 library(spacemodR)
 # Additional package for further analysis
 library(rstan)
@@ -33,7 +33,51 @@ library(tidyterra)
 library(scales)
 ```
 
-```{r echo=FALSE}
+# Transfer model
+
+For the inference of transfer model, we use Bayesian Multiple Linear Regression
+model using Stan code.
+
+## Simple model
+
+The likelihood is defined as:
+
+$$
+y_i \sim \mathcal{N}(\mu_i, \sigma^2)
+$$
+
+
+$$
+\mu_i = \beta_0 + \beta_1 x_i + \beta_{\text{cat}}[x\_cat_i]
+$$
+Where:
+
+- $\beta_0$ is the global intercept.
+- $\beta_1$ is the slope coefficient for the continuous variable $x$.
+- $\beta_{\text{cat}}[x\_cat_i]$ is the specific coefficient (effect) associated with the category to which observation $i$ belongs.
+- $\sigma$ is the standard deviation of the error term (residuals).
+
+
+The model specifies weakly informative priors for its parameters to 
+regularize the inferences without overly constraining the data:
+
+- Intercept: $\beta_0 \sim \mathcal{N}(0, 10)$ 
+- Continuous Slope: $\beta_1 \sim \mathcal{N}(0, 10)$ 
+- Categorical Coefficients: $\beta_{\text{cat}} \sim \mathcal{N}(0, 10)$ for each of the $K$ categories.
+- Error Standard Deviation: $\sigma \sim \text{Half-Cauchy}(0, 5)$. Because $\sigma$ is constrained to be strictly positive (`real<lower=0> sigma;`) , the Cauchy prior automatically becomes a truncated Half-Cauchy distribution.
+
+
+Based on the structure of the likelihood function, this model makes the following classical linear regression assumptions:
+
+- Linearity: The relationship between the continuous predictor $x$ and the mean of the response $y$ is strictly linear.
+- Additivity (No Interactions): The effect of the continuous variable ($x$) and the categorical variable ($x_{cat}$) are purely additive. The slopes are assumed to be identical across all categories; only the intercepts vary (parallel lines model).
+- Normality of Errors: The residuals (the differences between observed and predicted values) are normally distributed.
+- Homoscedasticity (Constant Variance): The standard deviation of the error term, $\sigma$, is assumed to be constant across all values of $x$ and across all $K$ categories.
+- Independence: Each observation $i$ is conditionally independent given the parameters.
+
+# Direct fix-point model of Soil-Organism
+
+```{r add_function, echo=FALSE}
 # ADDITIONAL FUNCTION
 read_sf_safe <- function(file_path) {
   paths <- c("", "../", "../../") |> paste0(file_path)
@@ -53,11 +97,206 @@ load_safe <- function(file_path) {
   warning("File not found at: ", paste(paths, collapse = " OR "))
   return(NULL)
 }
-
 ```
 
 
+## Inference for Vegetation and Earthworm
+
+For both species, we assumed a direct link:
+
+$$
+\log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right)
+$$
+
+
+```{r, echo=FALSE}
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+```
+
+### Vegetation
+
+```{r, echo=FALSE}
+bappet_cd <- read.csv("raw_data/BAPPET.csv", dec=",") %>%
+  dplyr::mutate(
+    log10_plant_mean=log10(as.numeric(gsub(",", ".", plant_mean))),
+    log10_media_mean=log10(as.numeric(gsub(",", ".", media_mean)))) %>%
+  dplyr::filter(
+    extraction %in% c("Totale", "Pseudo-totale"),
+    etm == "Cd",
+    !is.na(log10_media_mean),
+    !is.na(log10_plant_mean),
+    !is.infinite(log10_media_mean),
+    !is.infinite(log10_plant_mean),
+    media == "Sol (mg/kg)"
+    )
+
+ggplot(data=bappet_cd) +
+  theme_minimal() +
+  labs(
+    x="Mean [Cd] in soil (total)",
+    y="Mean [Cd] in vegetable") +
+  geom_point(aes(x=log10_media_mean, y=log10_plant_mean))
+```
+
 ```{r}
+stan_data = list(
+  N = nrow(bappet_cd),
+  x = bappet_cd$log10_media_mean,
+  y = bappet_cd$log10_plant_mean,
+  M = 100,
+  x_sim = seq(-2, 3, length.out=100)
+)
+```
+
+```{r direct_loadfit}
+# fit_simple_veg_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
+# saveRDS(fit_simple_veg_cd, file="raw_data/fit_simple_veg_cd.rds")
+fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
+```
+
+```{r, echo=FALSE}
+fit_pars <- rstan::extract(fit_simple_veg_cd, c("beta0", "beta1"))
+df_pars <- dplyr::bind_rows(list(
+  data.frame(value=fit_pars$beta0, par="beta0"),
+  data.frame(value=fit_pars$beta1, par="beta1")
+))
+ggplot(data=df_pars) +
+  theme_minimal() +
+  scale_fill_manual(
+    name="parameters",
+    values=c("#22aa33", "#aa2233")) +
+  geom_density(aes(value, fill=par), alpha=0.5)  +
+  facet_wrap(~par, scale="free")
+```
+
+```{r}
+arr_sim <- rstan::extract(fit_simple_veg_cd, "y_sim")[[1]]
+```
+
+```{r}
+quants <- c(0.025, 0.5, 0.975)
+q_mat <- apply(arr_sim, 2, quantile, probs = quants)
+df_sim <- q_mat %>%
+  t() %>%
+  as.data.frame() %>%
+  mutate(
+    var_id = 1:n(),
+    x_sim = stan_data$x_sim
+  )
+```
+
+```{r, echo=FALSE}
+plt_sim <- ggplot() +
+  theme_minimal() +
+  labs(
+    x = "Soil Concentration (Cd) [log10 µg/g]",
+    y = "Concentration in Plant (Cd) [log10 µg/g]"
+  ) +
+  geom_ribbon(
+    data = df_sim,
+    aes(x = x_sim, ymin = `2.5%`, ymax = `97.5%`), 
+    alpha = 0.25 
+  ) +
+  geom_line(
+    data = df_sim,
+    aes(x = x_sim, y = `50%`),
+    linewidth = 1
+  )
+
+plt_train <- plt_sim +
+  geom_point(
+    data=bappet_cd,
+    aes(x=log10_media_mean, y=log10_plant_mean)
+  )
+plt_train
+```
+
+
+### Earthworm
+
+```{r}
+Cd_earthworm <- read.csv("raw_data/Cd_Sample1998_earthworm.csv") %>%
+  mutate(
+    log10_cd_soil = log10(soil.concentration..mg.kg.dry.wt..),
+    log10_cd_worm = log10(earthworm.concentration..mg.kg.dry.wt..),
+  )
+
+stan_data = list(
+  N = nrow(Cd_earthworm),
+  x = Cd_earthworm$log10_cd_soil,
+  y = Cd_earthworm$log10_cd_worm,
+  M = 100,
+  x_sim = seq(-2, 3, length.out=100)
+)
+```
+
+```{r}
+fit_simple_worm_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
+saveRDS(fit_simple_worm_cd, file="raw_data/fit_simple_worm_cd.rds")
+fit_simple_worm_cd <- load_safe("raw_data/fit_simple_worm_cd.rds")
+```
+
+
+```{r, echo=FALSE}
+fit_pars <- rstan::extract(fit_simple_worm_cd, c("beta0", "beta1"))
+df_pars <- dplyr::bind_rows(list(
+  data.frame(value=fit_pars$beta0, par="beta0"),
+  data.frame(value=fit_pars$beta1, par="beta1")
+))
+ggplot(data=df_pars) +
+  theme_minimal() +
+  scale_fill_manual(
+    name="parameters",
+    values=c("#22aa33", "#aa2233")) +
+  geom_density(aes(value, fill=par), alpha=0.5)  +
+  facet_wrap(~par, scale="free")
+```
+
+```{r}
+arr_sim <- rstan::extract(fit_simple_worm_cd, "y_sim")[[1]]
+```
+
+```{r}
+quants <- c(0.025, 0.5, 0.975)
+q_mat <- apply(arr_sim, 2, quantile, probs = quants)
+df_sim <- q_mat %>%
+  t() %>%
+  as.data.frame() %>%
+  mutate(
+    var_id = 1:n(),
+    x_sim = stan_data$x_sim
+  )
+```
+
+```{r, echo=FALSE}
+plt_sim <- ggplot() +
+  theme_minimal() +
+  labs(
+    x = "Soil Concentration (Cd) [log10 µg/g]",
+    y = "Concentration in EarthWorm (Cd) [log10 µg/g]"
+  ) +
+  geom_ribbon(
+    data = df_sim,
+    aes(x = x_sim, ymin = `2.5%`, ymax = `97.5%`), 
+    alpha = 0.25 
+  ) +
+  geom_line(
+    data = df_sim,
+    aes(x = x_sim, y = `50%`),
+    linewidth = 1
+  )
+
+plt_train <- plt_sim +
+  geom_point(
+    data=Cd_earthworm,
+    aes(x=log10_cd_soil, y=log10_cd_worm)
+  )
+plt_train
+```
+
+## Inference for Micro-Mammals
+
+```{r, echo=FALSE}
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 sf_metaleurop_2010 <- read_sf_safe("raw_data/sf_metaleurop_2006_2010.gpkg")
 sf_metaleurop_2025 <- read_sf_safe("raw_data/sf_metaleurop_2025.gpkg")
@@ -65,13 +304,11 @@ sf_metaleurop_2025 <- read_sf_safe("raw_data/sf_metaleurop_2025.gpkg")
 
 ```{r}
 data(sf_micromammals)
-
 # ADD LOG_10 COLUMNS
 sf_train <- sf_micromammals |>
   dplyr::mutate(
     log10_cd_S = log10(cd_S),
     log10_cd_WB_FW = log10(cd_WB_FW))
-
 # ADD GROUP HERBIVOE vs INSECTIVORE
 lookup_table = data.frame(
     group = c('shrew', 'mouse', 'vole'),
@@ -80,9 +317,6 @@ lookup_table = data.frame(
 sf_train = dplyr::left_join(sf_train, lookup_table, by='group')
 ```
 
-# Direct fix-point model of Soil-Organism
-
-## Inference
 
 ```{r direct_stanData}
 stan_data = list(
@@ -135,7 +369,7 @@ ggplot(data=df_pars) +
 arr_sim <- rstan::extract(fit_direct, "y_sim")[[1]]
 ```
 
-```{r}
+```{r, echo=FALSE}
 categories <- c("herbivore", "insectivore")
 quants <- c(0.025, 0.5, 0.975) # Modifie avec les quantiles que tu souhaites
 df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
@@ -152,7 +386,7 @@ df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
 })
 ```
 
-```{r}
+```{r pltSim_direct, echo=FALSE}
 plt_sim <- ggplot() +
   theme_minimal() +
   scale_color_manual(values = c("#22aa33", "#aa2233")) +
@@ -182,7 +416,7 @@ plt_train <- plt_sim +
 plt_train
 ```
 
-## Predictive Test
+### Predictive Test
 
 The Cd concentration in body, dry weight, µg.g-1, is calculated from dat*a measured using equation given in Veltman et al. 2007 in Environmental Toxicology and Chemistry:
 
@@ -223,7 +457,7 @@ sf_test$log10_cd_S_meanLine <- val_mean_trapline[, 2]
 
 Big points are 
 
-```{r}
+```{r, echo=FALSE}
 sf_full <- data.frame(
   food =           c(sf_train$food, sf_test$food),
   set =            c(rep("train", nrow(sf_train)), rep("test", nrow(sf_test))),
@@ -246,63 +480,11 @@ plt_full <- plt_sim +
 plt_full
 ```
 
-## Mapping
-
-Here we are going to compute the map of predicted concentration over the landscape.
-
-Let first recapture the value of median:
-
-```{r}
-dp_q50 <- df_pars %>%
-  dplyr::group_by(par) %>%
-  dplyr::summarise(median_value = median(value, na.rm=TRUE))
-
-ls_q50 <- setNames(as.list(dp_q50$median_value), dp_q50$par)
-```
-
-```{r}
-names_hab = c("soil", "herbivore", "insectivore")
-list_habitat <- lapply(names_hab, function(i) ground_cd)
-stack_habitat <- raster_stack(list_habitat, names_hab)
-trophic_df <- trophic() |>
-  add_link("soil", "herbivore") |>
-  add_link("soil", "insectivore")
-spcmdl_direct <- spacemodel(stack_habitat, trophic_df)
-
-direct_kernels <- list(soil = NA, herbivore = NA, insectivore = NA)
-
-direct_intakes <- intake(spcmdl_direct,
-  "soil -> herbivore"       = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x,  
-  "soil -> insectivore"     = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
-
-spcmdl_direct_risk <- transfer(
-  spcmdl_direct,
-  direct_kernels,
-  direct_intakes,
-  exposure_weighting="potential")
-```
-
-```{r}
-r_risk = 10^spcmdl_direct_risk
-ggplot() +
-  geom_spatraster(data = r_risk) +
-  facet_wrap(~lyr) +
-  scale_fill_viridis_c(
-    option = "magma",
-    trans = "log10", # C'est ici que la magie opère
-    labels = label_log(), # Affiche 10^1, 10^2, etc.
-    na.value = "transparent"
-  ) +
-  theme_minimal() +
-  labs(fill = "Risk\n(log10-scaled)")
-```
 
 # Direct dist-buffer model of Soil-Organism
 
-The idea here is to consider a buffer around the traplines. Let 100m first.
+For moving organism as micro-mammals, the idea here is to consider a buffer
+around the traplines. Let 100m first.
 
 ## Collect Buffer mean Value
 
@@ -320,7 +502,7 @@ sf_train_b100$log10_cd_S_meanLine <- val_mean_trapline[, 2]
 sf_train_b100$log10_cd_S_meanb100 <- val_mean_b100[, 2]
 ```
 
-```{r}
+```{r, echo=FALSE}
 melt_b100 <- sf_train_b100 %>%
   sf::st_drop_geometry() %>%
   tidyr::pivot_longer(
@@ -370,7 +552,7 @@ fit_direct_b100 <- load_safe("raw_data/fit_direct_b100_cd.rds")
 arr_sim_b100 <- rstan::extract(fit_direct_b100, "y_sim")[[1]]
 ```
 
-```{r}
+```{r, echo=FALSE}
 arr_sim <- arr_sim_b100
 categories <- c("herbivore", "insectivore")
 quants <- c(0.025, 0.5, 0.975) # Modifie avec les quantiles que tu souhaites
@@ -388,7 +570,7 @@ df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
 })
 ```
 
-```{r}
+```{r, echo=FALSE}
 plt_sim <- ggplot() +
   theme_minimal() +
   scale_color_manual(values = c("#22aa33", "#aa2233")) +
@@ -491,9 +673,9 @@ spcmdl_direct_risk <- transfer(
   exposure_weighting="potential")
 ```
 
-```{r}
+```{r directBuffer_map, echo=FALSE}
 r_risk = 10^spcmdl_direct_risk
-ggplot() +
+map_directBuffer <- ggplot() +
   geom_spatraster(data = r_risk) +
   facet_wrap(~lyr) +
   scale_fill_viridis_c(
@@ -503,10 +685,20 @@ ggplot() +
     na.value = "transparent"
   ) +
   theme_minimal() +
-  labs(fill = "Risk\n(log10-scaled)")
+  labs(fill = "Concentration Cd \n direct buffer burden \n(log10-scaled)")
+map_directBuffer
+```
+
+That we can compared with previous model
+
+```{r, echo=FALSE}
+map_directFix
 ```
 
 # Direct kernel-buffer model of Soil-Organism
 
+```{r}
+data("ocsge_species_dict")
+```
 
 

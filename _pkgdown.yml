@@ -12,7 +12,7 @@ navbar:
       menu:
         - text: "Getting Started"
           href: articles/Tutorial.html
-        - text: "Habitat Modeling"
+        - text: "Habitat & Connectivity"
           href: articles/Habitat.html
     examples:
       text: Examples
@@ -21,5 +21,5 @@ navbar:
           href: articles/Inference_Direct.html
         - text: "Soil Target Analysis"
           href: articles/02_ex_SoilTarget.html
-        - text: "External Dispersal"
-          href: articles/02_Using_External_Dispersal.html
+        - text: "Omniscape Connectivity"
+          href: articles/Omniscape_Connectivity.html

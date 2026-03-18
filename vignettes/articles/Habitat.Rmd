@@ -1,8 +1,8 @@
 ---
-title: "Habitat Analysis and Visualization"
+title: "Habitat and Connectivity"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Habitat Analysis and Visualization}
+  %\VignetteIndexEntry{Habitat and Connectivity}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
@@ -39,7 +39,9 @@ library(leaflet)
 library(patchwork)
 ```
 
-# Weighted species habitat with OCS-GE layer for *Apodemus sylvaticus*
+# Defining Habitat
+
+## Weighted species habitat with OCS-GE layer for *Apodemus sylvaticus*
 
 First, we load the necessary datasets provided by spacemodR:
 
@@ -77,7 +79,7 @@ sf_Apsy <- sf_ocsge %>%
   dplyr::left_join(df_merged_Apsy, by = "code_cs")
 ```
 
-## Understanding Habitat Values
+### Understanding Habitat Values
 
 By examining the weight_global (wg), we can classify the landscape into 
 different habitat qualities for the species:
@@ -117,7 +119,7 @@ df_merged_Apsy %>%
   unique()
 ```
 
-## Static Mapping
+### Static Mapping
 
 We will now visualize the spatial distribution of these metrics. 
 We produce four maps focusing on Global Weight, Foraging Weight, 
@@ -162,7 +164,7 @@ p2
 p3
 ```
 
-## Interactive Synthesis
+### Interactive Synthesis
 
 To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
@@ -215,87 +217,49 @@ leaflet(sf_Apsy_wgs84) %>%
   addLegend(pal = pal_ocsge, values = ref_ocsge$nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
 ```
 
-# Multi-species Interactive Synthesis
+## Multi-species Interactive Synthesis
 
 Different species interact with the landscape in radically different ways. 
 Below, we create a function to automatically generate the interactive 
 Leaflet synthesis for any given species, allowing us to rapidly compare their habitat preferences.
-
-```{r multisp_plot_fct}
-plot_species_ggplot <- function(species_pattern) {
-  
-  # Find matching species in dict
-  matched <- ocsge_species_dict[grepl(species_pattern, ocsge_species_dict$nom_espece, ignore.case = TRUE), ]
-  
-  if(nrow(matched) == 0) {
-    message(paste("No data found for", species_pattern))
-    return(NULL)
-  }
-  
-  # Take the first match if multiple exist
-  sp_target <- matched$nom_espece[1]
-  df_sp <- matched[matched$nom_espece == sp_target, ]
-  
-  # Join data
-  df_merged <- ref_ocsge %>% dplyr::left_join(df_sp, by = c("code_cs_" = "code_cs"))
-  sf_merged <- sf_ocsge %>% dplyr::left_join(df_merged, by = "code_cs")
-  # 1. Map: Global Weight
-  p1 <- ggplot(sf_merged) +
-    geom_sf(aes(fill = weight_global), color = NA) +
-    scale_fill_distiller(palette = "YlGn", direction = 1, na.value = "transparent", name = "Score") +
-    theme_void() +
-    labs(subtitle = "Global Weight") +
-    theme(plot.subtitle = element_text(hjust = 0.5))
-  
-  # 2. Map: Foraging Weight
-  p2 <- ggplot(sf_merged) +
-    geom_sf(aes(fill = weight_foraging), color = NA) +
-    scale_fill_distiller(palette = "Blues", direction = 1, na.value = "transparent", name = "Score") +
-    theme_void() +
-    labs(subtitle = "Foraging Weight") +
-    theme(plot.subtitle = element_text(hjust = 0.5))
-  
-  # 3. Map: Resistance
-  p3 <- ggplot(sf_merged) +
-    geom_sf(aes(fill = resistance), color = NA) +
-    scale_fill_distiller(palette = "Reds", direction = 1, na.value = "transparent", name = "Score") +
-    theme_void() +
-    labs(subtitle = "Resistance") +
-    theme(plot.subtitle = element_text(hjust = 0.5))
-  
-  # Combine the 3 plots side-by-side using patchwork
-  combined_plot <- p1 + p2 + p3 + 
-    patchwork::plot_annotation(
-      title = paste("Habitat analysis for:", sp_target),
-      theme = theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5))
-    )
-  
-  return(combined_plot)
-}
-```
-
-## Turdus merula (Blackbird)
+### Turdus merula (Blackbird)
 
 ```{r plt_birdturdus}
-plot_species_ggplot("Turdus_merula")
+turdus_hab <- join_ocsge_species(sf_ocsge, "Turdus_merula")
+plot_species_habitat(turdus_hab)
 ```
 
-## Passer domesticus (House Sparrow)
+### Passer domesticus (House Sparrow)
 
 ```{r plt_birdpasser}
-plot_species_ggplot("Passer_domesticus")
+passer_hab <- join_ocsge_species(sf_ocsge, "Passer_domesticus")
+plot_species_habitat(passer_hab)
 ```
 
-## Other Small Mammals (Sorex, Crocidura, Microtus arvalis)
+### Small Mammals (Sorex, Crocidura, Microtus arvalis)
 
 ```{r plt_sorex}
-plot_species_ggplot("Sorex")
+sorex_hab <- join_ocsge_species(sf_ocsge, "Sorex")
+plot_species_habitat(sorex_hab)
 ```
 
 ```{r plt_crocidura}
-plot_species_ggplot("Crocidura")
+crocidura_hab <- join_ocsge_species(sf_ocsge, "Crocidura")
+plot_species_habitat(crocidura_hab)
 ```
 
 ```{r plt_microtus}
-plot_species_ggplot("Microtus_arvalis")
+microtus_hab <- join_ocsge_species(sf_ocsge, "Microtus_arvalis")
+plot_species_habitat(microtus_hab)
 ```
+
+# Connectivity
+
+## Kernel
+
+## Omniscape of *Apodemus Sylvaticus*
+
+```{r}
+
+```
+

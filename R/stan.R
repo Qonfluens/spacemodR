@@ -42,6 +42,51 @@ calibrate_direct <- function(data, ...) {
   return(out)
 }
 
+#' Calibrate simple transfer model
+#'
+#' @description
+#' Fits a Bayesian simple transfer model using Stan. The model handles continuous
+#' and categorical explanatory variables to predict a response variable.
+#'
+#' @param data A named list containing the data formatted for the Stan model.
+#'   Required elements are: \code{N}, \code{M}, \code{y}, \code{x},
+#'   and \code{x_sim}.
+#' @param ... Additional arguments passed to \code{\link[rstan]{sampling}}
+#'   (e.g., \code{iter}, \code{chains}, \code{cores}, \code{control}).
+#'
+#' @return A \code{stanfit} object containing the posterior samples.
+#' @export
+calibrate_simple <- function(data, ...) {
+  # 1. Check if data is a list
+  if (!is.list(data)) {
+    stop("`data` must be a named list.")
+  }
+
+  # 2. Check for required variables based on the Stan model 'data' block
+  req_vars <- c("N", "M", "y", "x", "x_sim")
+  missing_vars <- setdiff(req_vars, names(data))
+  if (length(missing_vars) > 0) {
+    stop("The following required variables are missing from `data`: ",
+         paste(missing_vars, collapse = ", "))
+  }
+
+  # 3. Check if compiled Stan models object exists
+  if (!exists("stanmodels") || is.null(stanmodels$stan_code_direct)) {
+    stop("Compiled Stan model 'stan_code_direct' not found. ",
+         "Ensure the package was properly compiled with rstantools.")
+  }
+
+  # 4. Run the sampler
+  out <- rstan::sampling(
+    object = stanmodels$stan_code_simple,
+    data = data,
+    ...
+  )
+
+  return(out)
+}
+
+
 
 #' Calibrate trophic transfer model
 #'
