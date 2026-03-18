@@ -34,6 +34,8 @@ starting with the Wood mouse (Apodemus sylvaticus).
 library(spacemodR)
 library(dplyr)
 library(ggplot2)
+library(terra)
+library(tidyterra)
 library(sf)
 library(leaflet)
 library(patchwork)
@@ -170,7 +172,7 @@ To better explore the local variations and overlay different habitat
 parameters for *Apodemus sylvaticus*, we combine them into a single
 interactive leaflet map. You can toggle the layers in the top right corner.
 
-```{r leaflet-apsy, fig.width=9, fig.height=6, echo=FALSE}
+```{r leaflet-apsy, fig.width=9, fig.height=6, echo=FALSE, cache=TRUE}
 # Transform to WGS84 for Leaflet compatibility
 sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
 
@@ -184,31 +186,31 @@ pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, levels = ref_ocsge$nomencl
 
 leaflet(sf_Apsy_wgs84) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
-  
+
   # Layer: OCS-GE
   addPolygons(
     fillColor = ~pal_ocsge(nomenclature), color = "white", weight = 0.5, fillOpacity = 0.7,
     group = "OCS-GE", label = ~paste(nomenclature)
   ) %>%
-  
+
   # Layer: Global Weight
   addPolygons(
     fillColor = ~pal_wg(weight_global), color = NA, fillOpacity = 0.7,
     group = "Global Weight", label = ~paste("Global Weight:", weight_global)
   ) %>%
-  
+
   # Layer: Foraging
   addPolygons(
     fillColor = ~pal_wf(weight_foraging), color = NA, fillOpacity = 0.7,
     group = "Foraging Weight", label = ~paste("Foraging:", weight_foraging)
   ) %>%
-  
+
   # Layer: Resistance
   addPolygons(
     fillColor = ~pal_res(resistance), color = NA, fillOpacity = 0.7,
     group = "Resistance", label = ~paste("Resistance:", resistance)
   ) %>%
-  
+
   # Controls
   addLayersControl(
     baseGroups = c("OCS-GE", "Global Weight", "Foraging Weight", "Resistance"),
@@ -255,11 +257,155 @@ plot_species_habitat(microtus_hab)
 
 # Connectivity
 
-## Kernel
+## From habitat to raster of source and resistance
 
-## Omniscape of *Apodemus Sylvaticus*
+1. first step is to collect habitat of the OCS-GE as we did previously
+
+```{r plt_apsy}
+apsy_hab <- join_ocsge_species(sf_ocsge, "Apodemus_sylvaticus")
+plot_species_habitat(apsy_hab)
+```
+
+2. then, we have to create an `habitat` object to benefit from `spacemodR` functionalities
+
+```{r habitat_apsy}
+apsy_habitat <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$weight_global)
+apsy_resistance <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$resistance)
+```
+
+
+3. converting them in raster
+
+```{r, echo=FALSE}
+rast_Apsy_habitat <- load_raster_extdata("rast_Apsy_habitat.tif")
+rast_Apsy_resistance_init <- load_raster_extdata("rast_Apsy_resistance_init.tif")
+rast_Apsy_resistance <- load_raster_extdata("rast_Apsy_resistance.tif")
+```
 
 ```{r}
-
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 ```
+
+
+```{r plt_apsy_habitat, eval=FALSE}
+rast_Apsy_habitat <- habitat_raster(ground_cd, apsy_habitat)
+```
+
+Note that for resistance, we have to use and exponential scale compare to the score in $[0-10]$
+that with have in the data-set `ocsge_species_dict` to an exponential $[1-1000]$.
+
+```{r plt_apsy_resistance}
+rast_Apsy_resistance_init <- habitat_raster(ground_cd, apsy_resistance)
+exp_scl <- function(x) { 10^( (log10(1000) / 10) * x )}
+rast_Apsy_resistance <- exp_scl(rast_Apsy_resistance_init)
+```
+
+```{r, echo=FALSE}
+# terra::writeRaster(rast_Apsy_habitat, "inst/extdata/rast_Apsy_habitat.tif", overwrite = TRUE)
+# terra::writeRaster(rast_Apsy_resistance_init, "inst/extdata/rast_Apsy_resistance_init.tif", overwrite = TRUE)
+# terra::writeRaster(rast_Apsy_resistance, "inst/extdata/rast_Apsy_resistance.tif", overwrite = TRUE)
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(rast_Apsy_resistance_init)
+plot(rast_Apsy_resistance)
+par(mfrow = c(1, 1))
+```
+
+
+```{r, eval=FALSE}
+terra::writeRaster(rast_Apsy_habitat, "julia_run/rast_Apsy_habitat.tif", overwrite = TRUE)
+terra::writeRaster(rast_Apsy_resistance, "julia_run/rast_Apsy_resistance.tif", overwrite = TRUE)
+```
+
+
+## Kernel
+
+## Omniscape
+
+4. defining a radius
+
+To define the radius, we have to know the real distance radius and then convert it into number of pixel.
+Let say, we have a dispersal radius of 500m for *Apodemus sylvaticus*,
+which is actually quite large for that species.
+
+Here the map has pixels of 24m, so we use this large value for examples.
+
+For pixel, the size is given by `res(raster)`, here it is a meter system:
+ 
+```{r}
+# get pixel size
+terra::res(ground_cd)
+# convert meter radius to pixel radius
+m_radius = 500
+px_radius = 500 / res(ground_cd)[1]
+px_radius
+```
+
+```{bash, eval=FALSE}
+docker run --rm \
+  -v "$(pwd)/julia_run:/julia_run" \
+  spacemodr Rscript /julia_run/run_dispersal.R \
+  /julia_run/rast_Apsy_habitat.tif \
+  /julia_run/rast_Apsy_resistance.tif \
+  20.05 \
+  omniscape_apsy_500m
+```
+
+```{bash, eval=FALSE}
+docker run --rm \
+  -v "$(pwd)/julia_run:/julia_run" \
+  spacemodr Rscript /julia_run/run_dispersal.R \
+  /julia_run/rast_Apsy_habitat.tif \
+  /julia_run/rast_Apsy_resistance.tif \
+  8.02 \
+  omniscape_apsy_200m
+```
+
+```{r load_omniscape, echo=FALSE}
+omniscape_apsy_200m <- load_raster_extdata("omniscape_apsy_200m.tif")
+omniscape_apsy_500m <- load_raster_extdata("omniscape_apsy_500m.tif")
+```
+
+
+```{r plt_omniscape}
+p_src = ggplot() +
+  theme_minimal() +
+  geom_spatraster(data = rast_Apsy_habitat) +
+  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Global\nWeight") +
+  labs(title = "Source")
+
+p_res = ggplot() +
+  theme_minimal() +
+  geom_spatraster(data = rast_Apsy_resistance) +
+  scale_fill_gradient(
+    low = "#fff5f0", high = "#67000d", transform="log10",
+    na.value = "transparent", name = "Resistance")+
+  labs(title = "Resistance")
+
+max_r200m <- global(omniscape_apsy_200m, fun = "max", na.rm = TRUE)
+norm_r200m <- omniscape_apsy_200m / as.numeric(max_r200m)
+p_omn_200m = ggplot() +
+  theme_minimal() +
+  geom_spatraster(data = norm_r200m) +
+  scale_fill_gradientn(
+    colours = c("white", "#11dddd", "#dddd11", "red"),
+    trans = "sqrt", 
+    na.value = "transparent") +
+  labs(title = "Omniscape Connectivity (r=200m)", fill = "Probability")
+
+max_r500m <- global(omniscape_apsy_500m, fun = "max", na.rm = TRUE)
+norm_r500m <- omniscape_apsy_500m / as.numeric(max_r500m)
+p_omn_500m = ggplot() +
+  theme_minimal() +
+  geom_spatraster(data = norm_r500m) +
+  scale_fill_gradientn(
+    colours = c("white", "#11dddd", "#dddd11", "red"),
+    trans = "sqrt", na.value = "transparent") +
+  labs(title = "Omniscape Connectivity (r=500m)", fill = "Probability")
+
+gridExtra::grid.arrange(p_src, p_res, p_omn_200m, p_omn_500m, ncol=2)
+```
+
 

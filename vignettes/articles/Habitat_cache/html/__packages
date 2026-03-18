@@ -3,3 +3,5 @@ dplyr
 ggplot2
 sf
 leaflet
+patchwork
+terra
