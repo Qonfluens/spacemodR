@@ -14,9 +14,11 @@ Description: A set of tools dedicated to modeling food web transfer based on an
   enabling the combination of flux data with population movement.
 License: MIT + file LICENSE
 Imports: 
+    dplyr,
     ggplot2,
     httr,
     methods,
+    patchwork,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),
@@ -31,13 +33,11 @@ Suggests:
     rmarkdown,
     testthat (>= 3.0.0),
     JuliaCall,
-    dplyr,
     tidyterra,
     scales,
     purrr,
     tidyr,
-    leaflet,
-    patchwork
+    leaflet
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 
