@@ -68,3 +68,116 @@
 #' data(earthworm_cd)
 #' @keywords datasets
 "earthworm_cd"
+
+
+#' Field Metabolic Rates Database (FmrBT)
+#'
+#' A comprehensive database containing Field Metabolic Rates (FMR), body mass,
+#' and ambient temperature across more than 700 species.
+#'
+#' @format A data frame with variables detailing energetic properties and taxonomy:
+#' \describe{
+#'   \item{Kingdom}{Taxonomic kingdom.}
+#'   \item{Phylum}{Taxonomic phylum.}
+#'   \item{Class}{Taxonomic class.}
+#'   \item{Order}{Taxonomic order.}
+#'   \item{Family}{Taxonomic family.}
+#'   \item{Genus}{Taxonomic genus.}
+#'   \item{SpeciesVerbatim}{Original species name as recorded in the source.}
+#'   \item{SpeciesAcceptedName}{Standardized accepted species name.}
+#'   \item{FMR_kJ_d}{Field metabolic rate per individual in kJ/day.}
+#'   \item{Mass_g}{Body mass of the individual in grams.}
+#'   \item{Temp_C}{The ambient temperature recorded during the study in Celsius.}
+#'   \item{Endotherm}{Indicator of thermal status (1/TRUE for endotherm, 0/FALSE for ectotherm).}
+#'   \item{Reference}{Source literature reference.}
+#'   \item{Comment}{Additional notes from the dataset creators.}
+#'   \item{Outlier}{Flag indicating if the record is considered a statistical outlier.}
+#' }
+#' @source De Castro et al. (2025) FmrBT database.
+"FmrBT"
+
+#' Mammal Functional Traits Dataset (EltonTraits 1.0)
+#'
+#' Dietary category percentages, foraging strategies, and functional traits for mammals.
+#'
+#' @format A data frame containing species dietary breakdowns (summing to 100%) and trait data:
+#' \describe{
+#'   \item{MSW3_ID}{Mammal Species of the World (3rd ed.) identifier.}
+#'   \item{Scientific}{Scientific name of the mammal species.}
+#'   \item{MSWFamilyLatin}{Mammal Species of the World (3rd ed.) family name.}
+#'   \item{Diet.Inv}{Percentage of invertebrates in the diet.}
+#'   \item{Diet.Vend}{Percentage of vertebrate endotherms consumed (birds and mammals).}
+#'   \item{Diet.Vect}{Percentage of vertebrate ectotherms consumed (reptiles and amphibians).}
+#'   \item{Diet.Vfish}{Percentage of fish consumed.}
+#'   \item{Diet.Vunk}{Percentage of unknown/unclassified vertebrates in the diet.}
+#'   \item{Diet.Scav}{Percentage of scavenging activity.}
+#'   \item{Diet.Fruit}{Percentage of fruits consumed.}
+#'   \item{Diet.Nect}{Percentage of nectar/pollen consumed.}
+#'   \item{Diet.Seed}{Percentage of seeds/nuts consumed.}
+#'   \item{Diet.PlantO}{Percentage of other plant tissues consumed (leaves, stems, roots).}
+#'   \item{Diet.Source}{Source of the dietary information.}
+#'   \item{Diet.Certainty}{Certainty score for the diet data.}
+#'   \item{ForStrat.Value}{Primary foraging stratum/habitat.}
+#'   \item{ForStrat.Certainty}{Certainty score for the foraging stratum.}
+#'   \item{ForStrat.Comment}{Notes on foraging strategy.}
+#'   \item{Activity.Nocturnal}{Binary flag for nocturnal activity.}
+#'   \item{Activity.Crepuscular}{Binary flag for crepuscular activity.}
+#'   \item{Activity.Diurnal}{Binary flag for diurnal activity.}
+#'   \item{Activity.Source}{Source of the activity information.}
+#'   \item{Activity.Certainty}{Certainty score for the activity pattern.}
+#'   \item{BodyMass.Value}{Body mass value in grams.}
+#'   \item{BodyMass.Source}{Source of the body mass information.}
+#'   \item{BodyMass.SpecLevel}{Specificity level of the body mass record.}
+#' }
+#' @source EltonTraits 1.0 database.
+"DBFunc_MamFuncDat"
+
+#' Bird Functional Traits Dataset (EltonTraits 1.0)
+#'
+#' Dietary category percentages, foraging strategies, and functional traits for birds.
+#'
+#' @format A data frame containing species dietary breakdowns (summing to 100%) and trait data:
+#' \describe{
+#'   \item{SpecID}{Unique species identifier.}
+#'   \item{PassNonPass}{Indicates whether the bird is a Passerine or Non-Passerine.}
+#'   \item{IOCOrder}{IOC taxonomic order.}
+#'   \item{BLFamilyLatin}{BirdLife International family Latin name.}
+#'   \item{BLFamilyEnglish}{BirdLife International family English name.}
+#'   \item{BLFamSequID}{BirdLife International family sequence ID.}
+#'   \item{Taxo}{Taxonomic grouping code.}
+#'   \item{Scientific}{Scientific name of the bird species.}
+#'   \item{English}{Common English name of the bird species.}
+#'   \item{Diet.Inv}{Percentage of invertebrates in the diet.}
+#'   \item{Diet.Vend}{Percentage of vertebrate endotherms consumed.}
+#'   \item{Diet.Vect}{Percentage of vertebrate ectotherms consumed.}
+#'   \item{Diet.Vfish}{Percentage of fish consumed.}
+#'   \item{Diet.Vunk}{Percentage of unknown/unclassified vertebrates in the diet.}
+#'   \item{Diet.Scav}{Percentage of scavenging activity.}
+#'   \item{Diet.Fruit}{Percentage of fruits consumed.}
+#'   \item{Diet.Nect}{Percentage of nectar/pollen consumed.}
+#'   \item{Diet.Seed}{Percentage of seeds/nuts consumed.}
+#'   \item{Diet.PlantO}{Percentage of other plant tissues consumed.}
+#'   \item{Diet.5Cat}{Simplified 5-category diet classification.}
+#'   \item{Diet.Source}{Source of the dietary information.}
+#'   \item{Diet.Certainty}{Certainty score for the diet data.}
+#'   \item{Diet.EnteredBy}{Identifier of the person who entered the diet data.}
+#'   \item{ForStrat.watbelowsurf}{Percentage of foraging time spent underwater.}
+#'   \item{ForStrat.wataroundsurf}{Percentage of foraging time spent at the water surface.}
+#'   \item{ForStrat.ground}{Percentage of foraging time spent on the ground.}
+#'   \item{ForStrat.understory}{Percentage of foraging time spent in the understory.}
+#'   \item{ForStrat.midhigh}{Percentage of foraging time spent in the mid-high canopy.}
+#'   \item{ForStrat.canopy}{Percentage of foraging time spent in the upper canopy.}
+#'   \item{ForStrat.aerial}{Percentage of foraging time spent in aerial foraging.}
+#'   \item{PelagicSpecialist}{Indicator of pelagic specialization.}
+#'   \item{ForStrat.Source}{Source of the foraging strategy data.}
+#'   \item{ForStrat.SpecLevel}{Specificity level of the foraging strategy record.}
+#'   \item{ForStrat.EnteredBy}{Identifier of the person who entered the foraging data.}
+#'   \item{Nocturnal}{Indicator of nocturnal activity.}
+#'   \item{BodyMass.Value}{Body mass value in grams.}
+#'   \item{BodyMass.Source}{Source of the body mass information.}
+#'   \item{BodyMass.SpecLevel}{Specificity level of the body mass record.}
+#'   \item{BodyMass.Comment}{Notes on body mass data.}
+#'   \item{Record.Comment}{General comments about the record.}
+#' }
+#' @source EltonTraits 1.0 database.
+"DBFunc_BirdFuncDat"

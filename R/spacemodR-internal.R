@@ -17,6 +17,7 @@ if (getRversion() >= "4.0.0")  utils::globalVariables(c(
 #' @import Rcpp
 #' @importFrom rstan sampling
 #' @importFrom rstantools rstan_config
+#' @importFrom rlang .data
 #'
 #' @references
 #' Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org

@@ -188,21 +188,21 @@ plot_species_habitat <- function(sf_merged, title_species = NULL) {
 
   # Generate Maps
   p1 <- ggplot2::ggplot(sf_merged) +
-    ggplot2::geom_sf(ggplot2::aes(fill = weight_global), color = NA) +
+    ggplot2::geom_sf(ggplot2::aes(fill = .data$weight_global), color = NA) +
     ggplot2::scale_fill_distiller(palette = "YlGn", direction = 1, na.value = "transparent", name = "Score") +
     ggplot2::theme_void() +
     ggplot2::labs(subtitle = "Global Weight") +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
   p2 <- ggplot2::ggplot(sf_merged) +
-    ggplot2::geom_sf(ggplot2::aes(fill = weight_foraging), color = NA) +
+    ggplot2::geom_sf(ggplot2::aes(fill = .data$weight_foraging), color = NA) +
     ggplot2::scale_fill_distiller(palette = "Blues", direction = 1, na.value = "transparent", name = "Score") +
     ggplot2::theme_void() +
     ggplot2::labs(subtitle = "Foraging Weight") +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
   p3 <- ggplot2::ggplot(sf_merged) +
-    ggplot2::geom_sf(ggplot2::aes(fill = resistance), color = NA) +
+    ggplot2::geom_sf(ggplot2::aes(fill = .data$resistance), color = NA) +
     ggplot2::scale_fill_distiller(palette = "Reds", direction = 1, na.value = "transparent", name = "Score") +
     ggplot2::theme_void() +
     ggplot2::labs(subtitle = "Resistance") +
