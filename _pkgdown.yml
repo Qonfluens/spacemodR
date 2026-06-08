@@ -32,3 +32,7 @@ navbar:
           href: articles/02_ex_SoilTarget.html
         - text: "Eco-SSL Risk Index Assessment"
           href: articles/Tutorial.html#eco-ssl-example-build-a-spacemodel-for-eco-ssl
+
+    news:
+      text: "News"
+      href: news/index.html
