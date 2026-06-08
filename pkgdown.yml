@@ -10,4 +10,7 @@ articles:
   articles/Omniscape_Connectivity: Omniscape_Connectivity.html
   articles/Simulation_Soil_Target: Simulation_Soil_Target.html
   Tutorial: Tutorial.html
-last_built: 2026-06-08T12:09Z
+last_built: 2026-06-08T12:30Z
+urls:
+  reference: https://qonfluens.github.io/spacemodR/reference
+  article: https://qonfluens.github.io/spacemodR/articles
