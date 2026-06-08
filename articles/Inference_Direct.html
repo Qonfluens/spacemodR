@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Calibration of Transfer Models • spacemodR</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Calibration of Transfer Models">
 </head>
@@ -35,6 +35,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-tutorials">
 <li><a class="dropdown-item" href="../articles/Tutorial.html">Getting Started</a></li>
     <li><a class="dropdown-item" href="../articles/Habitat.html">Habitat &amp; Connectivity</a></li>
+    <li><a class="dropdown-item" href="../articles/Food_Intake.html">Food Intake Rate</a></li>
   </ul>
 </li>
 <li class="active nav-item dropdown">
@@ -87,7 +88,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
 <span><span class="co">#&gt; Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE</span></span>
-<span><span class="co">#&gt; terra 1.9.1</span></span>
+<span><span class="co">#&gt; terra 1.9.27</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Attaching package: 'terra'</span></span>
 <span><span class="co">#&gt; The following object is masked from 'package:rstan':</span></span>
@@ -120,10 +121,10 @@ Regression model using Stan code.</p>
 <h3 id="simple-model">Simple model<a class="anchor" aria-label="anchor" href="#simple-model"></a>
 </h3>
 <p>The likelihood is defined as:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mi>i</mi></msub><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>μ</mi><mi>i</mi></msub><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
 y_i \sim \mathcal{N}(\mu_i, \sigma^2)
 </annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mi>i</mi></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>x</mi><mi>_</mi><mi>c</mi><mi>a</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>μ</mi><mi>i</mi></msub><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mo stretchy="false" form="prefix">[</mo><mi>x</mi><mi>_</mi><mi>c</mi><mi>a</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">
 \mu_i = \beta_0 + \beta_1 x_i + \beta_{\text{cat}}[x\_cat_i]
 </annotation></semantics></math> Where:</p>
 <ul>
@@ -135,7 +136,7 @@ is the global intercept.</li>
 is the slope coefficient for the continuous variable
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>x</mi><annotation encoding="application/x-tex">x</annotation></semantics></math>.</li>
 <li>
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mrow><mo stretchy="true" form="prefix">[</mo><mi>x</mi><mi>_</mi><mi>c</mi><mi>a</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">]</mo></mrow></mrow><annotation encoding="application/x-tex">\beta_{\text{cat}}[x\_cat_i]</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mo stretchy="false" form="prefix">[</mo><mi>x</mi><mi>_</mi><mi>c</mi><mi>a</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">]</mo></mrow><annotation encoding="application/x-tex">\beta_{\text{cat}}[x\_cat_i]</annotation></semantics></math>
 is the specific coefficient (effect) associated with the category to
 which observation
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
@@ -148,18 +149,18 @@ is the standard deviation of the error term (residuals).</li>
 regularize the inferences without overly constraining the data:</p>
 <ul>
 <li>Intercept:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\beta_0 \sim \mathcal{N}(0, 10)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>0</mn></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta_0 \sim \mathcal{N}(0, 10)</annotation></semantics></math>
 </li>
 <li>Continuous Slope:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\beta_1 \sim \mathcal{N}(0, 10)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta_1 \sim \mathcal{N}(0, 10)</annotation></semantics></math>
 </li>
 <li>Categorical Coefficients:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mo>∼</mo><mi>𝒩</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\beta_{\text{cat}} \sim \mathcal{N}(0, 10)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mtext mathvariant="normal">cat</mtext></msub><mo>∼</mo><mi>𝒩</mi><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>10</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\beta_{\text{cat}} \sim \mathcal{N}(0, 10)</annotation></semantics></math>
 for each of the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>K</mi><annotation encoding="application/x-tex">K</annotation></semantics></math>
 categories.</li>
 <li>Error Standard Deviation:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>∼</mo><mtext mathvariant="normal">Half-Cauchy</mtext><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>5</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\sigma \sim \text{Half-Cauchy}(0, 5)</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>∼</mo><mtext mathvariant="normal">Half-Cauchy</mtext><mo stretchy="false" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>5</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\sigma \sim \text{Half-Cauchy}(0, 5)</annotation></semantics></math>.
 Because
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>
 is constrained to be strictly positive
@@ -203,12 +204,18 @@ is conditionally independent given the parameters.</li>
 <h3 id="inference-for-vegetation-and-earthworm">Inference for Vegetation and Earthworm<a class="anchor" aria-label="anchor" href="#inference-for-vegetation-and-earthworm"></a>
 </h3>
 <p>For both species, we assumed a direct link:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>n</mi><mi>a</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mo>log</mo><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>n</mi><mi>a</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
 \log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right)
 </annotation></semantics></math></p>
-<div class="section level4">
-<h4 id="vegetation">Vegetation<a class="anchor" aria-label="anchor" href="#vegetation"></a>
-</h4>
+<p>In <span class="citation">Veltman et al. (<a href="#ref-veltman2007cadmium">2007</a>)</span> the regressions for
+empirical aboveground plant parts (predominantly leaves) and earthworm
+concentrations with total soil concentrations is such as:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>p</mi><mi>l</mi><mi>a</mi><mi>n</mi><mi>t</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>0.42</mn><mo>+</mo><mn>0.59</mn><mo>×</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\log_{10}(C_{plant}) = -0.42 + 0.59 \times \log_{10}(C_{soil}) 
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>e</mi><mi>a</mi><mi>r</mi><mi>t</mi><mi>h</mi><mi>w</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>1.09</mn><mo>+</mo><mn>0.68</mn><mo>×</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\log_{10}(C_{earthworm}) = 1.09 +  0.68 \times \log_{10}(C_{soil})
+</annotation></semantics></math> ### Vegetation</p>
 <p><img src="Inference_Direct_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="960"></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stan_data</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -234,9 +241,13 @@ is conditionally independent given the parameters.</li>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    var_id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    x_sim <span class="op">=</span> <span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">df_veltman</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  x_sim <span class="op">=</span> <span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span>,</span>
+<span>  y_sim <span class="op">=</span> <span class="op">-</span><span class="fl">0.42</span> <span class="op">+</span> <span class="fl">0.59</span> <span class="op">*</span><span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="Inference_Direct_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="960"></p>
-</div>
 <div class="section level4">
 <h4 id="earthworm">Earthworm<a class="anchor" aria-label="anchor" href="#earthworm"></a>
 </h4>
@@ -266,12 +277,17 @@ is conditionally independent given the parameters.</li>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    var_id <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    x_sim <span class="op">=</span> <span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="va">df_veltman</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  x_sim <span class="op">=</span> <span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span>,</span>
+<span>  y_sim <span class="op">=</span> <span class="fl">1.09</span> <span class="op">+</span> <span class="fl">0.68</span> <span class="op">*</span><span class="va">stan_data</span><span class="op">$</span><span class="va">x_sim</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="Inference_Direct_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="inference-for-micro-mammals">Inference for Micro-Mammals<a class="anchor" aria-label="anchor" href="#inference-for-micro-mammals"></a>
+<h3 id="soil---micro-mammals">Soil -&gt; Micro-Mammals<a class="anchor" aria-label="anchor" href="#soil---micro-mammals"></a>
 </h3>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">sf_micromammals</span><span class="op">)</span></span>
@@ -304,7 +320,7 @@ is conditionally independent given the parameters.</li>
 <h4 id="equation-parameters">Equation parameters<a class="anchor" aria-label="anchor" href="#equation-parameters"></a>
 </h4>
 <p>The equation of the direct model is given by:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mo>log</mo><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>n</mi><mi>a</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mo>log</mo><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>b</mi><mi>e</mi><mi>t</mi><msub><mi>a</mi><mrow><mi>c</mi><mi>a</mi><mi>t</mi></mrow></msub><msub><mo>log</mo><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>i</mi><mi>n</mi><mi>t</mi><mi>e</mi><mi>r</mi><mi>n</mi><mi>a</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><msub><mi>β</mi><mn>0</mn></msub><mo>+</mo><msub><mi>β</mi><mn>1</mn></msub><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>b</mi><mi>e</mi><mi>t</mi><msub><mi>a</mi><mrow><mi>c</mi><mi>a</mi><mi>t</mi></mrow></msub><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
 \log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right) + beta_{cat} \log_{10}\left( C_{soil} \right) 
 </annotation></semantics></math></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -335,6 +351,11 @@ is conditionally independent given the parameters.</li>
 </h4>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">arr_sim</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">fit_direct</span>, <span class="st">"y_sim"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
+<p>In the study of <span class="citation">Veltman et al. (<a href="#ref-veltman2007cadmium">2007</a>)</span>, an equation is given
+by</p>
+<p><span class="math display">$$
+C_{}0.68·log(Csoil)1.09
+$$</span></p>
 <p><img src="Inference_Direct_files/figure-html/pltSim_direct-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level4">
@@ -521,6 +542,33 @@ the landscape.</p>
 </h2>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"ocsge_species_dict"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="trophic-transfer">Trophic Transfer<a class="anchor" aria-label="anchor" href="#trophic-transfer"></a>
+</h2>
+<div class="section level3">
+<h3 id="plant---vole-earthworm---shrew">Plant -&gt; Vole &amp; Earthworm -&gt; Shrew<a class="anchor" aria-label="anchor" href="#plant---vole-earthworm---shrew"></a>
+</h3>
+<p>In <span class="citation">Veltman et al. (<a href="#ref-veltman2007cadmium">2007</a>)</span> the regressions for
+empirical aboveground plant parts (predominantly leaves) and earthworm
+concentrations with total soil concentrations is such as:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>v</mi><mi>o</mi><mi>l</mi><mi>e</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>0.37</mn><mo>+</mo><mn>1.16</mn><mo>×</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>p</mi><mi>l</mi><mi>a</mi><mi>n</mi><mi>t</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\log_{10}(C_{vole}) = -0.37 + 1.16 \times \log_{10}(C_{plant}) 
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>h</mi><mi>r</mi><mi>e</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>0.45</mn><mo>+</mo><mn>0.79</mn><mo>×</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>e</mi><mi>a</mi><mi>r</mi><mi>t</mi><mi>h</mi><mi>w</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\log_{10}(C_{shrew}) = -0.45 + 0.79 \times \log_{10}(C_{earthworm}) 
+</annotation></semantics></math></p>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-veltman2007cadmium" class="csl-entry">
+Veltman, Karin, Mark AJ Huijbregts, Timo Hamers, Sander Wijnhoven, and A
+Jan Hendriks. 2007. <span>“Cadmium Accumulation in Herbivorous and
+Carnivorous Small Mammals: Meta-Analysis of Field Data and Validation of
+the Bioaccumulation Model Optimal Modeling for Ecotoxicological
+Applications.”</span> <em>Environmental Toxicology and Chemistry</em> 26
+(7): 1488–96.
+</div>
+</div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

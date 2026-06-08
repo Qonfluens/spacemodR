@@ -1,13 +1,16 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   articles/Example_Berisp_full: Example_Berisp_full.html
+  articles/Food_Intake: Food_Intake.html
   articles/Habitat: Habitat.html
   articles/Inference_Direct: Inference_Direct.html
+  articles/Inference_Trophic: Inference_Trophic.html
   articles/Omniscape_Connectivity: Omniscape_Connectivity.html
+  articles/Simulation_Soil_Target: Simulation_Soil_Target.html
   Tutorial: Tutorial.html
-last_built: 2026-03-18T21:31Z
+last_built: 2026-06-08T08:29Z
 urls:
   reference: https://qonfluens.github.io/spacemodR/reference
   article: https://qonfluens.github.io/spacemodR/articles

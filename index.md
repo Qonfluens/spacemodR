@@ -36,6 +36,7 @@ branch. To install the latest version:
 5.  Install the package in R using the following command:
 
 ``` r
+
 # Replace the path with the location of your downloaded file
 install.packages("path/to/spacemodR_0.1.0.tar.gz", repos = NULL, type = "source")
 ```

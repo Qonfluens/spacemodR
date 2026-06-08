@@ -19,7 +19,7 @@
     #> 
     #>     intersect, setdiff, setequal, union
     #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
-    #> terra 1.9.1
+    #> terra 1.9.27
     #> 
     #> Attaching package: 'terra'
     #> The following object is masked from 'package:rstan':
@@ -53,46 +53,51 @@ Regression model using Stan code.
 
 The likelihood is defined as:
 
-$$y_{i} \sim \mathcal{N}\left( \mu_{i},\sigma^{2} \right)$$
+``` math
+y_i \sim \mathcal{N}(\mu_i, \sigma^2)
+```
 
-$$\mu_{i} = \beta_{0} + \beta_{1}x_{i} + \beta_{\text{cat}}\left\lbrack x\_ cat_{i} \right\rbrack$$
+``` math
+\mu_i = \beta_0 + \beta_1 x_i + \beta_{\text{cat}}[x\_cat_i]
+```
 Where:
 
-- $\beta_{0}$ is the global intercept.
-- $\beta_{1}$ is the slope coefficient for the continuous variable $x$.
-- $\beta_{\text{cat}}\left\lbrack x\_ cat_{i} \right\rbrack$ is the
-  specific coefficient (effect) associated with the category to which
-  observation $i$ belongs.
-- $\sigma$ is the standard deviation of the error term (residuals).
+- $`\beta_0`$ is the global intercept.
+- $`\beta_1`$ is the slope coefficient for the continuous variable
+  $`x`$.
+- $`\beta_{\text{cat}}[x\_cat_i]`$ is the specific coefficient (effect)
+  associated with the category to which observation $`i`$ belongs.
+- $`\sigma`$ is the standard deviation of the error term (residuals).
 
 The model specifies weakly informative priors for its parameters to
 regularize the inferences without overly constraining the data:
 
-- Intercept: $\beta_{0} \sim \mathcal{N}(0,10)$
-- Continuous Slope: $\beta_{1} \sim \mathcal{N}(0,10)$
-- Categorical Coefficients: $\beta_{\text{cat}} \sim \mathcal{N}(0,10)$
-  for each of the $K$ categories.
-- Error Standard Deviation: $\sigma \sim \text{Half-Cauchy}(0,5)$.
-  Because $\sigma$ is constrained to be strictly positive
+- Intercept: $`\beta_0 \sim \mathcal{N}(0, 10)`$
+- Continuous Slope: $`\beta_1 \sim \mathcal{N}(0, 10)`$
+- Categorical Coefficients:
+  $`\beta_{\text{cat}} \sim \mathcal{N}(0, 10)`$ for each of the $`K`$
+  categories.
+- Error Standard Deviation: $`\sigma \sim \text{Half-Cauchy}(0, 5)`$.
+  Because $`\sigma`$ is constrained to be strictly positive
   (`real<lower=0> sigma;`) , the Cauchy prior automatically becomes a
   truncated Half-Cauchy distribution.
 
 Based on the structure of the likelihood function, this model makes the
 following classical linear regression assumptions:
 
-- Linearity: The relationship between the continuous predictor $x$ and
-  the mean of the response $y$ is strictly linear.
+- Linearity: The relationship between the continuous predictor $`x`$ and
+  the mean of the response $`y`$ is strictly linear.
 - Additivity (No Interactions): The effect of the continuous variable
-  ($x$) and the categorical variable ($x_{cat}$) are purely additive.
-  The slopes are assumed to be identical across all categories; only the
-  intercepts vary (parallel lines model).
+  ($`x`$) and the categorical variable ($`x_{cat}`$) are purely
+  additive. The slopes are assumed to be identical across all
+  categories; only the intercepts vary (parallel lines model).
 - Normality of Errors: The residuals (the differences between observed
   and predicted values) are normally distributed.
 - Homoscedasticity (Constant Variance): The standard deviation of the
-  error term, $\sigma$, is assumed to be constant across all values of
-  $x$ and across all $K$ categories.
-- Independence: Each observation $i$ is conditionally independent given
-  the parameters.
+  error term, $`\sigma`$, is assumed to be constant across all values of
+  $`x`$ and across all $`K`$ categories.
+- Independence: Each observation $`i`$ is conditionally independent
+  given the parameters.
 
 ## Direct fix-point model of Soil-Organism
 
@@ -100,13 +105,27 @@ following classical linear regression assumptions:
 
 For both species, we assumed a direct link:
 
-$$\log_{10}\left( C_{internal} \right) = \beta_{0} + \beta_{1}\log_{10}\left( C_{soil} \right)$$
+``` math
+\log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right)
+```
 
-#### Vegetation
+In Veltman et al. ([2007](#ref-veltman2007cadmium)) the regressions for
+empirical aboveground plant parts (predominantly leaves) and earthworm
+concentrations with total soil concentrations is such as:
+
+``` math
+\log_{10}(C_{plant}) = -0.42 + 0.59 \times \log_{10}(C_{soil}) 
+```
+
+``` math
+\log_{10}(C_{earthworm}) = 1.09 +  0.68 \times \log_{10}(C_{soil})
+```
+\### Vegetation
 
 ![](Inference_Direct_files/figure-html/unnamed-chunk-3-1.png)
 
 ``` r
+
 stan_data = list(
   N = nrow(bappet_cd),
   x = bappet_cd$log10_media_mean,
@@ -117,6 +136,7 @@ stan_data = list(
 ```
 
 ``` r
+
 # fit_simple_veg_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_simple_veg_cd, file="raw_data/fit_simple_veg_cd.rds")
 fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
@@ -125,10 +145,12 @@ fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
 ![](Inference_Direct_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
+
 arr_sim <- rstan::extract(fit_simple_veg_cd, "y_sim")[[1]]
 ```
 
 ``` r
+
 quants <- c(0.025, 0.5, 0.975)
 q_mat <- apply(arr_sim, 2, quantile, probs = quants)
 df_sim <- q_mat %>%
@@ -138,6 +160,11 @@ df_sim <- q_mat %>%
     var_id = 1:n(),
     x_sim = stan_data$x_sim
   )
+
+df_veltman = data.frame(
+  x_sim = stan_data$x_sim,
+  y_sim = -0.42 + 0.59 *stan_data$x_sim
+)
 ```
 
 ![](Inference_Direct_files/figure-html/unnamed-chunk-8-1.png)
@@ -145,6 +172,7 @@ df_sim <- q_mat %>%
 #### Earthworm
 
 ``` r
+
 data("earthworm_cd")
 
 stan_data = list(
@@ -157,6 +185,7 @@ stan_data = list(
 ```
 
 ``` r
+
 # fit_simple_worm_cd <- calibrate_simple(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_simple_worm_cd, file="raw_data/fit_simple_worm_cd.rds")
 fit_simple_worm_cd <- load_safe("raw_data/fit_simple_worm_cd.rds")
@@ -165,10 +194,12 @@ fit_simple_worm_cd <- load_safe("raw_data/fit_simple_worm_cd.rds")
 ![](Inference_Direct_files/figure-html/unnamed-chunk-11-1.png)
 
 ``` r
+
 arr_sim <- rstan::extract(fit_simple_worm_cd, "y_sim")[[1]]
 ```
 
 ``` r
+
 quants <- c(0.025, 0.5, 0.975)
 q_mat <- apply(arr_sim, 2, quantile, probs = quants)
 df_sim <- q_mat %>%
@@ -178,13 +209,19 @@ df_sim <- q_mat %>%
     var_id = 1:n(),
     x_sim = stan_data$x_sim
   )
+
+df_veltman = data.frame(
+  x_sim = stan_data$x_sim,
+  y_sim = 1.09 + 0.68 *stan_data$x_sim
+)
 ```
 
 ![](Inference_Direct_files/figure-html/unnamed-chunk-14-1.png)
 
-### Inference for Micro-Mammals
+### Soil -\> Micro-Mammals
 
 ``` r
+
 data(sf_micromammals)
 # ADD LOG_10 COLUMNS
 sf_train <- sf_micromammals |>
@@ -200,6 +237,7 @@ sf_train = dplyr::left_join(sf_train, lookup_table, by='group')
 ```
 
 ``` r
+
 stan_data = list(
   N = nrow(sf_train),
   K = 2,
@@ -212,6 +250,7 @@ stan_data = list(
 ```
 
 ``` r
+
 # fit_direct <- calibrate_direct(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_direct, file="raw_data/fit_direct_cd.rds")
 fit_direct <- load_safe("raw_data/fit_direct_cd.rds")
@@ -221,9 +260,12 @@ fit_direct <- load_safe("raw_data/fit_direct_cd.rds")
 
 The equation of the direct model is given by:
 
-$$\log_{10}\left( C_{internal} \right) = \beta_{0} + \beta_{1}\log_{10}\left( C_{soil} \right) + beta_{cat}\log_{10}\left( C_{soil} \right)$$
+``` math
+\log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right) + beta_{cat} \log_{10}\left( C_{soil} \right) 
+```
 
 ``` r
+
 fit_pars <- rstan::extract(fit_direct, c("beta0", "beta1", "beta_cat"))
 
 df_pars <- dplyr::bind_rows(list(
@@ -251,8 +293,14 @@ ggplot(data=df_pars) +
 #### Observation vs Prediction
 
 ``` r
+
 arr_sim <- rstan::extract(fit_direct, "y_sim")[[1]]
 ```
+
+In the study of Veltman et al. ([2007](#ref-veltman2007cadmium)), an
+equation is given by
+
+\$\$ C\_{}0.68·log(Csoil)1.09 \$\$
 
 ![](Inference_Direct_files/figure-html/pltSim_direct-1.png)
 
@@ -263,14 +311,15 @@ dat\*a measured using equation given in Veltman et al. 2007 in
 Environmental Toxicology and Chemistry:
 
 - voles:
-  $\frac{1}{0.8}\left( 0.054 \times \text{Cd}_{\text{liver}} + 0.013 \times \text{Cd}_{\text{kidney}} \right)$
+  $`\frac{1}{0.8} \left( 0.054 \times \text{Cd}_\text{liver} + 0.013 \times \text{Cd}_\text{kidney} \right)`$
 - shrews:
-  $\frac{1}{0.8}\left( 0.07 \times \text{Cd}_{\text{liver}} + 0.019 \times \text{Cd}_{\text{kidney}} \right)$
+  $`\frac{1}{0.8} \left( 0.07 \times \text{Cd}_\text{liver} + 0.019 \times\text{Cd}_\text{kidney} \right)`$
 
 Then, the Cd concentration in body, fresh weight, µg.g-1, is calculated
 from data measured using the Dry/fresh ratio: \$Wfresh = Wdry \$
 
 ``` r
+
 # ADD GROUP HERBIVORE vs INSECTIVORE
 lookup_table = data.frame(
     Species = c('APSY', 'CRRU', 'SOMI'),
@@ -289,6 +338,7 @@ sf_test = dplyr::left_join(sf_metaleurop_2025, lookup_table, by='Species') |>
 Collect corresponding soil value
 
 ``` r
+
 sf_test <- st_transform(sf_test, crs(ground_cd))
 
 centroids <- st_centroid(sf_test)
@@ -315,6 +365,7 @@ buffer around the traplines. Let 100m first.
 ### Collect Buffer mean Value
 
 ``` r
+
 sf_train_b <- st_transform(sf_metaleurop_2010, crs(ground_cd))
 sf_train_b100 <- st_buffer(sf_train_b, dist = 100)
 
@@ -334,6 +385,7 @@ sf_train_b100$log10_cd_S_meanb100 <- val_mean_b100[, 2]
 ### Compute inference
 
 ``` r
+
 d00 = sf_train_b100 %>%
   dplyr::mutate(
     log10_cd_S = log10(cd_S),
@@ -357,12 +409,14 @@ stan_data = list(
 ```
 
 ``` r
+
 # fit_direct_b100 <- calibrate_direct(stan_data, chains=4, warmup=500, iter=1000)
 # saveRDS(fit_direct_b100, file="raw_data/fit_direct_b100_cd.rds")
 fit_direct_b100 <- load_safe("raw_data/fit_direct_b100_cd.rds")
 ```
 
 ``` r
+
 arr_sim_b100 <- rstan::extract(fit_direct_b100, "y_sim")[[1]]
 ```
 
@@ -371,6 +425,7 @@ arr_sim_b100 <- rstan::extract(fit_direct_b100, "y_sim")[[1]]
 ### Compare prediction with new data
 
 ``` r
+
 sf_full <- data.frame(
   food =           c(sf_train$food, sf_test$food),
   set =            c(rep("train", nrow(sf_train)), rep("test", nrow(sf_test))),
@@ -405,6 +460,7 @@ landscape.
 Let first recapture the value of median:
 
 ``` r
+
 fit_pars <- rstan::extract(fit_direct_b100, c("beta0", "beta1", "beta_cat"))
 
 df_pars <- dplyr::bind_rows(list(
@@ -422,6 +478,7 @@ ls_q50 <- setNames(as.list(dp_q50$median_value), dp_q50$par)
 ```
 
 ``` r
+
 names_hab = c("soil", "herbivore", "insectivore")
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)
@@ -451,5 +508,28 @@ spcmdl_direct_risk <- transfer(
 ## Direct kernel-buffer model of Soil-Organism
 
 ``` r
+
 data("ocsge_species_dict")
 ```
+
+## Trophic Transfer
+
+### Plant -\> Vole & Earthworm -\> Shrew
+
+In Veltman et al. ([2007](#ref-veltman2007cadmium)) the regressions for
+empirical aboveground plant parts (predominantly leaves) and earthworm
+concentrations with total soil concentrations is such as:
+
+``` math
+\log_{10}(C_{vole}) = -0.37 + 1.16 \times \log_{10}(C_{plant}) 
+```
+
+``` math
+\log_{10}(C_{shrew}) = -0.45 + 0.79 \times \log_{10}(C_{earthworm}) 
+```
+
+Veltman, Karin, Mark AJ Huijbregts, Timo Hamers, Sander Wijnhoven, and A
+Jan Hendriks. 2007. “Cadmium Accumulation in Herbivorous and Carnivorous
+Small Mammals: Meta-Analysis of Field Data and Validation of the
+Bioaccumulation Model Optimal Modeling for Ecotoxicological
+Applications.” *Environmental Toxicology and Chemistry* 26 (7): 1488–96.

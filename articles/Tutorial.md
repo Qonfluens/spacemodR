@@ -6,6 +6,7 @@ You can install from CRAN or from the [github
 repository](https://github.com/Qonfluens/spacemodR)
 
 ``` r
+
 library(spacemodR)
 ```
 
@@ -30,6 +31,7 @@ or process geospatial data.
   The function uses only the first geometry (polygon) in the object.
 
 ``` r
+
 data("roi_metaleurop")
 ## Or load a ROI via geojson
 # roi_metaleurop <- sf::st_read("data/metaleurop_roi.geojson")
@@ -59,6 +61,7 @@ projection (EPSG:2154), which is the standard coordinate system for
 French geographic data.
 
 ``` r
+
 ## This function is long to compute so we load the data set
 # sf_site <- get_ocsge_data(roi_metaleurop)
 data(ocsge_metaleurop)
@@ -68,6 +71,7 @@ You can then plot the object using for instance the `ggplot2` library
 which is not included in `spacemodR`.
 
 ``` r
+
 library(ggplot2)
 ggplot() +
   theme_minimal() +
@@ -103,6 +107,7 @@ There are three possible scenarios:
 #### Setting `habitat` from shapefiles (vector maps)
 
 ``` r
+
 layer_CS2111 = ocsge_metaleurop[ocsge_metaleurop$code_cs == "CS2.1.1.1", ]
 layer_CS221 = ocsge_metaleurop[ocsge_metaleurop$code_cs == "CS2.2.1", ]
 layer_CS1121 = ocsge_metaleurop[ocsge_metaleurop$code_cs == "CS1.1.2.1", ]
@@ -126,6 +131,7 @@ This function is useful for initializing spatial analyses where
 distinguishing between habitat and non-habitat zones is essential.
 
 ``` r
+
 habitat_10 = habitat(layer_CS2111)
 plot(habitat_10)
 ```
@@ -133,6 +139,7 @@ plot(habitat_10)
 ![](Tutorial_files/figure-html/build_plot_habitat_10-1.png)
 
 ``` r
+
 habitat_11 = habitat(layer_CS2111, weight=0.2)
 head(habitat_11)
 #> Simple feature collection with 1 feature and 2 fields
@@ -145,6 +152,7 @@ head(habitat_11)
 ```
 
 ``` r
+
 habitat_12 = habitat(
   layer_CS2111,
   habitat=sample(c(TRUE,FALSE), nrow(layer_CS2111), replace=TRUE),
@@ -173,6 +181,7 @@ while preserving the habitat class. This function is particularly useful
 for dynamically expanding habitat zones in a spatial analysis.
 
 ``` r
+
 habitat_20 = habitat() |>
   add_habitat(layer_CS2111)
 class(habitat_20)
@@ -180,6 +189,7 @@ class(habitat_20)
 ```
 
 ``` r
+
 habitat_21 = habitat() |>
   add_habitat(layer_CS2111, weight=0.2)
 head(habitat_21)
@@ -193,6 +203,7 @@ head(habitat_21)
 ```
 
 ``` r
+
 habitat_22 = habitat() |>
   add_habitat(layer_CS2111, weight=0.2) |>
   add_habitat(layer_CS1121, weight=0.4) |>
@@ -211,6 +222,7 @@ head(habitat_22)
 ```
 
 ``` r
+
 plot(habitat_22)
 ```
 
@@ -222,6 +234,7 @@ Here, we download a raster layer with the interpolation of the ground
 concentration of cadmium.
 
 ``` r
+
 # the raster tif file is internal to the spacemodR package
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 terra::plot(ground_cd)
@@ -233,6 +246,7 @@ Then, it’s the same algorithm to specified habitat and then build
 rasters.
 
 ``` r
+
 # prepare a list of OSGE code to make life easier
 OCSGE_codes <- list(
   forest = c("CS2.1.1.1", "CS2.1.1.2", "CS2.1.1.3", "CS2.1.3"),
@@ -245,6 +259,7 @@ OCSGE_codes <- list(
 ```
 
 ``` r
+
 layer_soil_natural = ocsge_metaleurop[ocsge_metaleurop$code_cs %in% OCSGE_codes$soil, ]
 layer_soil_artificial = ocsge_metaleurop[ocsge_metaleurop$code_cs %in% OCSGE_codes$sealed, ]
 
@@ -273,6 +288,7 @@ are mathematically excluded, making the final raster perfectly primed
 for downstream connectivity and dispersal modeling.
 
 ``` r
+
 rast_sol <- habitat_raster(ground_cd, habitat_sol)
 terra::plot(rast_sol)
 ```
@@ -280,6 +296,7 @@ terra::plot(rast_sol)
 ![](Tutorial_files/figure-html/unnamed-chunk-2-1.png)
 
 ``` r
+
 rast_10 <- habitat_raster(ground_cd, habitat_10)
 terra::plot(rast_10)
 ```
@@ -288,6 +305,7 @@ terra::plot(rast_10)
 
 ``` r
 
+
 rast_12 <- habitat_raster(ground_cd, habitat_12)
 terra::plot(rast_12)
 ```
@@ -295,6 +313,7 @@ terra::plot(rast_12)
 ![](Tutorial_files/figure-html/build_raster_habitat-2.png)
 
 ``` r
+
 
 rast_22 <- habitat_raster(ground_cd, habitat_22)
 terra::plot(rast_22)
@@ -305,6 +324,7 @@ terra::plot(rast_22)
 #### Join all rasters with a single stack
 
 ``` r
+
 stack_habitat <- raster_stack(
   raster_list = list(rast_sol, rast_10, rast_12, rast_22),
   names = c("sol", "sp10", "sp12", "sp22")
@@ -320,6 +340,7 @@ terra::plot(stack_habitat)
 You can use a data.frame like this:
 
 ``` r
+
 df_raw <- data.frame(
   src = c("sol", "sol", "sp10", "sp12"),
   target = c("sp10", "sp12", "sp12", "sp22"),
@@ -332,6 +353,7 @@ attr(trophic_from_df, "level")
 ```
 
 ``` r
+
 trophic_df <- trophic() |>
   add_link("sol", "sp10", 2) |>
   add_link("sol", "sp12", 3) |>
@@ -346,12 +368,14 @@ attr(trophic_df, "level")
 The trophic web can then be computed:
 
 ``` r
+
 plot(trophic_df, shift=FALSE)
 ```
 
 ![](Tutorial_files/figure-html/plot_trophic_web_df_noshift-1.png)
 
 ``` r
+
 plot(trophic_df, shift=TRUE)
 ```
 
@@ -365,10 +389,12 @@ trophic_graph: - the `raster_stack` is a stack of rasters using the
 directed acyclic graph (DAG) to which we can add `weight`.
 
 ``` r
+
 spcmdl_habitat <- spacemodel(stack_habitat, trophic_df)
 ```
 
 ``` r
+
 color_habitat <- colorRampPalette(c("white", "#169E19"))(255)
 terra::plot(spcmdl_habitat, col=color_habitat)
 ```
@@ -381,12 +407,14 @@ Dispersal is independent of trophic link for now since we did not yet
 implemented a dispersal dependent of the potential trophic links.
 
 ``` r
+
 k_sp10 <- compute_kernel(radius=10, GSD=25, size_std=1.5)
 k_sp12 <- compute_kernel(radius=100, GSD=25, size_std=1.5)
 k_sp22 <- compute_kernel(radius=200, GSD=25, size_std=1.5)
 ```
 
 ``` r
+
 spcmdl_dispersal <- spcmdl_habitat |>
   dispersal("sp10",  method="convolution",  method_option=list(kernel=k_sp10)) |>
   dispersal("sp12",  method="convolution",  method_option=list(kernel=k_sp12)) |>
@@ -396,6 +424,7 @@ spcmdl_dispersal <- spcmdl_habitat |>
 Plot the dispersal object:
 
 ``` r
+
 color_dispersal <- colorRampPalette(c("white", "#166C9E"))(255)
 terra::plot(spcmdl_dispersal, col=color_dispersal)
 ```
@@ -405,13 +434,15 @@ terra::plot(spcmdl_dispersal, col=color_dispersal)
 ## Spacemodel for Exposure
 
 ``` r
+
 spcmdl_dispersal[["sol"]][] <- ground_cd
-terra::plot(spcmdl_dispersal[["sol"]])
+terra::plot(spcmdl_dispersal["sol"])
 ```
 
 ![](Tutorial_files/figure-html/exposure_set_ground_cd-1.png)
 
 ``` r
+
 kernels <- list(
   sol  = NA,
   sp10 = k_sp10,
@@ -421,6 +452,7 @@ kernels <- list(
 ```
 
 ``` r
+
 attr(spcmdl_dispersal, "trophic_tbl")
 #>             link weight
 #> sp10   sol, sp10      2
@@ -430,6 +462,7 @@ attr(spcmdl_dispersal, "trophic_tbl")
 ```
 
 ``` r
+
 test_intakes <- intake(spcmdl_dispersal,
   # General rule: sp12 uptake with factor 3
   "sp12" = 3,  
@@ -445,6 +478,7 @@ spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_intakes)
 ```
 
 ``` r
+
 color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)
 terra::plot(spcmdl_transfer, col=color_transfer)
 ```
@@ -456,7 +490,7 @@ terra::plot(spcmdl_transfer, col=color_transfer)
 The first step is to build a raster stack with the ground as raster.
 
 ``` r
-ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+
 names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)
@@ -470,6 +504,7 @@ The second step is to build the trophic web, all species connecting
 directly to the soil.
 
 ``` r
+
 trophic_df <- trophic() |>
   add_link("soil", "plant") |>
   add_link("soil", "invert") |>
@@ -483,6 +518,7 @@ attr(trophic_df, "level")
 ```
 
 ``` r
+
 plot(trophic_df)
 ```
 
@@ -491,6 +527,7 @@ plot(trophic_df)
 The third step is to merge the raster stack with the trophic data.frame.
 
 ``` r
+
 spcmdl_ecossl_h <- spacemodel(stack_habitat, trophic_df)
 
 terra::plot(spcmdl_ecossl_h)
@@ -501,6 +538,7 @@ terra::plot(spcmdl_ecossl_h)
 ### Build the Risk indice
 
 ``` r
+
 # no dispersal for eco_ssl
 ecossl_kernels <- list(
   soil  = NA, plant = NA, invert = NA,
@@ -508,6 +546,7 @@ ecossl_kernels <- list(
 ```
 
 ``` r
+
 ecossl_intakes <- intake(spcmdl_ecossl_h,
   "soil -> plant"       = ~ 10^x/32,  
   "soil -> invert"      = ~ 10^x/140,
@@ -528,6 +567,7 @@ spcmdl_ecossl_risk <- transfer(
 A plot of layer with risk threshold color scale.
 
 ``` r
+
 # Risk colors
 breaks_risk <- c(0, 0.1, 0.5, 1, 5, 10, Inf)
 cols_risk <- c(
@@ -550,6 +590,7 @@ terra::plot(spcmdl_ecossl_risk_sub,
 ![](Tutorial_files/figure-html/eco_ssl_risk_plot-1.png)
 
 ``` r
+
 poly <- roi_metaleurop
 poly_vect <- terra::project(terra::vect(poly), terra::crs(spcmdl_ecossl_risk_sub))
 
@@ -568,6 +609,7 @@ For this very simple example, a simple check can be done, because
 Eco-SSL is a computing of a risk based on the amount in soil:
 
 ``` r
+
 check_ecossl_risk = list(
   "soil -> plant"       = 10^ground_cd/32,  
   "soil -> invert"      = 10^ground_cd/140,

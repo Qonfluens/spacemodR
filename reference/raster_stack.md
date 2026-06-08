@@ -36,17 +36,17 @@ with an error.
 ``` r
 # Example with terra rasters
 library(terra)
-#> terra 1.9.1
+#> terra 1.9.27
 r1 <- rast(nrows=10, ncols=10, vals=1:100)
 r2 <- rast(nrows=10, ncols=10, vals=101:200)
 raster_stack(list(r1, r2), c("layer1", "layer2"))
-#> class       : SpatRaster 
+#> class       : SpatRaster
 #> size        : 10, 10, 2  (nrow, ncol, nlyr)
 #> resolution  : 36, 18  (x, y)
 #> extent      : -180, 180, -90, 90  (xmin, xmax, ymin, ymax)
-#> coord. ref. : lon/lat WGS 84 (CRS84) (OGC:CRS84) 
+#> coord. ref. : lon/lat WGS 84 (CRS84) (OGC:CRS84)
 #> source(s)   : memory
-#> names       : layer1, layer2 
-#> min values  :      1,    101 
-#> max values  :    100,    200 
+#> names       : layer1, layer2
+#> min values  :      1,    101
+#> max values  :    100,    200
 ```

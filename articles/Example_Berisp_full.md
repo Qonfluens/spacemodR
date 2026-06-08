@@ -1,6 +1,7 @@
 # Berisp-like: a trophic model of contamination
 
 ``` r
+
 library(spacemodR)
 library(rstan)
 library(dplyr)
@@ -12,8 +13,9 @@ library(terra)
 ### Habitat
 
 ``` r
+
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-names_hab = c("soil", "plant", "earthwom", "carabid", "mamHerb", "mamInsect")
+names_hab = c("soil", "plant", "earthworm", "carabid", "mamHerb", "mamInsect")
 list_habitat <- lapply(names_hab, function(i) ground_cd)
 stack_habitat <- raster_stack(list_habitat, names_hab)
 
@@ -25,26 +27,35 @@ terra::plot(stack_habitat)
 ### Trophic web
 
 ``` r
+
 trophic_df <- trophic() |>
   add_link("soil", "plant", 1) |>
-  add_link("soil", "earthwom", 1) |>
+  add_link("soil", "earthworm", 1) |>
   add_link("soil", "carabid", 1) |>
   # mamHerb
   add_link("soil", "mamHerb", 2/100) |>
   add_link("plant", "mamHerb", 90/100) |>
-  add_link("earthwom", "mamHerb", 4/100) |>
+  add_link("earthworm", "mamHerb", 4/100) |>
   add_link("carabid", "mamHerb", 4/100) |>
   # mamInsect
   add_link("soil", "mamInsect", 2/100) |>
-  add_link("earthwom", "mamInsect", 49/100) |>
+  add_link("earthworm", "mamInsect", 49/100) |>
   add_link("carabid", "mamInsect", 49/100)
 ```
 
 ``` r
+
 plot(trophic_df)
 ```
 
 ![](Example_Berisp_full_files/figure-html/unnamed-chunk-4-1.png)
+
+### create the spacemodel
+
+``` r
+
+spcmdl_trophic_fixed <- spacemodel(stack_habitat, trophic_df)
+```
 
 ## Contaminantion by Cadmium
 
@@ -54,23 +65,124 @@ plot(trophic_df)
 
 For Cadmium, the equation is given by (Ma et al., 2004):
 
-$$\log C_{earthworm} = a + b \times \log C_{soil} + c \times \log OM + d \times pH$$
+``` math
+\log C_{earthworm} = a + b \times \log C_{soil} + c \times \log OM + d \times pH
+```
 
 ### Carabid
 
 ``` r
+
 inter_carab = -1
 slope_carab = 0.6
 ```
 
-### Transfer of food
+### Transfer of food and contaminant
 
-$$C = \frac{1}{b} \times \frac{food \times C_{food} \times c_{up}}{C_{out}}\left( 1 - \exp^{- c_{out} \times a} \right)$$
+``` math
+C_{consumer} = \frac{b_{resource}}{b_{consumer}} \times  C_{resource} \times \frac{k_{up}}{k_{out}} \left( 1 - \exp^{- c_{out} \times a} \right)
+```
 where:
 
-- $b$: average individual biomass $\lbrack g\rbrack$,
-- $c_{up}$: assimilation efficiency of food $\lbrack n.d.\rbrack$,
-- $c_{out}$: excretion rate of food,
-  $\left\lbrack day^{- 1} \right\rbrack$
-- $a$: average age $\lbrack day\rbrack$,
-- $food$: amount of food ingested $\lbrack g\rbrack$.
+- $`b_{resource}`$: average individual/item biomass of resource $`[g]`$,
+- $`b_{consumer}`$: average individual/item biomass of consumer $`[g]`$,
+- $`C_{resource}`$: concentration of substance in resource
+  (e.g. $`ppm=[ug.g^{-1}]=[mg.kg^{-1}]`$),
+- $`C_{resource}`$: concentration of substance in resource
+  (e.g. $`ppm=[ug.g^{-1}]=[mg.kg^{-1}]`$),
+- $`k_{up}`$: assimilation efficiency of food $`[n.d.]`$,
+- $`k_{out}`$: excretion rate of food, $`[day^{-1}]`$
+- $`a`$: average age of the consumer $`[day]`$,
+
+#### Average fresh biomass of items and indiviuals
+
+w weight of species \[kg\] (1.0 102 for S. araneus, 3.0 102 for M.
+agrestis, and 2.1 102 for C. glareolus) \[11,12,15\]
+
+``` r
+
+# b_apsy = 
+b_vole = 50
+b_shrew = 10
+```
+
+#### Uptake and Excretion rate
+
+- Uptake: The uptake rate constant of metals from food (kx,n,in) depends
+  on the food ingestion rate constant (kn ) and the metal assimilation
+  efficiency from the food matrix (px,a ) (Eqn. 3). The assimilation
+  efficiency of cadmium in small mammals generally is low and depends on
+  external conditions, such as pH in the gastrointestinal tract,
+  available biological ligands in food, and stability of these metal
+  complexes in the food matrix \[21\]. At present, the mechanisms of
+  metal uptake via ingestion are not fully understood \[20,22\];
+  therefore, metal assimilation efficiency cannot be modeled
+  mechanistically. Instead, an empirical cadmium assimilation efficiency
+  (px,a ) of 0.51% (Supplemental Data;
+  <http://dx.doi.org/10.1897/2006-518.S1>) was used to predict the
+  uptake rate constant of cadmium from food (kx,n,in) (Eqn. 3). This
+  empirical cadmium assimilation efficiency is a geometric mean value of
+  data from 10 long-term experimental studies, including various
+  experimental designs. kx,n,in n k ·px,a (3) where kn food ingestion
+  rate constant \[kg food/kg body wet wt/d\] px,a assimilation
+  efficiency of cadmium from food (empirical value, see Supplemental
+  Data; <http://dx>. doi.org/10.1897/2006-518.S1) (0.51) \[%\]
+
+``` r
+
+# k_up_vole
+# k_ex_vole
+```
+
+#### Transfer equation
+
+``` r
+# /!\ Faudrait changer le code pour pouvoir faire un truc de ce tyle :
+direct_intakes <- intake(spcmdl_trophic_fixed) |>
+  add_intake("soil", "plant", ~ inter_veg + slope_veg*x) |>
+  add_intake("soil", "earthworm", ~ inter_veg + slope_veg*x) |>
+  add_intake("soil", "carabid", ~ inter_veg + slope_veg*x) |>
+  default = NA, # for all other default is NA = no transfer or 1 full transfer ?
+)
+```
+
+``` r
+
+# ATTENTION DANS LES FONCTION, ON AIME TRAVAILLER EN LOG !!!
+direct_intakes <- intake(spcmdl_trophic_fixed,
+  "soil -> plant"       = ~ inter_veg + slope_veg*x,  
+  "soil -> earthworm"   = ~ inter_worm + slope_worm*x, 
+  "soil -> carabid"     = ~ inter_carab + slope_carab*x, 
+   # mamHerb
+  "soil -> mamHerb"     = ~ b_soil_mamHerb / b_mamHerb * /0.36,
+  "plant -> mamHerb"    = ~ 10^x/0.77,
+  "earthworm -> mamHerb"= ~ 10^x/0.77,
+  "carabid -> mamHerb"  = ~ 10^x/0.77,
+  # mamInsect
+  "soil -> mamInsect"     = ~ 10^x/0.77,
+  "plant -> mamInsect"    = ~ 10^x/0.77,
+  "earthworm -> mamInsect"= ~ 10^x/0.77,
+  "carabid -> mamInsect"  = ~ 10^x/0.77,
+  default = 1, # for all other default is 1
+  normalize = FALSE # TRUE would weight every link to sum at 1
+)
+```
+
+### dispersion
+
+``` r
+
+# no dispersal
+fixed_kernels <- list(
+  soil  = NA, plant = NA, earthworm = NA,
+  carabid=NA,  mamHerb = NA, mamInsect = NA)
+```
+
+``` r
+
+spcmdl_trophic_fixed_risk <- transfer(
+  spcmdl_trophic_fixed,
+  fixed_kernels,
+  direct_intakes,
+  exposure_weighting="potential")
+```

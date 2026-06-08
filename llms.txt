@@ -36,6 +36,7 @@ branch. To install the latest version:
 5.  Install the package in R using the following command:
 
 ``` r
+
 # Replace the path with the location of your downloaded file
 install.packages("path/to/spacemodR_0.1.0.tar.gz", repos = NULL, type = "source")
 ```
@@ -140,10 +141,15 @@ Go to `http://localhost:8787`, where user is `rstudio` and password:
 
 - [Berisp-like: a trophic model of
   contamination](https://qonfluens.github.io/spacemodR/articles/Example_Berisp_full.md):
+- [Food Intake
+  Rate](https://qonfluens.github.io/spacemodR/articles/Food_Intake.md):
 - [Habitat and
   Connectivity](https://qonfluens.github.io/spacemodR/articles/Habitat.md):
 - [Calibration of Transfer
   Models](https://qonfluens.github.io/spacemodR/articles/Inference_Direct.md):
+- [Inference_Trophic](https://qonfluens.github.io/spacemodR/articles/Inference_Trophic.md):
 - [Using Julia Omniscape to run Landscape
   Connectivity](https://qonfluens.github.io/spacemodR/articles/Omniscape_Connectivity.md):
+- [A simple example: a soil-target transfer with fix or moving
+  target](https://qonfluens.github.io/spacemodR/articles/Simulation_Soil_Target.md):
 - [Tutorial](https://qonfluens.github.io/spacemodR/articles/Tutorial.md):

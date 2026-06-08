@@ -11,6 +11,7 @@ varying qualities or resistances for different species, starting with
 the Wood mouse (Apodemus sylvaticus).
 
 ``` r
+
 library(spacemodR)
 library(dplyr)
 library(ggplot2)
@@ -34,6 +35,7 @@ First, we load the necessary datasets provided by spacemodR:
     dataset as our base map).
 
 ``` r
+
 # Load the species dict and reference tables
 data("ocsge_species_dict")
 data("ref_ocsge")
@@ -48,6 +50,7 @@ with the reference nomenclature to link the OCS-GE codes to their
 descriptive labels and predefined colors.
 
 ``` r
+
 # Filter for Apodemus sylvaticus
 dfhab_Apsy <- ocsge_species_dict[
   grepl("Apodemus_sylvaticus",ocsge_species_dict$nom_espece, ignore.case = TRUE), 
@@ -71,6 +74,7 @@ different habitat qualities for the species:
 - Non-habitat area (wg = 0):
 
 ``` r
+
 df_merged_Apsy %>% 
   filter(weight_global == 0) %>%
   pull(nomenclature) %>%
@@ -81,6 +85,7 @@ df_merged_Apsy %>%
 - Very Poor habitat (0 \< wg \<= 3):
 
 ``` r
+
 df_merged_Apsy %>% 
   filter(weight_global > 0, weight_global <= 3) %>% 
   pull(nomenclature) %>% 
@@ -92,6 +97,7 @@ df_merged_Apsy %>%
 - Poor habitat (3 \< wg \<= 7):
 
 ``` r
+
 df_merged_Apsy %>% 
   filter(weight_global > 7) %>% 
   pull(nomenclature) %>% 
@@ -106,6 +112,7 @@ df_merged_Apsy %>%
 - Good habitat (wg \> 7):
 
 ``` r
+
 df_merged_Apsy %>% 
   filter(weight_global > 7) %>% 
   pull(nomenclature) %>% 
@@ -141,6 +148,7 @@ rapidly compare their habitat preferences. \### Turdus merula
 (Blackbird)
 
 ``` r
+
 turdus_hab <- join_ocsge_species(sf_ocsge, "Turdus_merula")
 plot_species_habitat(turdus_hab)
 ```
@@ -150,6 +158,7 @@ plot_species_habitat(turdus_hab)
 #### Passer domesticus (House Sparrow)
 
 ``` r
+
 passer_hab <- join_ocsge_species(sf_ocsge, "Passer_domesticus")
 plot_species_habitat(passer_hab)
 ```
@@ -159,6 +168,7 @@ plot_species_habitat(passer_hab)
 #### Small Mammals (Sorex, Crocidura, Microtus arvalis)
 
 ``` r
+
 sorex_hab <- join_ocsge_species(sf_ocsge, "Sorex")
 plot_species_habitat(sorex_hab)
 ```
@@ -166,6 +176,7 @@ plot_species_habitat(sorex_hab)
 ![](Habitat_files/figure-html/plt_sorex-1.png)
 
 ``` r
+
 crocidura_hab <- join_ocsge_species(sf_ocsge, "Crocidura")
 plot_species_habitat(crocidura_hab)
 ```
@@ -173,6 +184,7 @@ plot_species_habitat(crocidura_hab)
 ![](Habitat_files/figure-html/plt_crocidura-1.png)
 
 ``` r
+
 microtus_hab <- join_ocsge_species(sf_ocsge, "Microtus_arvalis")
 plot_species_habitat(microtus_hab)
 ```
@@ -186,6 +198,7 @@ plot_species_habitat(microtus_hab)
 1.  first step is to collect habitat of the OCS-GE as we did previously
 
 ``` r
+
 apsy_hab <- join_ocsge_species(sf_ocsge, "Apodemus_sylvaticus")
 plot_species_habitat(apsy_hab)
 ```
@@ -196,6 +209,7 @@ plot_species_habitat(apsy_hab)
     `spacemodR` functionalities
 
 ``` r
+
 apsy_habitat <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$weight_global)
 apsy_resistance <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$resistance)
 ```
@@ -203,24 +217,28 @@ apsy_resistance <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$resistance)
 3.  converting them in raster
 
 ``` r
+
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 ```
 
 ``` r
+
 rast_Apsy_habitat <- habitat_raster(ground_cd, apsy_habitat)
 ```
 
 Note that for resistance, we have to use and exponential scale compare
-to the score in $\lbrack 0 - 10\rbrack$ that with have in the data-set
-`ocsge_species_dict` to an exponential $\lbrack 1 - 1000\rbrack$.
+to the score in $`[0-10]`$ that with have in the data-set
+`ocsge_species_dict` to an exponential $`[1-1000]`$.
 
 ``` r
+
 rast_Apsy_resistance_init <- habitat_raster(ground_cd, apsy_resistance)
 exp_scl <- function(x) { 10^( (log10(1000) / 10) * x )}
 rast_Apsy_resistance <- exp_scl(rast_Apsy_resistance_init)
 ```
 
 ``` r
+
 par(mfrow = c(1, 2))
 plot(rast_Apsy_resistance_init)
 plot(rast_Apsy_resistance)
@@ -229,10 +247,12 @@ plot(rast_Apsy_resistance)
 ![](Habitat_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
+
 par(mfrow = c(1, 1))
 ```
 
 ``` r
+
 terra::writeRaster(rast_Apsy_habitat, "julia_run/rast_Apsy_habitat.tif", overwrite = TRUE)
 terra::writeRaster(rast_Apsy_resistance, "julia_run/rast_Apsy_resistance.tif", overwrite = TRUE)
 ```
@@ -254,6 +274,7 @@ For pixel, the size is given by `res(raster)`, here it is a meter
 system:
 
 ``` r
+
 # get pixel size
 terra::res(ground_cd)
 #> [1] 24.93766 24.93976
@@ -285,6 +306,7 @@ docker run --rm \
 ```
 
 ``` r
+
 p_src = ggplot() +
   theme_minimal() +
   geom_spatraster(data = rast_Apsy_habitat) +

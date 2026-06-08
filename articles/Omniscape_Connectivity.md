@@ -1,6 +1,7 @@
 # Using Julia Omniscape to run Landscape Connectivity
 
 ``` r
+
 library(spacemodR)
 library(gridExtra)
 library(terra) 
@@ -86,12 +87,13 @@ To run Omniscape, you primarily need two raster maps and one parameter.
 When we build resistance map, for instance from the internal
 `ocsge_species_dict` dataset which provides resistance values that scale
 sharply, we have to transform the `weight` factor set in `0-10` to a
-log-scale function. Indeedn, if an optimal habitat is $1$ and the worst
-barrier is only $5$, `Omniscape` will barely notice the barrier and will
-simulate animals walking almost in straight lines!
+log-scale function. Indeedn, if an optimal habitat is $`1`$ and the
+worst barrier is only $`5`$, `Omniscape` will barely notice the barrier
+and will simulate animals walking almost in straight lines!
 
-A good practice would is to convert the linear scale $0$ to $10$ in an
-exponential scale $1$ to $1000$ (e.g. `10^( (log10(1000) / 10) * x )`.
+A good practice would is to convert the linear scale $`0`$ to $`10`$ in
+an exponential scale $`1`$ to $`1000`$
+(e.g. `10^( (log10(1000) / 10) * x )`.
 
 ### The Algorithm
 
@@ -155,6 +157,7 @@ population.
 ## Example of habitat and resistance
 
 ``` r
+
 # setup Matrix size
 n_row <- 100
 n_col <- 100
@@ -181,6 +184,7 @@ terra::writeRaster(rast_resistance, "julia_run/example_resistance.tif", overwrit
 ```
 
 ``` r
+
 # VIZUALIZE
 par(mfrow = c(1, 2))
 terra::plot(rast_habitat, main = "Habitat (Sources)", col = c("white", "green", "darkgreen"))
@@ -190,6 +194,7 @@ terra::plot(rast_resistance, main = "Resistance", col = c("grey", "brown"))
 ![](Omniscape_Connectivity_files/figure-html/unnamed-chunk-4-1.png)
 
 ``` r
+
 par(mfrow = c(1, 1))
 ```
 
@@ -197,9 +202,10 @@ Then the code to compute the dispersal. It can be very long to compute…
 
 Radius is in Pixel. To convert it into a distance of a dispersal kernel,
 you have to convert radius: for instance, if 1 pixel = x meter, then for
-a dispersal radius of $D$, the radius provided is $D/x$.
+a dispersal radius of $`D`$, the radius provided is $`D/x`$.
 
 ``` r
+
 ## USE DOCKER IMAGE TO RUN THIS
 dispersed_map <- compute_dispersal(
   x = rast_habitat,
@@ -212,6 +218,7 @@ dispersed_map <- compute_dispersal(
 ```
 
 ``` r
+
 plot(dispersed_map)
 ```
 
@@ -261,6 +268,7 @@ can sometimes contain dead C++ pointers depending on the `terra`
 version.*
 
 ``` r
+
 # Create the shared directory
 dir.create("julia_run", showWarnings = FALSE)
 # Save the raster inputs to this directory
@@ -290,7 +298,7 @@ docker build -t spacemodr .
 
 Now, execute the R script inside the container. We map our local
 julia_run directory to `/julia_run` inside the container. Notice how we
-pass the file paths and the radius ($30$) at the very end of the
+pass the file paths and the radius ($`30`$) at the very end of the
 command:
 
 ``` bash
@@ -321,6 +329,7 @@ be waiting for you in your local `julia_run` folder.
 We can now see the pipeline effect:
 
 ``` r
+
 par(mfrow = c(1, 3))
 terra::plot(rast_habitat, main = "Habitat (Sources)", col = c("white", "green", "darkgreen"))
 terra::plot(rast_resistance, main = "Resistance", col = c("grey", "brown"))
@@ -330,5 +339,6 @@ terra::plot(dispersed_map, main = "Dispersal",)
 ![](Omniscape_Connectivity_files/figure-html/unnamed-chunk-11-1.png)
 
 ``` r
+
 par(mfrow = c(1, 1))
 ```
