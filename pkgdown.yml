@@ -2,15 +2,18 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  articles/Example_Berisp_full: Example_Berisp_full.html
-  articles/Food_Intake: Food_Intake.html
-  articles/Habitat: Habitat.html
-  articles/Inference_Direct: Inference_Direct.html
-  articles/Inference_Trophic: Inference_Trophic.html
-  articles/Omniscape_Connectivity: Omniscape_Connectivity.html
-  articles/Simulation_Soil_Target: Simulation_Soil_Target.html
+  articles/core_Food_Intake: core_Food_Intake.html
+  articles/core_Habitat: core_Habitat.html
+  articles/core_Omniscape_Connectivity: core_Omniscape_Connectivity.html
+  Getting_Started_EN: Getting_Started_EN.html
+  Getting_Started_FR: Getting_Started_FR.html
+  articles/stats_Inference_Direct: stats_Inference_Direct.html
+  articles/stats_Inference_Trophic: stats_Inference_Trophic.html
   Tutorial: Tutorial.html
-last_built: 2026-06-08T12:40Z
+  articles/zoo_Berisp_full: zoo_Berisp_full.html
+  articles/zoo_ecossl: zoo_ecossl.html
+  articles/zoo_Simulation_Soil_Target: zoo_Simulation_Soil_Target.html
+last_built: 2026-06-08T14:48Z
 urls:
   reference: https://qonfluens.github.io/spacemodR/reference
   article: https://qonfluens.github.io/spacemodR/articles

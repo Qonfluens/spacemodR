@@ -31,23 +31,36 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="articles/Tutorial.html">🚀 Quick Start</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown--quick-start" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🚀 Quick Start</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown--quick-start">
+<li><a class="dropdown-item" href="articles/Getting_Started_EN.html">🚀 Quick Start</a></li>
+    <li><a class="dropdown-item" href="articles/Getting_Started_FR.html">🚀 Quick Start en Français</a></li>
+    <li><a class="dropdown-item" href="articles/Tutorial.html">Tutorial Overview</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🛠️ Core Guides</button>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
-<li><a class="dropdown-item" href="articles/Habitat.html">Habitat Layer Management</a></li>
-    <li><a class="dropdown-item" href="articles/Food_Intake.html">Food Intake Rate</a></li>
-    <li><a class="dropdown-item" href="articles/Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
-    <li><a class="dropdown-item" href="articles/Inference_Direct.html">Model Inference &amp; Calibration</a></li>
+<li><a class="dropdown-item" href="articles/core_Habitat.html">Habitat Layer</a></li>
+    <li><a class="dropdown-item" href="articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
 </li>
 <li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown--example-zoo" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🦁 Example Zoo</button>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown--tuning-parameters" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🎯️ Tuning Parameters</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown--tuning-parameters">
+<li><a class="dropdown-item" href="articles/stats_Inference_Direct.html">Soil-Target Transfers</a></li>
+    <li><a class="dropdown-item" href="articles/stats_Inference_Trophic.html">Trophic Transfers</a></li>
+  </ul>
+</li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown--example-zoo" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧪 Example Zoo</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--example-zoo">
-<li><a class="dropdown-item" href="articles/Example_Berisp_full.html">Full Berisp Eco-Model Application</a></li>
-    <li><a class="dropdown-item" href="articles/02_ex_SoilTarget.html">Soil Target Analysis</a></li>
-    <li><a class="dropdown-item" href="articles/Tutorial.html#eco-ssl-example-build-a-spacemodel-for-eco-ssl">Eco-SSL Risk Index Assessment</a></li>
+<li><a class="dropdown-item" href="articles/zoo_ecossl.html">Eco-SSL</a></li>
+    <li><a class="dropdown-item" href="articles/zoo_Berisp_full.html">Spatial Soil-Target Transfer</a></li>
+    <li><a class="dropdown-item" href="articles/zoo_Berisp_full.html">Spatial Trophic Transfer</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">News</a></li>
@@ -62,49 +75,79 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="spacemodr">spacemodR<a class="anchor" aria-label="anchor" href="#spacemodr"></a>
 </h1></div>
-<p><a href="https://qonfluens.github.io/spacemodR/"><img src="https://img.shields.io/badge/documentation-online-blue.svg" alt="Documentation"></a></p>
-<p><strong>Spacemod Habitat, Trophic, Dispersal, Exposure and Risk Mapping</strong></p>
-<p><code>spacemodR</code> is an R package designed for spatial ecological risk modeling. It integrates habitats, trophic webs, dispersal, and contaminant exposure to build complex “spacemodels” linking geographic data (rasters, vectors) with biological interactions.</p>
+<p><a href="https://qonfluens.github.io/spacemodR/"><img src="https://img.shields.io/badge/documentation-online-blue.svg" alt="Documentation"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
+<p><strong>Spatially Explicit Modeling of Habitats, Trophic Webs, Dispersal, Exposure, and Ecological Risk</strong></p>
+<p><code>spacemodR</code> is an R package designed for spatial ecological risk assessment (ERA). It integrates habitat mapping, trophic networks (food webs), animal dispersal, and contaminant exposure to build complex “spacemodels.” By linking geographic data (rasters, vectors) with biological and ecological interactions, it allows researchers and risk assessors to map the flow of elements (such as food, energy, or contaminants) across ecosystems.</p>
+<hr>
+<div class="section level2">
+<h2 id="seedling-the-spacemod-project">🌱 The SPACEMOD Project<a class="anchor" aria-label="anchor" href="#seedling-the-spacemod-project"></a>
+</h2>
+<p>This package is the core computational engine of the <strong>SPACEMOD</strong> project, funded by the French ecological transition agency (<strong>ADEME</strong>) under the <em>IMPACTS 2023</em> call for projects.</p>
+<p>With the discontinuation of historical ERA software (like TerraSys or BERISP), there was a critical need for a modern, generic tool dedicated to Ecological Risk Assessment for contaminated sites and soils (SSP). The SPACEMOD project aims to fill this gap by developing a spatially explicit tool to model multi-exposures and chemical mixture impacts in trophic webs.</p>
+<p><strong>Project Partners:</strong> * <strong>UMR Chrono-environnement (CNRS / Université de Franche-Comté)</strong> - <em>Project Coordinator (Pr. Renaud Scheifler)</em> * <strong>Qonfluens SAS</strong> * <strong>UK Centre for Ecology &amp; Hydrology (UKCEH)</strong></p>
+<p>You can find more information about the project on the <a href="https://recherche.ademe.fr/spacemod" class="external-link">ADEME research portal</a> or the <a href="https://chrono-environnement.univ-fcomte.fr/project/spacemod/" class="external-link">Chrono-environnement website</a>.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="rocket-what-can-you-do-with-spacemodr">🚀 What can you do with <code>spacemodR</code>?<a class="anchor" aria-label="anchor" href="#rocket-what-can-you-do-with-spacemodr"></a>
+</h2>
+<p>The package provides a complete workflow to move from raw landscape data to risk indices: 1. <strong>Habitat Construction:</strong> Convert vector shapefiles (e.g., OCS-GE) into high-resolution habitat raster grids based on species-specific preferences and weights. 2. <strong>Trophic Web Modeling:</strong> Define Directed Acyclic Graphs (DAGs) representing predation and herbivory flows across the ecosystem. 3. <strong>Dispersal &amp; Connectivity:</strong> Simulate animal movement and flow using advanced dispersal kernels or circuit theory (via integration with Julia’s <strong>Omniscape</strong> algorithm). 4. <strong>Exposure &amp; Transfer:</strong> Calculate Daily Food Intake (DFI) and model the bioaccumulation and transfer of contaminants (e.g., Cadmium, Lead, Zinc) through the food web. 5. <strong>Risk Mapping:</strong> Generate spatially explicit risk maps (e.g., Eco-SSL indices) to identify critical hot-spots of ecotoxicological concern.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="books-integrated-databases">📚 Integrated Databases<a class="anchor" aria-label="anchor" href="#books-integrated-databases"></a>
+</h2>
+<p>To facilitate parameterization, <code>spacemodR</code> workflows rely on standardized ecological and physiological databases: * <strong>FmrBT:</strong> Database of Field Metabolic Rates (FMR), body mass, and ambient temperature for over 700 species (De Castro et al., 2025). * <strong>EltonTraits 1.0 / MammalBase:</strong> Functional traits and precise dietary partitioning (percentages of invertebrates, seeds, vertebrates, etc.) for birds and mammals. * <strong>GARD Initiative:</strong> Global Assessment of Reptile Distributions and traits. * <strong>TRY Plant Trait Database:</strong> Lower Calorific Value (LCV) data for plant energy density. * <strong>Add-my-pet:</strong> Dynamic energy budget models and parameters (e.g., <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ξ</mi><mrow><mi>W</mi><mi>E</mi></mrow></msub><annotation encoding="application/x-tex">\xi_{WE}</annotation></semantics></math>).</p>
+<hr>
+</div>
 <div class="section level2">
 <h2 id="package-installation">📦 Installation<a class="anchor" aria-label="anchor" href="#package-installation"></a>
 </h2>
-<p>The package is automatically built via GitHub Actions. You can install it by retrieving the archive generated by the continuous integration system.</p>
+<p>The package is actively developed and automatically built via GitHub Actions. Since it is not yet on CRAN, you can install it by retrieving the artifact generated by our continuous integration system, or by using Docker.</p>
 <div class="section level3">
-<h3 id="note-about-tracking-big-files-with-git">Note about tracking big files with git<a class="anchor" aria-label="anchor" href="#note-about-tracking-big-files-with-git"></a>
+<h3 id="id_1-via-github-action-artifacts-source-installation">1. Via GitHub Action Artifacts (Source Installation)<a class="anchor" aria-label="anchor" href="#id_1-via-github-action-artifacts-source-installation"></a>
 </h3>
-<p>To git track big files, we use <code>git lfs</code>. Before using <code>git add</code> for a specifi file, we have to <code>git lfs track</code> it like this:</p>
-<pre><code>git lfs track "raw_data/new_fit.rda"</code></pre>
-</div>
-<div class="section level3">
-<h3 id="via-github-action-artifact">Via GitHub Action Artifact<a class="anchor" aria-label="anchor" href="#via-github-action-artifact"></a>
-</h3>
-<p>The <code>.github/workflows/build_and_release.yaml</code> workflow is configured to build the package and check its integrity on every push to the <code>main</code> branch. To install the latest version:</p>
+<p>The <code>.github/workflows/build_and_release.yaml</code> workflow checks integrity and builds the package on every push to the <code>main</code> branch.</p>
 <ol style="list-style-type: decimal">
 <li>Go to the <strong>Actions</strong> tab of the GitHub repository.</li>
-<li>Click on the latest run of the <strong>“Build and Archive”</strong> workflow.</li>
-<li>At the bottom of the page, in the <strong>Artifacts</strong> section, download the <code>spacemodR-archive</code> file.</li>
-<li>Unzip the file to obtain the <code>.tar.gz</code> source file.</li>
+<li>Click on the latest successful run of the <strong>“Build and Archive”</strong> workflow.</li>
+<li>Scroll to the bottom of the page to the <strong>Artifacts</strong> section and download the <code>spacemodR-archive</code> file.</li>
+<li>Unzip the downloaded file to extract the <code>.tar.gz</code> source package.</li>
 <li>Install the package in R using the following command:</li>
 </ol>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Replace the path with the location of your downloaded file</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"path/to/spacemodR_0.1.0.tar.gz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span></code></pre></div>
-<p>Note: Ensure that system dependencies (GDAL, PROJ, GEOS) are installed, as the package depends on <code>sf</code> and <code>terra</code>.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Replace the path below with the exact location of your downloaded .tar.gz file</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"path/to/spacemodR_0.1.3.tar.gz"</span>, repos <span class="op">=</span> <span class="cn">NULL</span>, type <span class="op">=</span> <span class="st">"source"</span><span class="op">)</span></span></code></pre></div>
+<p>Note: Ensure that your system dependencies (GDAL, PROJ, GEOS) are installed, as the package heavily relies on <code>sf</code> and <code>terra</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="id_2-via-docker">2. Via Docker<a class="anchor" aria-label="anchor" href="#id_2-via-docker"></a>
+</h3>
+<p>A Dockerfile is provided to ensure a fully reproducible environment with all system dependencies (including Julia for Omniscape) pre-configured.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Build the image locally</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> spacemodr .</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Run the container (with RStudio Server accessible on port 8787)</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">--rm</span> <span class="at">-ti</span> <span class="dt">\</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">-p</span> 8787:8787 <span class="dt">\</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">-e</span> PASSWORD=yourpassword <span class="dt">\</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  spacemodr</span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="note-on-git-lfs-for-contributors">Note on Git LFS (For Contributors)<a class="anchor" aria-label="anchor" href="#note-on-git-lfs-for-contributors"></a>
+</h3>
+<p>To track large data files (like rasters or fitted models) in the repository, we use <code>git lfs</code>. Before using <code>git add</code> on a large file, ensure it is tracked:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">git</span> lfs track <span class="st">"raw_data/new_fit.rda"</span></span></code></pre></div>
+<hr>
 </div>
 </div>
+<div class="section level2">
+<h2 id="page_facing_up-license">📄 License<a class="anchor" aria-label="anchor" href="#page_facing_up-license"></a>
+</h2>
+<p><code>spacemodR</code> is released under the <strong>MIT License</strong>. This is a permissive free software license that allows you to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the original copyright notice and permission notice are included in all copies or substantial portions of the software.</p>
+<p>See the <a href="LICENSE.html">LICENSE</a> file for full details.</p>
 </div>
-<div class="section level1">
-<h1 id="using-the-docker-file">Using the docker file<a class="anchor" aria-label="anchor" href="#using-the-docker-file"></a>
-</h1>
-<pre><code>docker build -t spacemodr .</code></pre>
-<pre><code>docker run --rm -ti \
-  -p 8787:8787 \
-  -e PASSWORD=mdp \
-  -v /home/virgile/Downloads:/home/rstudio/data \
-  spacemodr</code></pre>
-<p>Go to <code>http://localhost:8787</code>, where user is <code>rstudio</code> and password: <code>mdp</code>.</p>
 </div>
-
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">

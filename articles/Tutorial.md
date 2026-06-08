@@ -409,8 +409,8 @@ implemented a dispersal dependent of the potential trophic links.
 ``` r
 
 k_sp10 <- compute_kernel(radius=10, GSD=25, size_std=1.5)
-k_sp12 <- compute_kernel(radius=100, GSD=25, size_std=1.5)
-k_sp22 <- compute_kernel(radius=200, GSD=25, size_std=1.5)
+k_sp12 <- compute_kernel(radius=100, GSD=25, size_std=0.5)
+k_sp22 <- compute_kernel(radius=200, GSD=25, size_std=0.1)
 ```
 
 ``` r
@@ -464,14 +464,15 @@ attr(spcmdl_dispersal, "trophic_tbl")
 ``` r
 
 test_intakes <- intake(spcmdl_dispersal,
-  # General rule: sp12 uptake with factor 3
-  "sp12" = 3,  
-  # Exception: when sp12 feed on sp10, factor is 5
-  "sp10 -> sp12" = 5,
+  # sol to sp10 is a coef 0.4
+  "sol -> sp10" = 0.4,
+  # General rule: sp12 uptake with factor 0.1
+  "sp12" = 0.1,  
+  # Exception: when sp12 feed on sp10, it's a square function
+  "sp10 -> sp12" = ~ x^2/10,
   # General rule: sp22 has a complex function
-  "sp22" = ~ x^2 + 10,
-  # Exception: sol to sp10 is a coef
-  "sol -> sp10" = 0.1,
+  "sp22" = ~ x^0.1,
+  
   default = 1 # for all other default is 1
 )
 spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_intakes)
@@ -485,86 +486,36 @@ terra::plot(spcmdl_transfer, col=color_transfer)
 
 ![](Tutorial_files/figure-html/exposure_spacemodel_plot-1.png)
 
-## Eco-SSL Example: Build a `spacemodel` for Eco-SSL
+## Spacemodel for Risk
 
-The first step is to build a raster stack with the ground as raster.
-
-``` r
-
-names_hab = c("soil", "plant", "invert", "mamHerb", "mamInsect", "birdInsect")
-list_habitat <- lapply(names_hab, function(i) ground_cd)
-stack_habitat <- raster_stack(list_habitat, names_hab)
-
-terra::plot(stack_habitat)
-```
-
-![](Tutorial_files/figure-html/eco_ssl_cd_habitat-1.png)
-
-The second step is to build the trophic web, all species connecting
-directly to the soil.
+Let’s assume we also want to work with the actual values rather than the
+log10 scale.
 
 ``` r
 
-trophic_df <- trophic() |>
-  add_link("soil", "plant") |>
-  add_link("soil", "invert") |>
-  add_link("soil", "mamHerb") |>
-  add_link("soil", "mamInsect") |>
-  add_link("soil", "birdInsect")
-
-attr(trophic_df, "level")
-#>       soil      plant     invert    mamHerb  mamInsect birdInsect 
-#>          1          2          2          2          2          2
+# 1. Compute for all the stack
+spcmdl_10 <- 10^spcmdl_transfer
+# 2. and then add the  food web to get the real 'spacemodel'
+spcmdl_10 <- spacemodel(spcmdl_10, attr(spcmdl_transfer, "trophic_tbl"))
 ```
+
+Then, if you have toxicity thresholds (TRV / PNEC) used to calculate a
+Risk Index (Risk Characterization Ratio - RCR), it is highly recommended
+to use a named vector for your thresholds and divide them properly:
+
+Now, we applied the threshold:
 
 ``` r
 
-plot(trophic_df)
+# Reference thresholds for each component
+thresholds <- c(sol = 1, sp10 = 1.5, sp12 = 1.5, sp22 = 1.5)
+# Align the vector's order with the raster layers' order (very important!)
+ordered_thresholds <- thresholds[names(spcmdl_10)]
+# Calculate the risk index: Concentration / Threshold
+spcmdl_risk <- spcmdl_10 / ordered_thresholds
+# Re-attach the trophic metadata since the division created a new object
+spcmdl_risk <- spacemodel(spcmdl_risk, attr(spcmdl_transfer, "trophic_tbl"))
 ```
-
-![](Tutorial_files/figure-html/eco_ssl_cd_trophic_plot-1.png)
-
-The third step is to merge the raster stack with the trophic data.frame.
-
-``` r
-
-spcmdl_ecossl_h <- spacemodel(stack_habitat, trophic_df)
-
-terra::plot(spcmdl_ecossl_h)
-```
-
-![](Tutorial_files/figure-html/eco_ssl_cd_spacemodel-1.png)
-
-### Build the Risk indice
-
-``` r
-
-# no dispersal for eco_ssl
-ecossl_kernels <- list(
-  soil  = NA, plant = NA, invert = NA,
-  mamHerb = NA, mamInsect = NA, birdInsect = NA)
-```
-
-``` r
-
-ecossl_intakes <- intake(spcmdl_ecossl_h,
-  "soil -> plant"       = ~ 10^x/32,  
-  "soil -> invert"      = ~ 10^x/140,
-  "soil -> mamHerb"     = ~ 10^x/73,
-  "soil -> mamInsect"   = ~ 10^x/0.36,
-  "soil -> birdInsect"  = ~ 10^x/0.77,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
-
-spcmdl_ecossl_risk <- transfer(
-  spcmdl_ecossl_h,
-  ecossl_kernels,
-  ecossl_intakes,
-  exposure_weighting="potential")
-```
-
-A plot of layer with risk threshold color scale.
 
 ``` r
 
@@ -579,50 +530,12 @@ cols_risk <- c(
   "#4A2C2A"      # > 10
 )
 
-names_keep <- names(spcmdl_ecossl_risk)[names(spcmdl_ecossl_risk) != "soil"]
-spcmdl_ecossl_risk_sub <- spcmdl_ecossl_risk[[names_keep]]
+# names_keep <- names(spcmdl_risk)[names(spcmdl_transfer) != "sol"]
+# spcmdl_transfer <- spcmdl_transfer[[names_keep]]
 
-terra::plot(spcmdl_ecossl_risk_sub,
+terra::plot(spcmdl_risk,
             breaks = breaks_risk,
             col = cols_risk)
 ```
 
-![](Tutorial_files/figure-html/eco_ssl_risk_plot-1.png)
-
-``` r
-
-poly <- roi_metaleurop
-poly_vect <- terra::project(terra::vect(poly), terra::crs(spcmdl_ecossl_risk_sub))
-
-rast_crop <- terra::crop(spcmdl_ecossl_risk_sub, poly_vect)
-rast_final <- terra::mask(rast_crop, poly_vect)
-terra::plot(rast_final,
-            breaks = breaks_risk,
-            col = cols_risk)
-```
-
-![](Tutorial_files/figure-html/eco_ssl_risk_plot_crop-1.png)
-
-#### checking Eco-SSL
-
-For this very simple example, a simple check can be done, because
-Eco-SSL is a computing of a risk based on the amount in soil:
-
-``` r
-
-check_ecossl_risk = list(
-  "soil -> plant"       = 10^ground_cd/32,  
-  "soil -> invert"      = 10^ground_cd/140,
-  "soil -> mamHerb"     = 10^ground_cd/73,
-  "soil -> mamInsect"   = 10^ground_cd/0.36,
-  "soil -> birdInsect"  = 10^ground_cd/0.77
-)
-
-r_check_ecossl_risk = terra::rast(check_ecossl_risk)
-
-terra::plot(r_check_ecossl_risk,
-            breaks = breaks_risk,
-            col = cols_risk)
-```
-
-![](Tutorial_files/figure-html/unnamed-chunk-6-1.png)
+![](Tutorial_files/figure-html/risk-1.png)
