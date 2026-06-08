@@ -343,8 +343,8 @@ a dispersal dependent of the potential trophic links.
 
 ```{r set_kernels}
 k_sp10 <- compute_kernel(radius=10, GSD=25, size_std=1.5)
-k_sp12 <- compute_kernel(radius=100, GSD=25, size_std=1.5)
-k_sp22 <- compute_kernel(radius=200, GSD=25, size_std=1.5)
+k_sp12 <- compute_kernel(radius=100, GSD=25, size_std=0.5)
+k_sp22 <- compute_kernel(radius=200, GSD=25, size_std=0.1)
 ```
 
 
@@ -387,14 +387,15 @@ attr(spcmdl_dispersal, "trophic_tbl")
 
 ```{r exposure_spacemodel_build}
 test_intakes <- intake(spcmdl_dispersal,
-  # General rule: sp12 uptake with factor 3
-  "sp12" = 3,  
-  # Exception: when sp12 feed on sp10, factor is 5
-  "sp10 -> sp12" = 5,
+  # sol to sp10 is a coef 0.4
+  "sol -> sp10" = 0.4,
+  # General rule: sp12 uptake with factor 0.1
+  "sp12" = 0.1,  
+  # Exception: when sp12 feed on sp10, it's a square function
+  "sp10 -> sp12" = ~ x^2/10,
   # General rule: sp22 has a complex function
-  "sp22" = ~ x^2 + 10,
-  # Exception: sol to sp10 is a coef
-  "sol -> sp10" = 0.1,
+  "sp22" = ~ x^0.1,
+  
   default = 1 # for all other default is 1
 )
 spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_intakes)
@@ -406,6 +407,33 @@ terra::plot(spcmdl_transfer, col=color_transfer)
 ```
 
 # Spacemodel for Risk
+
+Let's assume we also want to work with the actual values rather than the log10 scale.
+
+```{r}
+# 1. Compute for all the stack
+spcmdl_10 <- 10^spcmdl_transfer
+# 2. and then add the  food web to get the real 'spacemodel'
+spcmdl_10 <- spacemodel(spcmdl_10, attr(spcmdl_transfer, "trophic_tbl"))
+```
+
+Then, if you have toxicity thresholds (TRV / PNEC) used to calculate a Risk Index 
+(Risk Characterization Ratio - RCR), it is highly recommended to use a named 
+vector for your thresholds and divide them properly:
+
+Now, we applied the threshold:
+
+```{r}
+# Reference thresholds for each component
+thresholds <- c(sol = 1, sp10 = 1.5, sp12 = 1.5, sp22 = 1.5)
+# Align the vector's order with the raster layers' order (very important!)
+ordered_thresholds <- thresholds[names(spcmdl_10)]
+# Calculate the risk index: Concentration / Threshold
+spcmdl_risk <- spcmdl_10 / ordered_thresholds
+# Re-attach the trophic metadata since the division created a new object
+spcmdl_risk <- spacemodel(spcmdl_risk, attr(spcmdl_transfer, "trophic_tbl"))
+```
+
 
 ```{r risk}
 # Risk colors
@@ -419,10 +447,10 @@ cols_risk <- c(
   "#4A2C2A"      # > 10
 )
 
-names_keep <- names(spcmdl_ecossl_risk)[names(spcmdl_ecossl_risk) != "sol"]
-spcmdl_ecossl_risk_sub <- spcmdl_ecossl_risk[[names_keep]]
+# names_keep <- names(spcmdl_risk)[names(spcmdl_transfer) != "sol"]
+# spcmdl_transfer <- spcmdl_transfer[[names_keep]]
 
-terra::plot(spcmdl_ecossl_risk_sub,
+terra::plot(spcmdl_risk,
             breaks = breaks_risk,
             col = cols_risk)
 ```
