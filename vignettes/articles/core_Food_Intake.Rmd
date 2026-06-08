@@ -38,11 +38,10 @@ load_safe <- function(file_path) {
 }
 ```
 
-# Daily Food Intake (DFI)
 
 The calculation of Daily Food Intake (DFI), expressed in grams of fresh matter per day ($g/day$), serves as the central pivot for translating physiological energy expenditure into actual predation or herbivory pressures. This estimation process requires the alignment of four critical variables: the Field Metabolic Rate (FMR), nutrient assimilation efficiency, the energy density of the consumed items, and their water content.
 
-## Energetic Needs
+# Energetic Needs
 
 Estimating food consumption from metabolism relies on an energy flux model where the maximum intake ($I$) can be derived from the following formula:
 
@@ -67,7 +66,7 @@ $$
 If the animal is an adult with a stable body mass, its production efficiency
 ($e_{p}$) is close to 0.
 
-### The FmrBT Database
+## The FmrBT Database
 
 The database provided by @decastro2025fmrbt, named `FmrBT`, constitutes a
 comprehensive resource of Field Metabolism Rates ($FMR$), body mass, and ambient
@@ -126,7 +125,7 @@ ggplot(data=FmrBT[FmrBT$Endotherm, ]) +
 # FmrBT_Endotherm_NAMES
 ```
 
-## Food Item Proportion
+# Food Item Proportion
 
 
 Apply the dietary category percentages from the EltonTraits 1.0 database (for birds and mammals) or MammalBase.
@@ -147,7 +146,6 @@ data("DBFunc_MamFuncDat")
 
 # head(DBFunc_MamFuncDat)
 ```
-
 
 ## Energy Density in Items 
 

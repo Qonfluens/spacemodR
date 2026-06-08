@@ -4,34 +4,47 @@ template:
 
 navbar:
   structure:
-    left:  [intro, reference, tutorials, examples, news]
+    left:  [intro, reference, simulation, inference, examples, news]
     right: [github]
   components:
     intro:
       text: "🚀 Quick Start"
-      href: articles/Tutorial.html
-
-    tutorials:
-      text: "🛠️ Core Guides"
       menu:
-        - text: "Habitat Layer Management"
-          href: articles/Habitat.html
-        - text: "Food Intake Rate"
-          href: articles/Food_Intake.html
+        - text: "🚀 Quick Start"
+          href: articles/Getting_Started_EN.html
+        - text: "🚀 Quick Start en Français"
+          href: articles/Getting_Started_FR.html
+        - text: "Tutorial Overview"
+          href: articles/Tutorial.html
+
+
+    simulation:
+      text: "🧩️ Core Guides"
+      menu:
+        - text: "Habitat Layer"
+          href: articles/core_Habitat.html
         - text: "Landscape Connectivity (Omniscape)"
-          href: articles/Omniscape_Connectivity.html
-        - text: "Model Inference & Calibration"
-          href: articles/Inference_Direct.html
+          href: articles/core_Omniscape_Connectivity.html
+        - text: "Food Intake"
+          href: articles/core_Food_Intake.html
+
+    inference:
+      text: "🎯️ Tuning Parameters"
+      menu:
+        - text: "Soil-Target Transfers"
+          href: articles/stats_Inference_Direct.html
+        - text: "Trophic Transfers"
+          href: articles/stats_Inference_Trophic.html
 
     examples:
-      text: "🦁 Example Zoo"
+      text: "🧪 Example Zoo"
       menu:
-        - text: "Full Berisp Eco-Model Application"
-          href: articles/Example_Berisp_full.html
-        - text: "Soil Target Analysis"
-          href: articles/02_ex_SoilTarget.html
-        - text: "Eco-SSL Risk Index Assessment"
-          href: articles/Tutorial.html#eco-ssl-example-build-a-spacemodel-for-eco-ssl
+        - text: "Eco-SSL"
+          href: articles/zoo_ecossl.html
+        - text: "Spatial Soil-Target Transfer"
+          href: articles/zoo_Berisp_full.html
+        - text: "Spatial Trophic Transfer"
+          href: articles/zoo_Berisp_full.html
 
     news:
       text: "News"
