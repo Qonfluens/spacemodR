@@ -1,31 +1,34 @@
+url: https://qonfluens.github.io/spacemodR/
+template:
+  bootstrap: 5
+
 navbar:
-  title: "spacemodR"
-  left:
-    - text: "Get Started"
+  structure:
+    left:  [intro, reference, tutorials, examples, news]
+    right: [github]
+  components:
+    intro:
+      text: "🚀 Quick Start"
       href: articles/Tutorial.html
-    - text: "Reference"
-      href: reference/index.html
-    - text: "Articles & Zoo"
+
+    tutorials:
+      text: "🛠️ Core Guides"
       menu:
-        - text: "🚀 Quick Start"
-        - text: "Package Overview Tutorial"
-          href: articles/Tutorial.html
-        - text: "---"
-        - text: "🛠️ Core Feature Guides"
         - text: "Habitat Layer Management"
           href: articles/Habitat.html
+        - text: "Food Intake Rate"
+          href: articles/Food_Intake.html
         - text: "Landscape Connectivity (Omniscape)"
           href: articles/Omniscape_Connectivity.html
         - text: "Model Inference & Calibration"
           href: articles/Inference_Direct.html
-        - text: "---"
-        - text: "🦁 The Example Zoo (Case Studies)"
+
+    examples:
+      text: "🦁 Example Zoo"
+      menu:
         - text: "Full Berisp Eco-Model Application"
           href: articles/Example_Berisp_full.html
-        - text: "Eco-SSL Soil Risk Index Assessment"
-          href: articles/Tutorial.html#build-the-risk-indice
-    - text: "News"
-      href: news/index.html
-  right:
-    - icon: fa-github
-      href: https://github.com/Qonfluens/spacemodR
+        - text: "Soil Target Analysis"
+          href: articles/02_ex_SoilTarget.html
+        - text: "Eco-SSL Risk Index Assessment"
+          href: articles/Tutorial.html#eco-ssl-example-build-a-spacemodel-for-eco-ssl
