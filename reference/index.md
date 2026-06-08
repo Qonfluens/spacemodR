@@ -2,6 +2,12 @@
 
 ## All functions
 
+- [`DBFunc_BirdFuncDat`](https://qonfluens.github.io/spacemodR/reference/DBFunc_BirdFuncDat.md)
+  : Bird Functional Traits Dataset (EltonTraits 1.0)
+- [`DBFunc_MamFuncDat`](https://qonfluens.github.io/spacemodR/reference/DBFunc_MamFuncDat.md)
+  : Mammal Functional Traits Dataset (EltonTraits 1.0)
+- [`FmrBT`](https://qonfluens.github.io/spacemodR/reference/FmrBT.md) :
+  Field Metabolic Rates Database (FmrBT)
 - [`add_habitat()`](https://qonfluens.github.io/spacemodR/reference/add_habitat.md)
   : Add habitat zones to a Habitat object
 - [`add_link()`](https://qonfluens.github.io/spacemodR/reference/add_link.md)
