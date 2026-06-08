@@ -65,6 +65,7 @@ sf_ocsge <- ocsge_metaleurop
 We filter our species dictionary for *Apodemus sylvaticus* and join it with the 
 reference nomenclature to link the OCS-GE codes to their descriptive labels and predefined colors.
 
+
 ```{r clean_data}
 # Filter for Apodemus sylvaticus
 dfhab_Apsy <- ocsge_species_dict[

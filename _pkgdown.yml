@@ -14,6 +14,8 @@ navbar:
           href: articles/Tutorial.html
         - text: "Habitat & Connectivity"
           href: articles/Habitat.html
+        - text: "Food Intake Rate"
+          href: articles/Food_Intake.html
     examples:
       text: Examples
       menu:

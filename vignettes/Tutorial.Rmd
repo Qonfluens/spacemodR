@@ -365,7 +365,7 @@ terra::plot(spcmdl_dispersal, col=color_dispersal)
 # Spacemodel for Exposure
 
 ```{r exposure_set_ground_cd}
-spcmdl_dispersal["sol"] <- ground_cd
+spcmdl_dispersal[["sol"]][] <- ground_cd
 terra::plot(spcmdl_dispersal["sol"])
 ```
 

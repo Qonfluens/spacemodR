@@ -3,6 +3,8 @@ title: "Calibration of Transfer Models"
 output: 
   rmarkdown::html_vignette:
     toc: true
+bibliography: references.bib
+link-citations: true
 vignette: >
   %\VignetteIndexEntry{Inference_Transfer}
   %\VignetteEncoding{UTF-8}
@@ -114,6 +116,17 @@ $$
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 ```
 
+
+In @veltman2007cadmium the regressions for empirical aboveground plant parts (predominantly leaves) and earthworm concentrations with total soil concentrations is
+such as:
+
+$$
+\log_{10}(C_{plant}) = -0.42 + 0.59 \times \log_{10}(C_{soil}) 
+$$
+
+$$
+\log_{10}(C_{earthworm}) = 1.09 +  0.68 \times \log_{10}(C_{soil})
+$$
 ### Vegetation
 
 ```{r, echo=FALSE}
@@ -143,18 +156,22 @@ stan_data = list(
 fit_simple_veg_cd <- load_safe("raw_data/fit_simple_veg_cd.rds")
 ```
 
+
 ```{r, echo=FALSE}
 fit_pars <- rstan::extract(fit_simple_veg_cd, c("beta0", "beta1"))
 df_pars <- dplyr::bind_rows(list(
   data.frame(value=fit_pars$beta0, par="beta0"),
   data.frame(value=fit_pars$beta1, par="beta1")
 ))
+df_veltman_pars = data.frame(par=c("beta0", "beta1"), value=c(-0.42, 0.59))
 ggplot(data=df_pars) +
   theme_minimal() +
+  labs(title="Coefficient for logC ~ beta0 + beta1*logCinput (blue=Veltamn's coef)") +
   scale_fill_manual(
     name="parameters",
     values=c("#22aa33", "#aa2233")) +
   geom_density(aes(value, fill=par), alpha=0.5)  +
+  geom_vline(data=df_veltman_pars, aes(xintercept=value, group=par), col="blue") +
   facet_wrap(~par, scale="free")
 ```
 
@@ -172,6 +189,11 @@ df_sim <- q_mat %>%
     var_id = 1:n(),
     x_sim = stan_data$x_sim
   )
+
+df_veltman = data.frame(
+  x_sim = stan_data$x_sim,
+  y_sim = -0.42 + 0.59 *stan_data$x_sim
+)
 ```
 
 ```{r, echo=FALSE}
@@ -190,6 +212,11 @@ plt_sim <- ggplot() +
     data = df_sim,
     aes(x = x_sim, y = `50%`),
     linewidth = 1
+  ) +
+  geom_line(
+    data = df_veltman,
+    aes(x = x_sim, y = y_sim),
+    linewidth = 1, colour="blue"
   )
 
 plt_train <- plt_sim +
@@ -228,12 +255,15 @@ df_pars <- dplyr::bind_rows(list(
   data.frame(value=fit_pars$beta0, par="beta0"),
   data.frame(value=fit_pars$beta1, par="beta1")
 ))
+df_veltman_pars = data.frame(par=c("beta0", "beta1"), value=c(1.09, 0.68))
 ggplot(data=df_pars) +
   theme_minimal() +
+  labs(title="Coefficient for logC ~ beta0 + beta1*logCinput (blue=Veltamn's coef)") +
   scale_fill_manual(
     name="parameters",
     values=c("#22aa33", "#aa2233")) +
   geom_density(aes(value, fill=par), alpha=0.5)  +
+  geom_vline(data=df_veltman_pars, aes(xintercept=value, group=par), col="blue") +
   facet_wrap(~par, scale="free")
 ```
 
@@ -251,6 +281,11 @@ df_sim <- q_mat %>%
     var_id = 1:n(),
     x_sim = stan_data$x_sim
   )
+
+df_veltman = data.frame(
+  x_sim = stan_data$x_sim,
+  y_sim = 1.09 + 0.68 *stan_data$x_sim
+)
 ```
 
 ```{r, echo=FALSE}
@@ -269,6 +304,11 @@ plt_sim <- ggplot() +
     data = df_sim,
     aes(x = x_sim, y = `50%`),
     linewidth = 1
+  ) +
+  geom_line(
+    data = df_veltman,
+    aes(x = x_sim, y = y_sim),
+    linewidth = 1, colour="blue"
   )
 
 plt_train <- plt_sim +
@@ -279,7 +319,7 @@ plt_train <- plt_sim +
 plt_train
 ```
 
-## Inference for Micro-Mammals
+## Soil -> Micro-Mammals
 
 ```{r, echo=FALSE}
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
@@ -330,6 +370,7 @@ $$
 \log_{10}\left( C_{internal} \right) = \beta_0 + \beta_1  \log_{10}\left( C_{soil} \right) + beta_{cat} \log_{10}\left( C_{soil} \right) 
 $$
 
+
 ```{r direct_loadparsfit}
 fit_pars <- rstan::extract(fit_direct, c("beta0", "beta1", "beta_cat"))
 
@@ -370,6 +411,12 @@ df_sim <- map_dfr(1:dim(arr_sim)[3], function(i) {
     )
 })
 ```
+
+In the study of  @veltman2007cadmium, an equation is given by
+
+$$
+C_{}0.68·log(Csoil)1.09
+$$
 
 ```{r pltSim_direct, echo=FALSE}
 plt_sim <- ggplot() +
@@ -464,6 +511,7 @@ plt_full <- plt_sim +
   )
 plt_full
 ```
+
 
 
 # Direct dist-buffer model of Soil-Organism
@@ -680,4 +728,23 @@ map_directBuffer
 data("ocsge_species_dict")
 ```
 
+
+# Trophic Transfer
+
+## Plant -> Vole & Earthworm -> Shrew
+
+In @veltman2007cadmium the regressions for empirical aboveground plant parts (predominantly leaves) and earthworm concentrations with total soil concentrations is
+such as:
+
+$$
+\log_{10}(C_{vole}) = -0.37 + 1.16 \times \log_{10}(C_{plant}) 
+$$
+
+$$
+\log_{10}(C_{shrew}) = -0.45 + 0.79 \times \log_{10}(C_{earthworm}) 
+$$
+
+```{r}
+
+```
 
