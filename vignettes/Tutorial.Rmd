@@ -446,10 +446,7 @@ cols_risk <- c(
   "saddlebrown", # 5 - 10
   "#4A2C2A"      # > 10
 )
-
-# names_keep <- names(spcmdl_risk)[names(spcmdl_transfer) != "sol"]
-# spcmdl_transfer <- spcmdl_transfer[[names_keep]]
-
+# And plot
 terra::plot(spcmdl_risk,
             breaks = breaks_risk,
             col = cols_risk)

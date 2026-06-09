@@ -4,7 +4,7 @@ template:
 
 navbar:
   structure:
-    left:  [intro, reference, simulation, inference, examples, news]
+    left:  [intro, simulation, inference, examples, news, reference]
     right: [github]
   components:
     intro:
@@ -42,7 +42,7 @@ navbar:
         - text: "Eco-SSL"
           href: articles/zoo_ecossl.html
         - text: "Spatial Soil-Target Transfer"
-          href: articles/zoo_Berisp_full.html
+          href: articles/zoo_Soil_Target.html
         - text: "Spatial Trophic Transfer"
           href: articles/zoo_Berisp_full.html
 
