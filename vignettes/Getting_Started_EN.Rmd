@@ -108,8 +108,8 @@ plot_species_habitat(microtus_hab)
 ... and the greater white-toothed shrew (*Crocidura russula*):
 
 ```{r map_hab_crocidura}
-Crocidura_hab <- join_ocsge_species(ocsge_metaleurop, "Crocidura")
-plot_species_habitat(Crocidura_hab)
+crocidura_hab <- join_ocsge_species(ocsge_metaleurop, "Crocidura")
+plot_species_habitat(crocidura_hab)
 ```
 
 To understand the 3 maps in detail, please refer to the **Habitat** page. Briefly:
