@@ -133,8 +133,10 @@ page. Briefly:
 ``` r
 
 # We use the `weight_global` as habitat
-habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global)
-habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global)
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global) |>
+  add_nohabitat(microtus_hab[microtus_hab$resistance==10,])
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global) |>
+  add_nohabitat(crocidura_hab[crocidura_hab$resistance==10,])
 ```
 
 At this stage, now that the habitats are defined, we rasterize the
@@ -226,8 +228,8 @@ circuit theory (Omniscape).
 ``` r
 
 # Compute dispersal kernels based on a mobility radius (e.g., in pixels)
-k_herb <- compute_kernel(radius=50, GSD=25, size_std=1.5)
-k_carn <- compute_kernel(radius=150, GSD=25, size_std=1.5)
+k_herb <- compute_kernel(radius=50, GSD=25, size_std=0.5)
+k_carn <- compute_kernel(radius=150, GSD=25, size_std=0.5)
 
 # Apply dispersal to the spacemodel
 spcmdl_dispersal <- spcmdl |>

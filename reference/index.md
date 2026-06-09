@@ -46,8 +46,6 @@
   : Create a Habitat object
 - [`habitat_raster()`](https://qonfluens.github.io/spacemodR/reference/habitat_raster.md)
   : Rasterize a Habitat Object
-- [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md)
-  : Constructor for Intake Parameters
 - [`is_cyclic()`](https://qonfluens.github.io/spacemodR/reference/is_cyclic.md)
   : Test if a directed graph is cyclic
 - [`join_ocsge_species()`](https://qonfluens.github.io/spacemodR/reference/join_ocsge_species.md)

@@ -4,9 +4,8 @@
 
 ### Breaking Changes
 
-- **Refactored trophic fluxes interface:** The
-  [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md)
-  function has been completely redesigned and renamed to
+- **Refactored trophic fluxes interface:** The `intake()` function has
+  been completely redesigned and renamed to
   [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) to
   better reflect the mathematical and ecological concept of transfer
   rates.

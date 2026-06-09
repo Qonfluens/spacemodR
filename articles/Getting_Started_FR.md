@@ -136,8 +136,10 @@ Pour comprendre les 3 cartes en détails, ce référer à la page
 ``` r
 
 # nous utilise le poids `weight_global` comme habitat
-habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global)
-habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global)
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global) |>
+  add_nohabitat(microtus_hab[microtus_hab$resistance==10,])
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global) |>
+  add_nohabitat(crocidura_hab[crocidura_hab$resistance==10,])
 ```
 
 A cette étape, maintenant que les habitats sont défini, on rasterize les
