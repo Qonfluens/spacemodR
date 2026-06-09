@@ -6,7 +6,7 @@
 #' @param spacemodel A named list of spatial layers (e.g. \code{SpatRaster} objects).
 #'        Must contain an attribute \code{trophic_tbl} of class \code{trophic_tbl}.
 #' @param kernels A list of kernel parameters for each layer.
-#' @param flux A \code{trophic_tbl} object (or compatible table) containing
+#' @param fluxes A \code{trophic_tbl} object (or compatible table) containing
 #'        normalized weights and flux functions for each trophic link.
 #' @param exposure_weighting Character. Defines how the realized exposure is calculated
 #' based on the predator's presence. Options are:
@@ -31,11 +31,11 @@
 #' \enumerate{
 #'   \item Resources (lower neighbors) are identified.
 #'   \item Concentration from each resource is spatially spread using \code{spread()}.
-#'   \item Fluxes is computed using \code{flux()} and \code{add_flux()}.
+#'   \item Flux is computed using \code{apply_flux()}.
 #'   \item Contributions from all resources are summed.
 #' }
 #'
-#' The function assumes that trophic weights are already normalized so that,
+#' The function assumes that flux weights are already normalized so that,
 #' for each consumer, the sum of contributions from all resources equals 1.
 #'
 #' @return A named `spacemodel` object as a list of spatial layers representing
@@ -45,7 +45,7 @@
 transfer <- function(
     spacemodel,
     kernels,
-    fluxes=NULL,
+    fluxes = NULL,
     exposure_weighting = "local",
     verbose = FALSE) {
 
@@ -99,9 +99,9 @@ transfer <- function(
         use_diffusion = use_diffusion
       )
 
-      # INTAKE / FLUX
+      # APPLICATION DU FLUX
       if(!is.null(fluxes)) {
-        out_r_map <- compute_flux(out_r_map, fluxes, from = prey_name, to = predator_name)
+        out_r_map <- apply_flux(out_r_map, fluxes, from = prey_name, to = predator_name)
       }
       ## accumulation
       total_out <- total_out + out_r_map
@@ -111,7 +111,6 @@ transfer <- function(
   }
 
   # Reconstruction de l'objet spacemodel final
-  # Note: `raster_stack` et `spacemodel` sont des constructeurs
   stack_transfer <- raster_stack(
     raster_list = uptake_stack,
     names = names(uptake_stack)
@@ -135,7 +134,6 @@ transfer <- function(
 compute_exposure_map <- function(prey_conc, predator_hab, weight_map, kernel, use_diffusion) {
 
   # 1. Accessibilité : On ne mange que ce qui est dans sa zone d'habitat
-  # (Zone d'exclusion physique)
   accessible_prey <- terra::mask(prey_conc, predator_hab)
 
   # 2. Dispersion (OFFRE) : Potentiel de proies autour du point
@@ -185,7 +183,7 @@ compute_exposure_map <- function(prey_conc, predator_hab, weight_map, kernel, us
 #' @return A raster object with transformed values.
 #'
 #' @export
-compute_flux <- function(raster, fluxes, from, to) {
+apply_flux <- function(raster, fluxes, from, to) {
 
   stopifnot(inherits(fluxes, "trophic_tbl"))
 
