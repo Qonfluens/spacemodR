@@ -7,7 +7,7 @@
 transfer(
   spacemodel,
   kernels,
-  intakes = NULL,
+  fluxes = NULL,
   exposure_weighting = "local",
   verbose = FALSE
 )
@@ -17,9 +17,6 @@ transfer(
 Must contain an attribute \code{trophic_tbl} of class \code{trophic_tbl}.}
 
 \item{kernels}{A list of kernel parameters for each layer.}
-
-\item{intakes}{A \code{trophic_tbl} object (or compatible table) containing
-normalized weights and flux functions for each trophic link.}
 
 \item{exposure_weighting}{Character. Defines how the realized exposure is calculated
 based on the predator's presence. Options are:
@@ -36,6 +33,9 @@ based on the predator's presence. Options are:
 }}
 
 \item{verbose}{Logical. If \code{TRUE}, prints progress information.}
+
+\item{flux}{A \code{trophic_tbl} object (or compatible table) containing
+normalized weights and flux functions for each trophic link.}
 }
 \value{
 A named `spacemodel` object as a list of spatial layers representing
@@ -43,7 +43,7 @@ A named `spacemodel` object as a list of spatial layers representing
 }
 \description{
 Computes the transfer through a trophic network from
-lower to higher trophic levels using spatial spreading and intake functions.
+lower to higher trophic levels using spatial spreading and flux functions.
 }
 \details{
 The function processes layers in ascending trophic order, as defined
@@ -53,10 +53,10 @@ For each layer:
 \enumerate{
   \item Resources (lower neighbors) are identified.
   \item Concentration from each resource is spatially spread using \code{spread()}.
-  \item Intake is computed using \code{intake()}.
+  \item Fluxes is computed using \code{flux()} and \code{add_flux()}.
   \item Contributions from all resources are summed.
 }
 
-The function assumes that intake weights are already normalized so that,
+The function assumes that trophic weights are already normalized so that,
 for each consumer, the sum of contributions from all resources equals 1.
 }

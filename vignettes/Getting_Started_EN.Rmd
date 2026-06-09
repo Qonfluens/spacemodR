@@ -208,18 +208,16 @@ Now that the system is set up, we can "inject" our actual pollutant concentratio
 spcmdl_dispersal[["soil"]][] <- ground_cd
 
 # 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
-intakes <- intake(spcmdl_dispersal,
-  "soil -> plant" = ~ 10^x / 32,      # Specific equation for plants
-  "plant -> herbivore" = 0.5,         # Simple transfer factor for the herbivore
-  "herbivore -> carnivore" = 0.8,     # Simple transfer factor for the carnivore
-  default = 1
-)
+fluxes <- flux(spcmdl_dispersal, default = 1) |>
+  add_flux("soil", "plant",  ~ 10^x / 32) |> # Specific equation for plants
+  add_flux("soil", "herbivore",  0.5) |>     # Simple transfer factor for the herbivore
+  add_flux("herbivore", "carnivore",  0.8)   # Simple transfer factor for the carnivore
 
 # 3. Gather our dispersal kernels for the exposure calculation
 kernels <- list(soil = NA, plant = NA, herbivore = k_herb, carnivore = k_carn)
 
 # 4. Compute the global transfer throughout the ecosystem
-spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, intakes)
+spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, fluxes)
 
 # Visualize the contamination absorbed by the carnivore
 color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)

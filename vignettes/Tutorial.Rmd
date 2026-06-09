@@ -386,19 +386,17 @@ attr(spcmdl_dispersal, "trophic_tbl")
 
 
 ```{r exposure_spacemodel_build}
-test_intakes <- intake(spcmdl_dispersal,
+test_fluxes <- flux(spcmdl_dispersal, default = 1) |>
   # sol to sp10 is a coef 0.4
-  "sol -> sp10" = 0.4,
-  # General rule: sp12 uptake with factor 0.1
-  "sp12" = 0.1,  
-  # Exception: when sp12 feed on sp10, it's a square function
-  "sp10 -> sp12" = ~ x^2/10,
+  add_flux(from = "sol", to = "sp10", value = 0.4) |>
+  # General rule: sp12 uptake with factor 0.1 (applies to ALL links to sp12)
+  add_flux(to = "sp12", value = 0.1) |>
+  # Exception: when sp12 feeds on sp10, it's a square function (overwrites the general rule above)
+  add_flux(from = "sp10", to = "sp12", value = ~ x^2/10) |>
   # General rule: sp22 has a complex function
-  "sp22" = ~ x^0.1,
-  
-  default = 1 # for all other default is 1
-)
-spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_intakes)
+  add_flux(to = "sp22", value = ~ x^0.1)
+
+spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, test_fluxes)
 ```
 
 ```{r exposure_spacemodel_plot}

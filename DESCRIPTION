@@ -1,6 +1,6 @@
 Package: spacemodR
 Title: Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk
-Version: 0.1.3
+Version: 0.2.0
 Authors@R: 
     c(person("Virgile", "Baudrot", email = "virgile.baudrot@qonfluens.com", role = c("aut", "cre")),
       person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr ", role = "ctb"),
