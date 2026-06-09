@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>zoo_ecossl • spacemodR</title>
+<title>Implementing Eco-SSL model • spacemodR</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="zoo_ecossl">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Implementing Eco-SSL model">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -37,7 +37,6 @@
     <li><a class="dropdown-item" href="../articles/Tutorial.html">Tutorial Overview</a></li>
   </ul>
 </li>
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
@@ -57,11 +56,12 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--example-zoo" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧪 Example Zoo</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--example-zoo">
 <li><a class="dropdown-item" href="../articles/zoo_ecossl.html">Eco-SSL</a></li>
-    <li><a class="dropdown-item" href="../articles/zoo_Berisp_full.html">Spatial Soil-Target Transfer</a></li>
+    <li><a class="dropdown-item" href="../articles/zoo_Soil_Target.html">Spatial Soil-Target Transfer</a></li>
     <li><a class="dropdown-item" href="../articles/zoo_Berisp_full.html">Spatial Trophic Transfer</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav"></ul>
 </div>
@@ -76,7 +76,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>zoo_ecossl</h1>
+      <h1>Implementing Eco-SSL model</h1>
             
       
 
@@ -85,13 +85,63 @@
 
     
     
+<p>The fundamental principle of this assessment is based on the
+calculation of the Hazard Quotient (HQ).</p>
+<p>The goal of the algorithm is to find the exact concentration of the
+contaminant in the soil (Soil) for which the HQ is strictly equal to 1
+(the tipping point where the risk begins). The risk equation used to
+model this relationship is as follows:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mfrac><mrow><mi>F</mi><mi>I</mi><mi>R</mi><mo>×</mo><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><mi>l</mi><mo>×</mo><msub><mi>P</mi><mi>s</mi></msub><mo>+</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>T</mi><mi>R</mi><mi>V</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+HQ = \frac{FIR \times (Soil \times P_s + B_i)}{TRV}
+</annotation></semantics></math> By setting
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">HQ = 1</annotation></semantics></math>,
+it is possible to rearrange the equation to isolate the Soil variable.
+The Soil value thus obtained becomes our safety threshold: the
+Eco-SSL.</p>
+<p><strong>Exposure Parameters</strong></p>
+<p>The numerator of our equation models the animal’s environmental
+exposure. It is based on the following ecological and physiological
+parameters:</p>
+<ul>
+<li>Food Ingestion Rate
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi><mi>I</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">FIR</annotation></semantics></math>):
+The dietary ingestion rate. It is the total amount of food the animal
+consumes per day, normalized to its own body weight. (Example: a
+herbivorous bird consumes 0.190 kg of dry matter for each kg of its own
+body weight).</li>
+<li>Soil Ingestion as Proportion of Diet
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>):
+The proportion of soil that the animal swallows accidentally or
+unintentionally while feeding. (Example: 13.9% or 0.139 for the
+herbivorous bird).</li>
+<li>Concentration of Cadmium in Biota Type
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>):
+This is the core of trophic transfer. It refers to the concentration of
+the contaminant in the animal’s food items (plants, earthworms, prey).
+Because this concentration directly depends on the soil’s pollution
+state, it is modeled using specific regression equations. (Example: for
+plants eaten by a herbivore, the transfer equation is
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.546</mn><mo>×</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><mi>l</mi><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn>0.475</mn></mrow><annotation encoding="application/x-tex">\ln(B_i) = 0.546 \times \ln(Soil) - 0.475</annotation></semantics></math>).</li>
+</ul>
 <div class="section level2">
 <h2 id="build-a-spacemodel-to-get-eco-ssl-risk-layer">Build a <code>spacemodel</code> to get Eco-SSL risk layer<a class="anchor" aria-label="anchor" href="#build-a-spacemodel-to-get-eco-ssl-risk-layer"></a>
 </h2>
 <p>First step is load the package <code>spacemodR</code>.</p>
 <p>You can install from CRAN or from the <a href="https://github.com/Qonfluens/spacemodR" class="external-link">github repository</a></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">spacemodR</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">spacemodR</span><span class="op">)</span></span>
+<span><span class="co"># additional libraries for this specific notebook</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://scales.r-lib.org" class="external-link">scales</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="habitat">Habitat<a class="anchor" aria-label="anchor" href="#habitat"></a>
 </h3>
@@ -100,14 +150,16 @@ raster.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># the raster tif file is internal to the spacemodR package</span></span>
 <span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ground_cd</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="va">color_contam</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ground_cd</span>, col<span class="op">=</span><span class="va">color_contam</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_ecossl_files/figure-html/eco_ssl_ground_cd-1.png" class="r-plt" alt="" width="960"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">names_hab</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="st">"invert"</span>, <span class="st">"mamHerb"</span>, <span class="st">"mamInsect"</span>, <span class="st">"birdInsect"</span><span class="op">)</span></span>
 <span><span class="va">list_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">names_hab</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="va">ground_cd</span><span class="op">)</span></span>
 <span><span class="va">stack_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/raster_stack.html">raster_stack</a></span><span class="op">(</span><span class="va">list_habitat</span>, <span class="va">names_hab</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stack_habitat</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stack_habitat</span>, col<span class="op">=</span><span class="va">color_contam</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_ecossl_files/figure-html/eco_ssl_cd_habitat-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 <div class="section level3">
@@ -121,12 +173,14 @@ directly to the soil.</p>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"invert"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamHerb"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamInsect"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"birdInsect"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">trophic_df</span>, <span class="st">"level"</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"birdInsect"</span><span class="op">)</span></span></code></pre></div>
+<p>You can have access to trophic level:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">trophic_df</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       soil      plant     invert    mamHerb  mamInsect birdInsect </span></span>
 <span><span class="co">#&gt;          1          2          2          2          2          2</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<p>And then plot it:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_ecossl_files/figure-html/eco_ssl_cd_trophic_plot-1.png" class="r-plt" alt="" width="960"></p>
 </div>
@@ -135,43 +189,422 @@ directly to the soil.</p>
 </h3>
 <p>The third step is to merge the raster stack with the trophic
 data.frame.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">spcmdl_ecossl_h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_ecossl_h</span><span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_ecossl_files/figure-html/eco_ssl_cd_spacemodel-1.png" class="r-plt" alt="" width="960"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">spcmdl_ecossl_h</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="transfer-soil-target">Transfer Soil-Target<a class="anchor" aria-label="anchor" href="#transfer-soil-target"></a>
+<h3 id="no-dispersal-in-eco-ssl">No dispersal in Eco-SSL<a class="anchor" aria-label="anchor" href="#no-dispersal-in-eco-ssl"></a>
 </h3>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<p>There is no dispersal in Eco-SSL, so all kernels are set to
+<code>NA</code>.</p>
+<p>We set this list of kernel which is requirement later for transfer
+function.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># no dispersal for eco_ssl</span></span>
 <span><span class="va">ecossl_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  soil  <span class="op">=</span> <span class="cn">NA</span>, plant <span class="op">=</span> <span class="cn">NA</span>, invert <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  mamHerb <span class="op">=</span> <span class="cn">NA</span>, mamInsect <span class="op">=</span> <span class="cn">NA</span>, birdInsect <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ecossl_intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_ecossl_h</span>,</span>
-<span>  <span class="st">"soil -&gt; plant"</span>       <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">/</span><span class="fl">32</span>,  </span>
-<span>  <span class="st">"soil -&gt; invert"</span>      <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">/</span><span class="fl">140</span>,</span>
-<span>  <span class="st">"soil -&gt; mamHerb"</span>     <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">/</span><span class="fl">73</span>,</span>
-<span>  <span class="st">"soil -&gt; mamInsect"</span>   <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">/</span><span class="fl">0.36</span>,</span>
-<span>  <span class="st">"soil -&gt; birdInsect"</span>  <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">/</span><span class="fl">0.77</span>,</span>
+</div>
+</div>
+<div class="section level2">
+<h2 id="computing-the-risk">Computing the Risk<a class="anchor" aria-label="anchor" href="#computing-the-risk"></a>
+</h2>
+<p>The computing of Risk Threshold using data for Species Sensitivity
+Distribution compiled by the US-EPA is findable in this dataset:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"SSD_ecoSSL_all"</span><span class="op">)</span></span></code></pre></div>
+<div class="section level4">
+<h4 id="for-plants-and-soil-invertebrates">For plants and soil invertebrates<a class="anchor" aria-label="anchor" href="#for-plants-and-soil-invertebrates"></a>
+</h4>
+<p>For plants and soil invertebrates, the toxicological value is not a
+daily ingested dose. It directly refers to the concentration in the soil
+(expressed in mg/kg of soil dry weight). These organisms live in the
+soil and are continuously exposed to it.</p>
+<p>For plant, the Eco-SSL is the geometric mean of the maximum
+acceptable toxicant concentration (MATC) values for fourteen test
+species under different test conditions (pH and % organic matter (OM))
+and is equal to 32 mg/kg dw.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Data preparation (remove NAs to avoid warnings)</span></span>
+<span><span class="va">ssd_cd_plant</span> <span class="op">&lt;-</span> <span class="va">SSD_ecoSSL_all</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">compound</span> <span class="op">==</span> <span class="st">"Cadmium"</span>,</span>
+<span>    <span class="va">species_group</span> <span class="op">==</span> <span class="st">"Plant"</span>,</span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tox_value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Create the plot</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ssd_cd_plant</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">order_tox_value</span>, y <span class="op">=</span> <span class="va">tox_value</span>, color <span class="op">=</span> <span class="va">ERE_full</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">32</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">ERE_full</span>, scales <span class="op">=</span> <span class="st">"free_x"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html" class="external-link">label_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"plasma"</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Plant Sensitivity to Cadmium (Soil)"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Distribution of toxicity values by effect type (ERE)"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Order of Toxicity"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Soil concentration (mg/kg dry weight)"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span></span>
+<span>    panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>    strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span>, size <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_ecossl_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="960"></p>
+<p>For invertebrates, the Eco-SSL is the geometric mean of the MATC or
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><msub><mi>C</mi><mn>10</mn></msub></mrow><annotation encoding="application/x-tex">EC_{10}</annotation></semantics></math>
+(concentration causing an effect on 10% of the population) values for
+three test species under six different test conditions (pH) and is equal
+140 mg/kg dw. For Cadmium, the Eco-SSL is 32 mg/kg for plants</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ssd_cd_invert</span> <span class="op">&lt;-</span> <span class="va">SSD_ecoSSL_all</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">compound</span> <span class="op">==</span> <span class="st">"Cadmium"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Invert"</span>, <span class="va">species_group</span><span class="op">)</span>, <span class="co"># Flexible filter for Invertebrates</span></span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tox_value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ssd_cd_invert</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">order_tox_value</span>, y <span class="op">=</span> <span class="va">tox_value</span>, color <span class="op">=</span> <span class="va">ERE_full</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">140</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">ERE_full</span>, scales <span class="op">=</span> <span class="st">"free_x"</span>, ncol<span class="op">=</span><span class="fl">4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html" class="external-link">label_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"viridis"</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Invertebrate Sensitivity to Cadmium (Soil)"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Distribution of toxicity values by effect type (ERE)"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Order of Toxicity"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Soil concentration (mg/kg dry weight)"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>, strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_ecossl_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="960"></p>
+</div>
+<div class="section level4">
+<h4 id="for-birds-avian-and-mammals-mammalian">For birds (Avian) and mammals (Mammalian)<a class="anchor" aria-label="anchor" href="#for-birds-avian-and-mammals-mammalian"></a>
+</h4>
+<p>The process involves two steps. First, a TRV (Toxicity Reference
+Value) is calculated. This TRV represents the safe daily ingested dose,
+expressed in milligrams of contaminant per kilogram of the animal’s body
+weight per day (mg/kg bw/day). This is the one we are going to use
+here.</p>
+<p>Then, this TRV is used to “back-calculate” the maximum acceptable
+concentration in the soil (the Eco-SSL) by modeling the animal’s
+diet.</p>
+<p>This is where we use the equation:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mfrac><mrow><mi>F</mi><mi>I</mi><mi>R</mi><mo>×</mo><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><mi>l</mi><mo>×</mo><msub><mi>P</mi><mi>s</mi></msub><mo>+</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>T</mi><mi>R</mi><mi>V</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">
+HQ = \frac{FIR \times (Soil \times P_s + B_i)}{TRV}
+</annotation></semantics></math></p>
+<div class="section level5">
+<h5 id="birds">Birds<a class="anchor" aria-label="anchor" href="#birds"></a>
+</h5>
+<p>The Eco-SSL TRV for Cadmium in birds is 1.47 mg/kg/day.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ssd_cd_avian</span> <span class="op">&lt;-</span> <span class="va">SSD_ecoSSL_all</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">compound</span> <span class="op">==</span> <span class="st">"Cadmium"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Avian"</span>, <span class="va">species_group</span><span class="op">)</span>,</span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tox_value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ssd_cd_avian</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">order_tox_value</span>, y <span class="op">=</span> <span class="va">tox_value</span>, color <span class="op">=</span> <span class="va">ERE_full</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">1.47</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">ERE_full</span>, scales <span class="op">=</span> <span class="st">"free_x"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html" class="external-link">label_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"cividis"</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Bird Sensitivity (Avian) to Cadmium"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Distribution of toxicity values (Daily Dose) by effect type"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Order of Toxicity"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Daily dose (mg/kg body weight / day)"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>, strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_ecossl_files/figure-html/plot_ssd_cd_bird-1.png" class="r-plt" alt="" width="960"></p>
+</div>
+<div class="section level5">
+<h5 id="mammals">Mammals<a class="anchor" aria-label="anchor" href="#mammals"></a>
+</h5>
+<p>The official TRV for Cadmium in mammals is stricter, set at 0.77
+mg/kg/day.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">ssd_cd_mammal</span> <span class="op">&lt;-</span> <span class="va">SSD_ecoSSL_all</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
+<span>    <span class="va">compound</span> <span class="op">==</span> <span class="st">"Cadmium"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Mammal"</span>, <span class="va">species_group</span><span class="op">)</span>,</span>
+<span>    <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">tox_value</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ssd_cd_mammal</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">order_tox_value</span>, y <span class="op">=</span> <span class="va">tox_value</span>, color <span class="op">=</span> <span class="va">ERE_full</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">14</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_hline</a></span><span class="op">(</span>yintercept <span class="op">=</span> <span class="fl">0.77</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span>, linewidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">2.5</span>, alpha <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">ERE_full</span>, scales <span class="op">=</span> <span class="st">"free_x"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_continuous.html" class="external-link">scale_y_log10</a></span><span class="op">(</span>labels <span class="op">=</span> <span class="fu"><a href="https://scales.r-lib.org/reference/label_number.html" class="external-link">label_number</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_viridis.html" class="external-link">scale_color_viridis_d</a></span><span class="op">(</span>option <span class="op">=</span> <span class="st">"magma"</span>, guide <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span></span>
+<span>    title <span class="op">=</span> <span class="st">"Mammal Sensitivity to Cadmium"</span>,</span>
+<span>    subtitle <span class="op">=</span> <span class="st">"Distribution of toxicity values (Daily Dose) by effect type"</span>,</span>
+<span>    x <span class="op">=</span> <span class="st">"Order of Toxicity"</span>,</span>
+<span>    y <span class="op">=</span> <span class="st">"Daily dose (mg/kg body weight / day)"</span></span>
+<span>  <span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>, strip.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_ecossl_files/figure-html/plot_ssd_cd_mammal-1.png" class="r-plt" alt="" width="960"></p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="computing-hazard-quotient-hq">Computing Hazard Quotient (HQ)<a class="anchor" aria-label="anchor" href="#computing-hazard-quotient-hq"></a>
+</h3>
+<p>To solve the equation
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mfrac><mrow><mi>F</mi><mi>I</mi><mi>R</mi><mo>×</mo><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><mi>l</mi><mo>×</mo><msub><mi>P</mi><mi>s</mi></msub><mo>+</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>T</mi><mi>R</mi><mi>V</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">HQ = \frac{FIR \times (Soil \times P_s + B_i)}{TRV}</annotation></semantics></math>,
+the table integrates several species-specific parameters:</p>
+<ul>
+<li>Surrogate Receptor Group: This column identifies the specific bird
+species chosen by the EPA to represent an entire dietary guild within
+the ecosystem. For instance, the dove models avian herbivores, the
+woodcock models avian insectivores (foraging in the soil), and the hawk
+models avian carnivores.</li>
+<li>TRV for Cadmium (Toxicity Reference Value): This is the maximum safe
+daily dose of Cadmium the bird can ingest without experiencing adverse
+health effects. For all avian species in this assessment, the TRV is set
+at 1.47 mg/kg bw/day.</li>
+<li>Food Ingestion Rate (FIR): This parameter represents the total
+amount of food the bird consumes daily, normalized to its own body
+weight (kg of dry food per kg of body weight). Notice that the
+insectivore (woodcock) has the highest metabolic demand and ingestion
+rate (0.214) compared to the carnivore (0.0353).</li>
+<li>Soil Ingestion as Proportion of Diet
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>):
+Birds incidentally swallow soil while foraging or preening. This value
+represents the fraction of their total daily diet that is made up of
+soil. The ground-probing woodcock incidentally ingests the most soil
+(16.4% or 0.164).</li>
+<li>Concentration of Cadmium in Biota Type
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>):
+This column provides the bioaccumulation regression equations used to
+estimate how much Cadmium transfers from the soil into the bird’s
+specific food source (plants, earthworms, or mammals). It bridges the
+gap between environmental contamination and dietary exposure.</li>
+<li>Eco-SSL (Ecological Soil Screening Level): The final calculated
+threshold. It represents the maximum allowable Cadmium concentration in
+the soil (in mg/kg dry weight) to ensure the target bird remains safe
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">HQ = 1</annotation></semantics></math>).
+The avian insectivore is the most at risk, requiring a very stringent
+soil limit of 0.77 mg/kg, while the carnivore is protected up to 630
+mg/kg.</li>
+</ul>
+<div class="section level4">
+<h4 id="birds-1">Birds<a class="anchor" aria-label="anchor" href="#birds-1"></a>
+</h4>
+<table class="table">
+<colgroup>
+<col width="14%">
+<col width="17%">
+<col width="17%">
+<col width="17%">
+<col width="14%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Surrogate Receptor Group</th>
+<th align="center">TRV for Cadmium (mg dw/kg bw/d)¹</th>
+<th align="center">Food Ingestion Rate (FIR)² (kg dw/kg bw/d)</th>
+<th align="center">Soil Ingestion as Proportion of Diet
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>)²</th>
+<th align="left">Concentration of Cadmium in Biota Type (i)²’³
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>)
+(mg/kg dw)</th>
+<th align="center">Eco-SSL (mg/kg dw)⁴</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Avian herbivore (dove)</td>
+<td align="center">1.47</td>
+<td align="center">0.190</td>
+<td align="center">0.139</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.546</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn>0.475</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.546\cdot\ln(Soil_j)-0.475</annotation></semantics></math>
+where i = plants</td>
+<td align="center">28</td>
+</tr>
+<tr class="even">
+<td align="left">Avian ground insectivore (woodcock)</td>
+<td align="center">1.47</td>
+<td align="center">0.214</td>
+<td align="center">0.164</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.795</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mn>2.114</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.795\cdot\ln(Soil_j)+2.114</annotation></semantics></math>
+where i = earthworms</td>
+<td align="center">0.77</td>
+</tr>
+<tr class="odd">
+<td align="left">Avian carnivore (hawk)</td>
+<td align="center">1.47</td>
+<td align="center">0.0353</td>
+<td align="center">0.057</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.4723</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn>1.2571</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.4723\cdot\ln(Soil_j)-1.2571</annotation></semantics></math>
+where i = mammals</td>
+<td align="center">630</td>
+</tr>
+</tbody>
+</table>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>1</mn></msup><annotation encoding="application/x-tex">^1</annotation></semantics></math>
+The process for derivation of wildlife TRVs is described in Attachment
+4-5 of U.S. EPA (2003).</p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math>
+Parameters (FIR,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>
+values, regressions) are provided in U.S. EPA (2003) Attachment 4-1
+(revised February 2005).</p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>
+= Concentration in biota type (i) which represents 100% of the diet for
+the respective receptor.</p>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>4</mn></msup><annotation encoding="application/x-tex">^4</annotation></semantics></math><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mfrac><mrow><mi>F</mi><mi>I</mi><mi>R</mi><mo>⋅</mo><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo>⋅</mo><msub><mi>P</mi><mi>s</mi></msub><mo>+</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>T</mi><mi>R</mi><mi>V</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">HQ = \frac{FIR \cdot (Soil_j \cdot P_s + B_i)}{TRV}</annotation></semantics></math>
+solved for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">HQ=1</annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">Soil_j</annotation></semantics></math>
+= Eco-SSL (Equation 4-2; U.S. EPA, 2003). NA = Not Applicable.</p>
+</div>
+<div class="section level4">
+<h4 id="mammals-1">Mammals<a class="anchor" aria-label="anchor" href="#mammals-1"></a>
+</h4>
+<table class="table">
+<colgroup>
+<col width="14%">
+<col width="17%">
+<col width="17%">
+<col width="17%">
+<col width="14%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Surrogate Receptor Group</th>
+<th align="center">TRV for Cadmium (mg dw/kg bw/d)¹</th>
+<th align="center">Food Ingestion Rate (FIR)² (kg dw/kg bw/d)</th>
+<th align="center">Soil Ingestion as Proportion of Diet
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>)²</th>
+<th align="left">Concentration of Cadmium in Biota Type (i)²’³
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>)
+(mg/kg dw)</th>
+<th align="center">Eco-SSL (mg/kg dw)⁴</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Mammalian herbivore (vole)</td>
+<td align="center">0.770</td>
+<td align="center">0.0875</td>
+<td align="center">0.032</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.546</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn>0.475</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.546\cdot\ln(Soil_j)-0.475</annotation></semantics></math>
+where i = plants</td>
+<td align="center">73</td>
+</tr>
+<tr class="even">
+<td align="left">Mammalian ground insectivore (shrew)</td>
+<td align="center">0.770</td>
+<td align="center">0.209</td>
+<td align="center">0.030</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.795</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>+</mo><mn>2.114</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.795\cdot\ln(Soil_j)+2.114</annotation></semantics></math>
+where i = earthworms</td>
+<td align="center">0.36</td>
+</tr>
+<tr class="odd">
+<td align="left">Mammalian carnivore (weasel)</td>
+<td align="center">0.770</td>
+<td align="center">0.130</td>
+<td align="center">0.043</td>
+<td align="left">
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>0.4723</mn><mo>⋅</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>−</mo><mn>1.2571</mn></mrow><annotation encoding="application/x-tex">\ln(B_i)=0.4723\cdot\ln(Soil_j)-1.2571</annotation></semantics></math>
+where i = mammals</td>
+<td align="center">84</td>
+</tr>
+</tbody>
+</table>
+<p><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>1</mn></msup><annotation encoding="application/x-tex">^1</annotation></semantics></math>
+The process for derivation of wildlife TRVs is described in Attachment
+4-5 of U.S. EPA (2003).
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>2</mn></msup><annotation encoding="application/x-tex">^2</annotation></semantics></math>
+Parameters (FIR,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mi>s</mi></msub><annotation encoding="application/x-tex">P_s</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>
+values, regressions) are provided in U.S. EPA (2003) Attachment 4-1
+(revised February 2005).
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>3</mn></msup><annotation encoding="application/x-tex">^3</annotation></semantics></math><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>i</mi></msub><annotation encoding="application/x-tex">B_i</annotation></semantics></math>
+= Concentration in biota type (i) which represents 100% of the diet for
+the respective receptor.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi></mi><mn>4</mn></msup><annotation encoding="application/x-tex">^4</annotation></semantics></math><math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mfrac><mrow><mi>F</mi><mi>I</mi><mi>R</mi><mo>⋅</mo><mo stretchy="false" form="prefix">(</mo><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub><mo>⋅</mo><msub><mi>P</mi><mi>s</mi></msub><mo>+</mo><msub><mi>B</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><mrow><mi>T</mi><mi>R</mi><mi>V</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">HQ = \frac{FIR \cdot (Soil_j \cdot P_s + B_i)}{TRV}</annotation></semantics></math>
+solved for
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>H</mi><mi>Q</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">HQ=1</annotation></semantics></math>
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mi>o</mi><mi>i</mi><msub><mi>l</mi><mi>j</mi></msub></mrow><annotation encoding="application/x-tex">Soil_j</annotation></semantics></math>
+= Eco-SSL (Equation 4-2; U.S. EPA, 2003). NA = Not Applicable.</p>
+</div>
+</div>
+</div>
+<div class="section level2">
+<h2 id="mapping-risk-levels">Mapping Risk Levels<a class="anchor" aria-label="anchor" href="#mapping-risk-levels"></a>
+</h2>
+<p>To evaluate the spatial distribution of environmental risk, we will
+calculate the Hazard Quotient (HQ) for each target group across the
+landscape.</p>
+<p>The HQ is simply the ratio of the environmental exposure to the safe
+threshold (HQ = Exposure / Eco-SSL). B</p>
+<p>Because our input soil concentration layers (<code>x</code>) are
+currently
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>o</mi><msub><mi>g</mi><mn>10</mn></msub></mrow><annotation encoding="application/x-tex">log_{10}</annotation></semantics></math>-scaled,
+we must first back-transform them to their actual, linear values (using
+<code>10^x</code>) before performing the division. To keep our model
+setup clean and easy to update, we will first define a vector containing
+the specific Eco-SSL thresholds for each group, and then apply these
+values within the <code><a href="../reference/intake.html">intake()</a></code> function to configure our
+<code>spacemodel</code> object.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define the Eco-SSL thresholds (in mg/kg) for each group in a named vector</span></span>
+<span><span class="va">ecossl_vals</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  plant      <span class="op">=</span> <span class="fl">32</span>,</span>
+<span>  invert     <span class="op">=</span> <span class="fl">140</span>,</span>
+<span>  mamHerb    <span class="op">=</span> <span class="fl">73</span>,</span>
+<span>  mamInsect  <span class="op">=</span> <span class="fl">0.36</span>,</span>
+<span>  birdInsect <span class="op">=</span> <span class="fl">0.77</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Build the intake thresholds by transforming the log10 soil (10^x) </span></span>
+<span><span class="co"># and dividing by the specific Eco-SSL value to get the HQ</span></span>
+<span><span class="va">ecossl_threshold</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_ecossl_h</span>,</span>
+<span>  <span class="st">"soil -&gt; plant"</span>       <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="va">ecossl_vals</span><span class="op">[</span><span class="st">"plant"</span><span class="op">]</span>,  </span>
+<span>  <span class="st">"soil -&gt; invert"</span>      <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="va">ecossl_vals</span><span class="op">[</span><span class="st">"invert"</span><span class="op">]</span>,</span>
+<span>  <span class="st">"soil -&gt; mamHerb"</span>     <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="va">ecossl_vals</span><span class="op">[</span><span class="st">"mamHerb"</span><span class="op">]</span>,</span>
+<span>  <span class="st">"soil -&gt; mamInsect"</span>   <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="va">ecossl_vals</span><span class="op">[</span><span class="st">"mamInsect"</span><span class="op">]</span>,</span>
+<span>  <span class="st">"soil -&gt; birdInsect"</span>  <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="va">ecossl_vals</span><span class="op">[</span><span class="st">"birdInsect"</span><span class="op">]</span>,</span>
 <span>  default <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for all other default is 1</span></span>
 <span>  normalize <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Apply the transfer to compute the spatial risk layers</span></span>
 <span><span class="va">spcmdl_ecossl_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_ecossl_h</span>,</span>
 <span>  <span class="va">ecossl_kernels</span>,</span>
-<span>  <span class="va">ecossl_intakes</span>,</span>
-<span>  exposure_weighting<span class="op">=</span><span class="st">"potential"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="risk-indices">Risk Indices<a class="anchor" aria-label="anchor" href="#risk-indices"></a>
-</h3>
-<p>Finally, we build the Risk indice.</p>
-<p>A plot of layer with risk threshold color scale.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<span>  <span class="va">ecossl_threshold</span>,</span>
+<span>  exposure_weighting<span class="op">=</span><span class="st">"potential"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>To easily interpret the spatial distribution of ecological risks, we
+map the calculated Hazard Quotients (HQs) using a discrete,
+threshold-based color scale. Because an HQ value of <code>1</code>
+represents the regulatory tipping point for risk, the palette is split
+intentionally: areas below the threshold are represented by shades of
+green (safe zones), while areas exceeding the threshold shift to yellow
+and dark brown (action or risk zones). After excluding the baseline
+<code>soil</code> layer to focus strictly on our ecological receptors,
+we plot the entire study area and subsequently crop and mask the layers
+to our specific Metaleurop Region of Interest (ROI) for a clean,
+site-focused evaluation.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Risk colors</span></span>
 <span><span class="va">breaks_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="va">cols_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -190,7 +623,7 @@ data.frame.</p>
 <span>            breaks <span class="op">=</span> <span class="va">breaks_risk</span>,</span>
 <span>            col <span class="op">=</span> <span class="va">cols_risk</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_ecossl_files/figure-html/eco_ssl_risk_plot-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">poly</span> <span class="op">&lt;-</span> <span class="va">roi_metaleurop</span></span>
 <span><span class="va">poly_vect</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/project.html" class="external-link">project</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/vect.html" class="external-link">vect</a></span><span class="op">(</span><span class="va">poly</span><span class="op">)</span>, <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/crs.html" class="external-link">crs</a></span><span class="op">(</span><span class="va">spcmdl_ecossl_risk_sub</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -200,28 +633,6 @@ data.frame.</p>
 <span>            breaks <span class="op">=</span> <span class="va">breaks_risk</span>,</span>
 <span>            col <span class="op">=</span> <span class="va">cols_risk</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_ecossl_files/figure-html/eco_ssl_risk_plot_crop-1.png" class="r-plt" alt="" width="960"></p>
-</div>
-<div class="section level3">
-<h3 id="checking-eco-ssl">checking Eco-SSL<a class="anchor" aria-label="anchor" href="#checking-eco-ssl"></a>
-</h3>
-<p>For this very simple example, a simple check can be done, because
-Eco-SSL is a computing of a risk based on the amount in soil:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">check_ecossl_risk</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="st">"soil -&gt; plant"</span>       <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="va">ground_cd</span><span class="op">/</span><span class="fl">32</span>,  </span>
-<span>  <span class="st">"soil -&gt; invert"</span>      <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="va">ground_cd</span><span class="op">/</span><span class="fl">140</span>,</span>
-<span>  <span class="st">"soil -&gt; mamHerb"</span>     <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="va">ground_cd</span><span class="op">/</span><span class="fl">73</span>,</span>
-<span>  <span class="st">"soil -&gt; mamInsect"</span>   <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="va">ground_cd</span><span class="op">/</span><span class="fl">0.36</span>,</span>
-<span>  <span class="st">"soil -&gt; birdInsect"</span>  <span class="op">=</span> <span class="fl">10</span><span class="op">^</span><span class="va">ground_cd</span><span class="op">/</span><span class="fl">0.77</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">r_check_ecossl_risk</span> <span class="op">=</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">check_ecossl_risk</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">r_check_ecossl_risk</span>,</span>
-<span>            breaks <span class="op">=</span> <span class="va">breaks_risk</span>,</span>
-<span>            col <span class="op">=</span> <span class="va">cols_risk</span><span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_ecossl_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="960"></p>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

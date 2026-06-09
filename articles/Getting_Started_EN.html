@@ -37,7 +37,6 @@
     <li><a class="dropdown-item" href="../articles/Tutorial.html">Tutorial Overview</a></li>
   </ul>
 </li>
-<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
@@ -57,11 +56,12 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--example-zoo" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧪 Example Zoo</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--example-zoo">
 <li><a class="dropdown-item" href="../articles/zoo_ecossl.html">Eco-SSL</a></li>
-    <li><a class="dropdown-item" href="../articles/zoo_Berisp_full.html">Spatial Soil-Target Transfer</a></li>
+    <li><a class="dropdown-item" href="../articles/zoo_Soil_Target.html">Spatial Soil-Target Transfer</a></li>
     <li><a class="dropdown-item" href="../articles/zoo_Berisp_full.html">Spatial Trophic Transfer</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">News</a></li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul>
 <ul class="navbar-nav"></ul>
 </div>
@@ -92,16 +92,27 @@ provides a high-level overview of the package’s capabilities.</p>
 Rather than calculating a global, single-point risk for a site, we
 integrate the actual geography of the landscape to map ecological and
 contaminant flows.</p>
-<p>To achieve this, we follow a logical, modular pipeline: 1.
-<strong>Landscape and Habitats</strong>: Define the study area and the
-species’ ability to inhabit it. 2. <strong>Trophic Web</strong>: Define
-“who eats whom” (predator-prey relationships). 3. <strong>The
-Spacemodel</strong>: The core object that merges spatial data with
-ecological relationships. 4. <strong>Dispersal</strong>: Model animal
-movement across the landscape. 5. <strong>Transfer and
-Exposure</strong>: Track the propagation of a contaminant through the
-food web. 6. <strong>Risk Mapping</strong>: Generate spatial risk
-indices (e.g., Eco-SSL).</p>
+<p>To achieve this, we follow a logical, modular pipeline:</p>
+<ol style="list-style-type: decimal">
+<li>
+<strong>Landscape and Habitats</strong>: Define the study area and
+the species’ ability to inhabit it.</li>
+<li>
+<strong>Trophic Web</strong>: Define “who eats whom” (predator-prey
+relationships).</li>
+<li>
+<strong>The Spacemodel</strong>: The core object that merges spatial
+data with ecological relationships.</li>
+<li>
+<strong>Dispersal</strong>: Model animal movement across the
+landscape.</li>
+<li>
+<strong>Transfer and Exposure</strong>: Track the propagation of a
+contaminant through the food web.</li>
+<li>
+<strong>Risk Mapping</strong>: Generate spatial risk indices (e.g.,
+Eco-SSL).</li>
+</ol>
 <p>Let’s start by loading the necessary packages:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">spacemodR</span><span class="op">)</span></span>
@@ -114,6 +125,10 @@ indices (e.g., Eco-SSL).</p>
 <p>Everything starts with geography. <code>spacemodR</code> facilitates
 the extraction and manipulation of land cover data (like the OCS-GE
 database in France) for a given Region of Interest (ROI).</p>
+<p>First, we load data from a site in northern France. Here, we use the
+provided data (<code>ocsge_metaleurop</code> and
+<code>roi_metaleurop</code>) along with the <code>ggplot2</code> package
+for visualization.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load a study area (e.g., the Metaleurop site) and its land cover data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"roi_metaleurop"</span><span class="op">)</span></span>
@@ -131,20 +146,79 @@ our species. A habitat is a combination of favorable, unfavorable, or
 neutral zones. These geometries are then rasterized (converted into
 regular grids) to prepare them for modeling.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Example: Load a background concentration raster for a contaminant (e.g., Cadmium)</span></span>
+<code class="sourceCode R"><span><span class="co"># Example: Loading a background concentration raster for a contaminant (Cadmium)</span></span>
 <span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># For this demonstration, we simulate a simplified 4-level ecosystem</span></span>
-<span><span class="va">names_hab</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="st">"herbivore"</span>, <span class="st">"carnivore"</span><span class="op">)</span></span>
+<span><span class="co"># Habitat definition based on OSGE codes (which are in the `ocsge_metaleurop` table)</span></span>
+<span><span class="va">layer_soil_natural</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS1.2.1"</span>,<span class="st">"CS2.1.1.1"</span>,<span class="st">"CS2.1.1.2"</span>,<span class="st">"CS2.1.1.3"</span>, <span class="st">"CS2.1.2"</span>,<span class="st">"CS2.1.3"</span>,<span class="st">"CS2.2.1"</span>,<span class="st">"CS2.2.3"</span><span class="op">)</span></span>
+<span><span class="va">layer_soil_artificial</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS1.1.1.1"</span>, <span class="st">"CS1.1.1.2"</span>, <span class="st">"CS1.1.2.1"</span><span class="op">)</span></span>
+<span><span class="va">layer_plant</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
+<span>   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS2.1.1.1"</span>, <span class="st">"CS2.1.1.2"</span>, <span class="st">"CS2.1.1.3"</span>, <span class="st">"CS2.1.3"</span>, <span class="st">"CS2.2.1"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">habitat_sol</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_natural</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_artificial</span>,<span class="op">]</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_sol</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Getting_Started_EN_files/figure-html/map_sol-1.png" class="r-plt" alt="" width="960"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">habitat_plante</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_plant</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_artificial</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>Some of these habitat specificities are included in the project.
+Currently, there are 935 species, including 499 birds, 215 mammals, 136
+reptiles, and 85 amphibians.</p>
+<p>For example, for the common vole (<em>Microtus arvalis</em>):</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">microtus_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Microtus_arvalis"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Getting_Started_EN_files/figure-html/map_hab_microtus-1.png" class="r-plt" alt="" width="960"></p>
+<p>… and the greater white-toothed shrew (<em>Crocidura
+russula</em>):</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">crocidura_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Crocidura"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Getting_Started_EN_files/figure-html/map_hab_crocidura-1.png" class="r-plt" alt="" width="960"></p>
+<p>To understand the 3 maps in detail, please refer to the
+<strong>Habitat</strong> page. Briefly:</p>
+<ul>
+<li>
+<strong>Global weight</strong>: This is the carrying capacity (or
+general attractiveness) of an environment for the species.</li>
+<li>
+<strong>Foraging weight</strong>: This is the trophic attractiveness
+of the environment. An animal does not necessarily feed everywhere it
+lives.</li>
+<li>
+<strong>Resistance</strong> (Movement resistance / Spatial
+friction): This is the energetic cost or danger associated with crossing
+this environment. This parameter is used by connectivity and dispersal
+models (like the Omniscape algorithm discussed later).</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># We use the `weight_global` as habitat</span></span>
+<span><span class="va">habitat_herbivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span></span>
+<span><span class="va">habitat_carnivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">crocidura_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span></span></code></pre></div>
+<p>At this stage, now that the habitats are defined, we rasterize the
+habitats based on a default layer, here <code>cd_ground</code>. This
+allows us to have the same landscape grid so we can successfully overlay
+all the layers.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># We initialize habitat grids (rasters) for each level</span></span>
+<span><span class="va">rast_sol</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_sol</span><span class="op">)</span></span>
+<span><span class="va">rast_plant</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_plante</span><span class="op">)</span></span>
+<span><span class="va">rast_herbivor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_herbivore</span><span class="op">)</span></span>
+<span><span class="va">rast_carnivor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_carnivore</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># We initialize habitat grids (rasters) for each level</span></span>
-<span><span class="co"># (In a real project, each raster derives from specific habitat suitability weights)</span></span>
-<span><span class="va">list_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">names_hab</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="va">ground_cd</span><span class="op">)</span> </span>
-<span><span class="va">stack_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/raster_stack.html">raster_stack</a></span><span class="op">(</span><span class="va">list_habitat</span>, <span class="va">names_hab</span><span class="op">)</span></span>
+<span><span class="co"># We create the `raster_stack` of the habitats</span></span>
+<span><span class="va">stack_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/raster_stack.html">raster_stack</a></span><span class="op">(</span></span>
+<span>  raster_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">rast_sol</span>, <span class="va">rast_plant</span>, <span class="va">rast_herbivor</span>, <span class="va">rast_carnivor</span><span class="op">)</span>,</span>
+<span>  names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="st">"herbivore"</span>, <span class="st">"carnivore"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Visualize the raster layers</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stack_habitat</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/build_habitat-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="960"></p>
 <hr>
 </div>
 <div class="section level2">
@@ -154,7 +228,7 @@ regular grids) to prepare them for modeling.</p>
 ecological interactions. <code>spacemodR</code> uses a <strong>Directed
 Acyclic Graph (DAG)</strong> to define prey, predators, and the flow of
 energy (or contaminants).</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Build the trophic web</span></span>
 <span><span class="va">trophic_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trophic.html">trophic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"soil"</span>, to <span class="op">=</span> <span class="st">"plant"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -174,7 +248,7 @@ inherently links the spatial dimension (the <code>raster_stack</code>)
 with the ecological dimension (the <code>trophic_df</code> graph).</p>
 <p>Any subsequent operation (dispersal, exposure) will use this object
 to ensure computational consistency.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">spcmdl</span><span class="op">)</span></span>
 <span><span class="co">#&gt; class       : SpatRaster</span></span>
@@ -182,10 +256,14 @@ to ensure computational consistency.</p>
 <span><span class="co">#&gt; resolution  : 24.93766, 24.93976  (x, y)</span></span>
 <span><span class="co">#&gt; extent      : 697602.7, 707602.7, 7032171, 7042521  (xmin, xmax, ymin, ymax)</span></span>
 <span><span class="co">#&gt; coord. ref. : RGF93 v1 / Lambert-93 (EPSG:2154)</span></span>
-<span><span class="co">#&gt; sources     : ground_concentration_cd_compressed.tif</span></span>
-<span><span class="co">#&gt; names       :      soil,     plant, herbivore, carnivore</span></span>
-<span><span class="co">#&gt; min values  : -0.229399, -0.229399, -0.229399, -0.229399</span></span>
-<span><span class="co">#&gt; max values  :  1.769119,  1.769119,  1.769119,  1.769119</span></span></code></pre></div>
+<span><span class="co">#&gt; source(s)   : memory</span></span>
+<span><span class="co">#&gt; varnames    : ground_concentration_cd_compressed</span></span>
+<span><span class="co">#&gt;               ground_concentration_cd_compressed</span></span>
+<span><span class="co">#&gt;               ground_concentration_cd_compressed</span></span>
+<span><span class="co">#&gt;               ground_concentration_cd_compressed</span></span>
+<span><span class="co">#&gt; names       : soil, plant, herbivore, carnivore</span></span>
+<span><span class="co">#&gt; min values  :    0,     0,         0,         0</span></span>
+<span><span class="co">#&gt; max values  :    1,     1,        10,         9</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -195,7 +273,7 @@ to ensure computational consistency.</p>
 movements (its foraging radius, its dispersal). <code>spacemodR</code>
 allows you to simulate these movements, for instance via convolution
 kernels or circuit theory (Omniscape).</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Compute dispersal kernels based on a mobility radius (e.g., in pixels)</span></span>
 <span><span class="va">k_herb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">50</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
 <span><span class="va">k_carn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">150</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
@@ -215,7 +293,7 @@ kernels or circuit theory (Omniscape).</p>
 concentrations into the soil, and model its bioconcentration and
 bioaccumulation up to the top of the food chain using the
 <code><a href="../reference/transfer.html">transfer()</a></code> function.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. Assign the actual concentration grid into the "soil" layer</span></span>
 <span><span class="va">spcmdl_dispersal</span><span class="op">[[</span><span class="st">"soil"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ground_cd</span></span>
 <span></span>
@@ -235,9 +313,7 @@ bioaccumulation up to the top of the food chain using the
 <span></span>
 <span><span class="co"># Visualize the contamination absorbed by the carnivore</span></span>
 <span><span class="va">color_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span><span class="op">[[</span><span class="st">"carnivore"</span><span class="op">]</span><span class="op">]</span>, </span>
-<span>            col<span class="op">=</span><span class="va">color_transfer</span>, </span>
-<span>            main<span class="op">=</span><span class="st">"Estimated Exposure of the Carnivore to Cadmium"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, col<span class="op">=</span><span class="va">color_transfer</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Getting_Started_EN_files/figure-html/transfer-1.png" class="r-plt" alt="" width="960"></p>
 <hr>
 </div>
@@ -248,9 +324,9 @@ bioaccumulation up to the top of the food chain using the
 Index</strong> (e.g., Hazard Quotient or Eco-SSL approach). This allows
 us to map “Hot-Spots” where ecotoxicological reference thresholds are
 exceeded.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define risk classes (from "Safe" to "Very High Risk")</span></span>
-<span><span class="va">breaks_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span></span>
+<span><span class="va">breaks_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="va">cols_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"darkgreen"</span>,   <span class="co"># 0 - 0.1 (No Risk)</span></span>
 <span>  <span class="st">"green"</span>,       <span class="co"># 0.1 - 0.5</span></span>
@@ -279,11 +355,13 @@ exceeded.</p>
 action! To go further and finely configure each step, we invite you to
 consult our specialized guides:</p>
 <ul>
-<li>🛠️ <strong>Habitat Layer Management</strong>: Build complex habitat
-and resistance maps from vector geometries.</li>
-<li>🛠️ <strong>Landscape Connectivity</strong>: Integrate circuit theory
-(Omniscape) to model the movement of large mammals.</li>
-<li>🦁 <strong>The Example Zoo</strong>: Explore real-world case studies
+<li>🧩️ <strong>Habitat Layer</strong>: Build complex habitat and
+resistance maps from vector geometries.</li>
+<li>🧩️️ <strong>Landscape Connectivity</strong>: Integrate circuit theory
+(Omniscape) to model the movement of large mammals</li>
+<li>🎯️ <strong>Tuning Parameters</strong>: Explore parameters and their
+inference (with Bayesian tools).</li>
+<li>🧪 <strong>The Example Zoo</strong>: Explore real-world case studies
 (like the complete Berisp model).</li>
 </ul>
 </div>

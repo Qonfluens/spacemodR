@@ -8,14 +8,18 @@ Ecological Risk Assessments (ERA)**. Rather than calculating a global,
 single-point risk for a site, we integrate the actual geography of the
 landscape to map ecological and contaminant flows.
 
-To achieve this, we follow a logical, modular pipeline: 1. **Landscape
-and Habitats**: Define the study area and the species’ ability to
-inhabit it. 2. **Trophic Web**: Define “who eats whom” (predator-prey
-relationships). 3. **The Spacemodel**: The core object that merges
-spatial data with ecological relationships. 4. **Dispersal**: Model
-animal movement across the landscape. 5. **Transfer and Exposure**:
-Track the propagation of a contaminant through the food web. 6. **Risk
-Mapping**: Generate spatial risk indices (e.g., Eco-SSL).
+To achieve this, we follow a logical, modular pipeline:
+
+1.  **Landscape and Habitats**: Define the study area and the species’
+    ability to inhabit it.
+2.  **Trophic Web**: Define “who eats whom” (predator-prey
+    relationships).
+3.  **The Spacemodel**: The core object that merges spatial data with
+    ecological relationships.
+4.  **Dispersal**: Model animal movement across the landscape.
+5.  **Transfer and Exposure**: Track the propagation of a contaminant
+    through the food web.
+6.  **Risk Mapping**: Generate spatial risk indices (e.g., Eco-SSL).
 
 Let’s start by loading the necessary packages:
 
@@ -33,6 +37,10 @@ library(terra)
 Everything starts with geography. `spacemodR` facilitates the extraction
 and manipulation of land cover data (like the OCS-GE database in France)
 for a given Region of Interest (ROI).
+
+First, we load data from a site in northern France. Here, we use the
+provided data (`ocsge_metaleurop` and `roi_metaleurop`) along with the
+`ggplot2` package for visualization.
 
 ``` r
 
@@ -57,22 +65,101 @@ prepare them for modeling.
 
 ``` r
 
-# Example: Load a background concentration raster for a contaminant (e.g., Cadmium)
+# Example: Loading a background concentration raster for a contaminant (Cadmium)
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 
-# For this demonstration, we simulate a simplified 4-level ecosystem
-names_hab = c("soil", "plant", "herbivore", "carnivore")
+# Habitat definition based on OSGE codes (which are in the `ocsge_metaleurop` table)
+layer_soil_natural = ocsge_metaleurop$code_cs %in% 
+  c("CS1.2.1","CS2.1.1.1","CS2.1.1.2","CS2.1.1.3", "CS2.1.2","CS2.1.3","CS2.2.1","CS2.2.3")
+layer_soil_artificial = ocsge_metaleurop$code_cs %in%
+  c("CS1.1.1.1", "CS1.1.1.2", "CS1.1.2.1")
+layer_plant = ocsge_metaleurop$code_cs %in% 
+   c("CS2.1.1.1", "CS2.1.1.2", "CS2.1.1.3", "CS2.1.3", "CS2.2.1")
+```
+
+``` r
+
+habitat_sol = habitat() |>
+  add_habitat(ocsge_metaleurop[layer_soil_natural,]) |>
+  add_nohabitat(ocsge_metaleurop[layer_soil_artificial,])
+plot(habitat_sol)
+```
+
+![](Getting_Started_EN_files/figure-html/map_sol-1.png)
+
+``` r
+
+habitat_plante = habitat() |>
+  add_habitat(ocsge_metaleurop[layer_plant,]) |>
+  add_nohabitat(ocsge_metaleurop[layer_soil_artificial,])
+```
+
+Some of these habitat specificities are included in the project.
+Currently, there are 935 species, including 499 birds, 215 mammals, 136
+reptiles, and 85 amphibians.
+
+For example, for the common vole (*Microtus arvalis*):
+
+``` r
+
+microtus_hab <- join_ocsge_species(ocsge_metaleurop, "Microtus_arvalis")
+plot_species_habitat(microtus_hab)
+```
+
+![](Getting_Started_EN_files/figure-html/map_hab_microtus-1.png)
+
+… and the greater white-toothed shrew (*Crocidura russula*):
+
+``` r
+
+crocidura_hab <- join_ocsge_species(ocsge_metaleurop, "Crocidura")
+plot_species_habitat(crocidura_hab)
+```
+
+![](Getting_Started_EN_files/figure-html/map_hab_crocidura-1.png)
+
+To understand the 3 maps in detail, please refer to the **Habitat**
+page. Briefly:
+
+- **Global weight**: This is the carrying capacity (or general
+  attractiveness) of an environment for the species.
+- **Foraging weight**: This is the trophic attractiveness of the
+  environment. An animal does not necessarily feed everywhere it lives.
+- **Resistance** (Movement resistance / Spatial friction): This is the
+  energetic cost or danger associated with crossing this environment.
+  This parameter is used by connectivity and dispersal models (like the
+  Omniscape algorithm discussed later).
+
+``` r
+
+# We use the `weight_global` as habitat
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global)
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global)
+```
+
+At this stage, now that the habitats are defined, we rasterize the
+habitats based on a default layer, here `cd_ground`. This allows us to
+have the same landscape grid so we can successfully overlay all the
+layers.
+
+``` r
 
 # We initialize habitat grids (rasters) for each level
-# (In a real project, each raster derives from specific habitat suitability weights)
-list_habitat <- lapply(names_hab, function(i) ground_cd) 
-stack_habitat <- raster_stack(list_habitat, names_hab)
+rast_sol <- habitat_raster(ground_cd, habitat_sol)
+rast_plant <- habitat_raster(ground_cd, habitat_plante)
+rast_herbivor <- habitat_raster(ground_cd, habitat_herbivore)
+rast_carnivor <- habitat_raster(ground_cd, habitat_carnivore)
 
-# Visualize the raster layers
+# We create the `raster_stack` of the habitats
+stack_habitat <- raster_stack(
+  raster_list = list(rast_sol, rast_plant, rast_herbivor, rast_carnivor),
+  names = c("soil", "plant", "herbivore", "carnivore")
+)
+
 terra::plot(stack_habitat)
 ```
 
-![](Getting_Started_EN_files/figure-html/build_habitat-1.png)
+![](Getting_Started_EN_files/figure-html/unnamed-chunk-3-1.png)
 
 ------------------------------------------------------------------------
 
@@ -117,10 +204,14 @@ print(spcmdl)
 #> resolution  : 24.93766, 24.93976  (x, y)
 #> extent      : 697602.7, 707602.7, 7032171, 7042521  (xmin, xmax, ymin, ymax)
 #> coord. ref. : RGF93 v1 / Lambert-93 (EPSG:2154)
-#> sources     : ground_concentration_cd_compressed.tif
-#> names       :      soil,     plant, herbivore, carnivore
-#> min values  : -0.229399, -0.229399, -0.229399, -0.229399
-#> max values  :  1.769119,  1.769119,  1.769119,  1.769119
+#> source(s)   : memory
+#> varnames    : ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#> names       : soil, plant, herbivore, carnivore
+#> min values  :    0,     0,         0,         0
+#> max values  :    1,     1,        10,         9
 ```
 
 ------------------------------------------------------------------------
@@ -177,9 +268,7 @@ spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, intakes)
 
 # Visualize the contamination absorbed by the carnivore
 color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)
-terra::plot(spcmdl_transfer[["carnivore"]], 
-            col=color_transfer, 
-            main="Estimated Exposure of the Carnivore to Cadmium")
+terra::plot(spcmdl_transfer, col=color_transfer)
 ```
 
 ![](Getting_Started_EN_files/figure-html/transfer-1.png)
@@ -195,7 +284,7 @@ The final step of an ERA often involves generating a **Risk Index**
 ``` r
 
 # Define risk classes (from "Safe" to "Very High Risk")
-breaks_risk <- c(0, 0.1, 0.5, 1, 5, 10, Inf)
+breaks_risk <- c(-Inf, 0.1, 0.5, 1, 5, 10, Inf)
 cols_risk <- c(
   "darkgreen",   # 0 - 0.1 (No Risk)
   "green",       # 0.1 - 0.5
@@ -226,9 +315,11 @@ You have just seen the entire `spacemodR` pipeline in action! To go
 further and finely configure each step, we invite you to consult our
 specialized guides:
 
-- 🛠️ **Habitat Layer Management**: Build complex habitat and resistance
-  maps from vector geometries.
-- 🛠️ **Landscape Connectivity**: Integrate circuit theory (Omniscape) to
-  model the movement of large mammals.
-- 🦁 **The Example Zoo**: Explore real-world case studies (like the
+- 🧩️ **Habitat Layer**: Build complex habitat and resistance maps from
+  vector geometries.
+- 🧩️️ **Landscape Connectivity**: Integrate circuit theory (Omniscape) to
+  model the movement of large mammals
+- 🎯️ **Tuning Parameters**: Explore parameters and their inference (with
+  Bayesian tools).
+- 🧪 **The Example Zoo**: Explore real-world case studies (like the
   complete Berisp model).

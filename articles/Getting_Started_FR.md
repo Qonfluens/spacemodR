@@ -8,15 +8,20 @@ L’objectif de `spacemodR` est de réaliser des **Évaluations des Risques
 risque global sur un site, nous intégrons la géographie réelle du
 paysage pour cartographier les flux.
 
-Pour cela, nous suivons un pipeline logique et modulaire : 1. **Le
-Paysage et les Habitats** : Définir la zone d’étude et la capacité des
-espèces à y vivre. 2. **Le Réseau Trophique** : Définir “qui mange qui”
-(les proies et les prédateurs). 3. **Le Spacemodel** : L’objet central
-qui fusionne l’espace et les relations écologiques. 4. **La Dispersion**
-: Modéliser le mouvement des animaux dans le paysage. 5. **Le Transfert
-et l’Exposition** : Suivre la propagation d’un contaminant à travers le
-réseau trophique. 6. **La Cartographie du Risque** : Générer des indices
-de risque spatiaux (ex: Eco-SSL).
+Pour cela, nous suivons un pipeline logique et modulaire :
+
+1.  **Le Paysage et les Habitats** : Définir la zone d’étude et la
+    capacité des espèces à y vivre.
+2.  **Le Réseau Trophique** : Définir “qui mange qui” (les proies et les
+    prédateurs).
+3.  **Le Spacemodel** : L’objet central qui fusionne l’espace et les
+    relations écologiques.
+4.  **La Dispersion** : Modéliser le mouvement des animaux dans le
+    paysage.
+5.  **Le Transfert et l’Exposition** : Suivre la propagation d’un
+    contaminant à travers le réseau trophique.
+6.  **La Cartographie du Risque** : Générer des indices de risque
+    spatiaux (ex: Eco-SSL).
 
 Commençons par charger les packages nécessaires :
 
@@ -34,6 +39,10 @@ library(terra)
 Tout commence par la géographie. `spacemodR` facilite l’extraction et la
 manipulation de données d’occupation du sol (comme la base OCS-GE en
 France) pour une zone d’intérêt (Region of Interest - ROI).
+
+Nous chargeons dans un premier temps les données d’un site dans le nord
+de la France. Ici, on utilise les présente (`ocsge_metaleurop` et
+`roi_metaleurop`) ainsi que le package `ggplot2` pour la représentation.
 
 ``` r
 
@@ -61,19 +70,99 @@ grilles régulières (rasters) prêtes pour la modélisation.
 # Exemple: Chargement d'un raster de la concentration de fond d'un contaminant (Cadmium)
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 
-# Pour la démonstration, nous simulons un écosystème simplifié avec 4 maillons
-names_hab = c("soil", "plant", "herbivore", "carnivore")
+# Définition d'habitat à partir des code OSGE (qui sont dans le tableau `ocsge_metaleurop`)
+layer_soil_natural = ocsge_metaleurop$code_cs %in% 
+  c("CS1.2.1","CS2.1.1.1","CS2.1.1.2","CS2.1.1.3", "CS2.1.2","CS2.1.3","CS2.2.1","CS2.2.3")
+layer_soil_artificial = ocsge_metaleurop$code_cs %in%
+  c("CS1.1.1.1", "CS1.1.1.2", "CS1.1.2.1")
+layer_plant = ocsge_metaleurop$code_cs %in% 
+   c("CS2.1.1.1", "CS2.1.1.2", "CS2.1.1.3", "CS2.1.3", "CS2.2.1")
+```
+
+``` r
+
+habitat_sol = habitat() |>
+  add_habitat(ocsge_metaleurop[layer_soil_natural,]) |>
+  add_nohabitat(ocsge_metaleurop[layer_soil_artificial,])
+plot(habitat_sol)
+```
+
+![](Getting_Started_FR_files/figure-html/map_sol-1.png)
+
+``` r
+
+habitat_plante = habitat() |>
+  add_habitat(ocsge_metaleurop[layer_plant,]) |>
+  add_nohabitat(ocsge_metaleurop[layer_soil_artificial,])
+```
+
+Certaines de ces spécificités d’habitats sont incluses dans le projet.
+Pour l’instant, 935 espèces dont 499 oiseaux, 215 mammifères, 136
+reptiles et 85 amphibiens.
+
+Par exemple pour le campagnol des champs (*Microtus arvalis*):
+
+``` r
+
+microtus_hab <- join_ocsge_species(ocsge_metaleurop, "Microtus_arvalis")
+plot_species_habitat(microtus_hab)
+```
+
+![](Getting_Started_FR_files/figure-html/map_hab_microtus-1.png)
+
+… et la musaraigne grise commune (*Crocidura russula*):
+
+``` r
+
+crocidura_hab <- join_ocsge_species(ocsge_metaleurop, "Crocidura")
+plot_species_habitat(crocidura_hab)
+```
+
+![](Getting_Started_FR_files/figure-html/map_hab_crocidura-1.png)
+
+Pour comprendre les 3 cartes en détails, ce référer à la page
+**Habitat**. Brièvement:
+
+- **Global weight** (pondération globale), c’est la capacité d’accueil
+  (ou l’attractivité générale) d’un milieu pour l’espèce.
+- **Foraging weight** (pondération de recherche de nourriture) : c’est
+  l’attractivité trophique du milieu. Un animal ne se nourrit pas
+  forcément partout où il vit.
+- **Resistance** (résistance au déplacement / Friction spatiale) : c’est
+  le coût énergétique ou le danger lié à la traversée de ce milieu. Ce
+  paramètre est utilisé par les modèles de connectivité et de dispersion
+  (comme l’algorithme Omniscape abordé plus tard).
+
+``` r
+
+# nous utilise le poids `weight_global` comme habitat
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global)
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global)
+```
+
+A cette étape, maintenant que les habitats sont défini, on rasterize les
+habitats selon une couche par défaut, ici `cd_ground`, qui va permettre
+d’avoir la même grille paysagère afin de pouvoir superposer toutes les
+couches.
+
+``` r
 
 # On initialise des grilles d'habitats (raster) pour chaque maillon
-# (Dans un vrai projet, chaque raster dérive de pondérations d'habitat spécifiques)
-list_habitat <- lapply(names_hab, function(i) ground_cd) 
-stack_habitat <- raster_stack(list_habitat, names_hab)
+rast_sol <- habitat_raster(ground_cd, habitat_sol)
+rast_plant <- habitat_raster(ground_cd, habitat_plante)
+rast_herbivor <- habitat_raster(ground_cd, habitat_herbivore)
+rast_carnivor <- habitat_raster(ground_cd, habitat_carnivore)
 
-# Visualisation des couches
+# On créé le `raster_stack` des habiats
+stack_habitat <- raster_stack(
+  raster_list = list(rast_sol, rast_plant, rast_herbivor, rast_carnivor),
+  names = c("sol", "plante", "herbivore", "carnivore")
+)
+
 terra::plot(stack_habitat)
 ```
 
-![](Getting_Started_FR_files/figure-html/build_habitat-1.png)
+![](Getting_Started_FR_files/figure-html/unnamed-chunk-3-1.png)
 
 ------------------------------------------------------------------------
 
@@ -88,8 +177,8 @@ l’énergie (ou des contaminants).
 
 # Construction du réseau trophique
 trophic_df <- trophic() |>
-  add_link(from = "soil", to = "plant") |>
-  add_link(from = "plant", to = "herbivore") |>
+  add_link(from = "sol", to = "plante") |>
+  add_link(from = "plante", to = "herbivore") |>
   add_link(from = "herbivore", to = "carnivore")
 
 # Visualisation des liens trophiques
@@ -118,10 +207,14 @@ print(spcmdl)
 #> resolution  : 24.93766, 24.93976  (x, y)
 #> extent      : 697602.7, 707602.7, 7032171, 7042521  (xmin, xmax, ymin, ymax)
 #> coord. ref. : RGF93 v1 / Lambert-93 (EPSG:2154)
-#> sources     : ground_concentration_cd_compressed.tif
-#> names       :      soil,     plant, herbivore, carnivore
-#> min values  : -0.229399, -0.229399, -0.229399, -0.229399
-#> max values  :  1.769119,  1.769119,  1.769119,  1.769119
+#> source(s)   : memory
+#> varnames    : ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#>               ground_concentration_cd_compressed
+#> names       : sol, plante, herbivore, carnivore
+#> min values  :   0,      0,         0,         0
+#> max values  :   1,      1,        10,         9
 ```
 
 ------------------------------------------------------------------------
@@ -136,8 +229,8 @@ de convolution (kernels) ou la théorie des circuits (Omniscape).
 ``` r
 
 # Calcul des noyaux de dispersion en fonction d'un rayon de mobilité (ex: en pixels)
-k_herb <- compute_kernel(radius=50, GSD=25, size_std=1.5)
-k_carn <- compute_kernel(radius=150, GSD=25, size_std=1.5)
+k_herb <- compute_kernel(radius=50, GSD=25, size_std=0.5)
+k_carn <- compute_kernel(radius=150, GSD=25, size_std=0.5)
 
 # Application de la dispersion sur le spacemodel
 spcmdl_dispersal <- spcmdl |>
@@ -160,27 +253,25 @@ alimentaire grâce à la fonction
 ``` r
 
 # 1. On assigne la grille de concentration réelle dans la couche "soil"
-spcmdl_dispersal[["soil"]][] <- ground_cd
+spcmdl_dispersal[["sol"]][] <- ground_cd
 
 # 2. On définit les équations de transfert (Facteurs de Bioaccumulation / Bioconcentration)
 intakes <- intake(spcmdl_dispersal,
-  "soil -> plant" = ~ 10^x / 32,      # Equation spécifique pour les plantes
-  "plant -> herbivore" = 0.5,         # Facteur simple pour l'herbivore
+  "sol -> plante" = ~ 10^x / 32,      # Equation spécifique pour les plantes
+  "plante -> herbivore" = 0.5,         # Facteur simple pour l'herbivore
   "herbivore -> carnivore" = 0.8,     # Facteur simple pour le carnivore
   default = 1
 )
 
 # 3. On rassemble nos noyaux de dispersion pour le calcul de l'exposition
-kernels <- list(soil = NA, plant = NA, herbivore = k_herb, carnivore = k_carn)
+kernels <- list(sol = NA, plante = NA, herbivore = k_herb, carnivore = k_carn)
 
 # 4. Calcul du transfert global dans l'écosystème
 spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, intakes)
 
 # Visualisation de la contamination absorbée par le carnivore
 color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)
-terra::plot(spcmdl_transfer[["carnivore"]], 
-            col=color_transfer, 
-            main="Exposition estimée du Carnivore au Cadmium")
+terra::plot(spcmdl_transfer, col=color_transfer)
 ```
 
 ![](Getting_Started_FR_files/figure-html/transfer-1.png)
@@ -197,7 +288,7 @@ de référence sont dépassés.
 ``` r
 
 # Définition des classes de risque (de "Sûr" à "Risque Très Élevé")
-breaks_risk <- c(0, 0.1, 0.5, 1, 5, 10, Inf)
+breaks_risk <- c(-Inf, 0.1, 0.5, 1, 5, 10, Inf)
 cols_risk <- c(
   "darkgreen",   # 0 - 0.1 (Pas de risque)
   "green",       # 0.1 - 0.5
@@ -228,9 +319,11 @@ Vous venez de voir l’ensemble du pipeline `spacemodR` en action ! Pour
 aller plus loin et configurer finement chaque étape, nous vous invitons
 à consulter nos guides spécialisés :
 
-- 🛠️ **Habitat Layer Management** : Construire des cartes de résistance
-  et d’habitats complexes depuis des vecteurs.
-- 🛠️ **Landscape Connectivity** : Intégrer la théorie des circuits
+- 🧩️ **Habitat Layer** : Construire des cartes de résistance et
+  d’habitats complexes depuis des vecteurs.
+- 🧩️ **Landscape Connectivity** : Intégrer la théorie des circuits
   (Omniscape) pour le mouvement des grands mammifères.
-- 🦁 **The Example Zoo** : Explorer des cas d’études réels (comme le
+- 🎯️ **Tuning Parameters**: Faire l’inférence des paramètres (méthodes
+  Bayesiennes).
+- 🧪 **The Example Zoo** : Explorer des cas d’études réels (comme le
   modèle Berisp complet).

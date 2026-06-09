@@ -18,6 +18,7 @@
 - [Tutorial](https://qonfluens.github.io/spacemodR/articles/Tutorial.md):
 - [Berisp-like: a trophic model of
   contamination](https://qonfluens.github.io/spacemodR/articles/zoo_Berisp_full.md):
-- [zoo_ecossl](https://qonfluens.github.io/spacemodR/articles/zoo_ecossl.md):
+- [Implementing Eco-SSL
+  model](https://qonfluens.github.io/spacemodR/articles/zoo_ecossl.md):
 - [A simple example: a soil-target transfer with fix or moving
-  target](https://qonfluens.github.io/spacemodR/articles/zoo_Simulation_Soil_Target.md):
+  target](https://qonfluens.github.io/spacemodR/articles/zoo_Soil_Target.md):
