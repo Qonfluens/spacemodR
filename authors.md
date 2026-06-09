@@ -14,11 +14,11 @@
 
 Baudrot V (2026). *spacemodR: Workflow for Environmental Risk
 Assessment: Habitat, Food Web, Dispersal, Exposure and Risk*. R package
-version 0.1.3.
+version 0.2.0.
 
     @Manual{,
       title = {spacemodR: Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk},
       author = {Virgile Baudrot},
       year = {2026},
-      note = {R package version 0.1.3},
+      note = {R package version 0.2.0},
     }

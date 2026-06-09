@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -538,17 +538,18 @@ the landscape.</p>
 <span></span>
 <span><span class="va">direct_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>soil <span class="op">=</span> <span class="cn">NA</span>, herbivore <span class="op">=</span> <span class="cn">NA</span>, insectivore <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">direct_intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_direct</span>,</span>
-<span>  <span class="st">"soil -&gt; herbivore"</span>       <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_herbivore</span><span class="op">*</span><span class="va">x</span>,  </span>
-<span>  <span class="st">"soil -&gt; insectivore"</span>     <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_insectivore</span><span class="op">*</span><span class="va">x</span>,</span>
-<span>  default <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for all other default is 1</span></span>
-<span>  normalize <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">direct_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span></span>
+<span>    <span class="va">spcmdl_direct</span>,</span>
+<span>    default <span class="op">=</span> <span class="fl">1</span>,          <span class="co"># for all other default is 1</span></span>
+<span>    normalize <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"herbivore"</span>, <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_herbivore</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"insectivore"</span>, <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_insectivore</span><span class="op">*</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spcmdl_direct_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_direct</span>,</span>
 <span>  <span class="va">direct_kernels</span>,</span>
-<span>  <span class="va">direct_intakes</span>,</span>
+<span>  <span class="va">direct_fluxes</span>,</span>
 <span>  exposure_weighting<span class="op">=</span><span class="st">"potential"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="stats_Inference_Direct_files/figure-html/directBuffer_map-1.png" class="r-plt" alt="" width="960"></p>
 </div>

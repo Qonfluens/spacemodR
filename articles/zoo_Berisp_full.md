@@ -382,69 +382,23 @@ ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = Specie
 
 ![](zoo_Berisp_full_files/figure-html/unnamed-chunk-16-1.png)
 
-## Uptake and Excretion rate
+## Dose of Exposure
 
-- Uptake: The uptake rate constant of metals from food (kx,n,in) depends
-  on the food ingestion rate constant (kn ) and the metal assimilation
-  efficiency from the food matrix (px,a ) (Eqn. 3). The assimilation
-  efficiency of cadmium in small mammals generally is low and depends on
-  external conditions, such as pH in the gastrointestinal tract,
-  available biological ligands in food, and stability of these metal
-  complexes in the food matrix \[21\]. At present, the mechanisms of
-  metal uptake via ingestion are not fully understood \[20,22\];
-  therefore, metal assimilation efficiency cannot be modeled
-  mechanistically. Instead, an empirical cadmium assimilation efficiency
-  (px,a ) of 0.51% (Supplemental Data;
-  <http://dx.doi.org/10.1897/2006-518.S1>) was used to predict the
-  uptake rate constant of cadmium from food (kx,n,in) (Eqn. 3). This
-  empirical cadmium assimilation efficiency is a geometric mean value of
-  data from 10 long-term experimental studies, including various
-  experimental designs. kx,n,in n k ·px,a (3) where kn food ingestion
-  rate constant \[kg food/kg body wet wt/d\] px,a assimilation
-  efficiency of cadmium from food (empirical value, see Supplemental
-  Data; <http://dx>. doi.org/10.1897/2006-518.S1) (0.51) \[%\]
+### Trophic transfer equation
 
 ``` r
 
-# k_up_vole
-# k_ex_vole
+direct_fluxes <- flux(
+    spcmdl_trophic_fixed,
+    default = 1,    # for all other default is 1
+    normalize=FALSE # TRUE would weight every link to sum at 1
+  ) |>
+  add_flux("soil", "plant", ~ inter_veg + slope_veg*x) |>
+  add_flux("soil", "earthworm", ~ inter_veg + slope_veg*x) |>
+  add_flux("soil", "carabid", ~ inter_veg + slope_veg*x)
 ```
 
-#### Transfer equation
-
-``` r
-# /!\ Faudrait changer le code pour pouvoir faire un truc de ce tyle :
-direct_intakes <- intake(spcmdl_trophic_fixed) |>
-  add_intake("soil", "plant", ~ inter_veg + slope_veg*x) |>
-  add_intake("soil", "earthworm", ~ inter_veg + slope_veg*x) |>
-  add_intake("soil", "carabid", ~ inter_veg + slope_veg*x) |>
-  default = NA, # for all other default is NA = no transfer or 1 full transfer ?
-)
-```
-
-``` r
-
-# ATTENTION DANS LES FONCTION, ON AIME TRAVAILLER EN LOG !!!
-direct_intakes <- intake(spcmdl_trophic_fixed,
-  "soil -> plant"       = ~ inter_veg + slope_veg*x,  
-  "soil -> earthworm"   = ~ inter_worm + slope_worm*x, 
-  "soil -> carabid"     = ~ inter_carab + slope_carab*x, 
-   # mamHerb
-  "soil -> mamHerb"     = ~ b_soil_mamHerb / b_mamHerb * /0.36,
-  "plant -> mamHerb"    = ~ 10^x/0.77,
-  "earthworm -> mamHerb"= ~ 10^x/0.77,
-  "carabid -> mamHerb"  = ~ 10^x/0.77,
-  # mamInsect
-  "soil -> mamInsect"     = ~ 10^x/0.77,
-  "plant -> mamInsect"    = ~ 10^x/0.77,
-  "earthworm -> mamInsect"= ~ 10^x/0.77,
-  "carabid -> mamInsect"  = ~ 10^x/0.77,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
-```
-
-### dispersion
+### Population dispersion in landscape
 
 ``` r
 
@@ -459,6 +413,10 @@ fixed_kernels <- list(
 spcmdl_trophic_fixed_risk <- transfer(
   spcmdl_trophic_fixed,
   fixed_kernels,
-  direct_intakes,
+  direct_fluxes,
   exposure_weighting="potential")
 ```
+
+### Computing Population Exposure
+
+## Risk based on SSD

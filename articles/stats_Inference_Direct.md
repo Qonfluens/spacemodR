@@ -489,17 +489,18 @@ spcmdl_direct <- spacemodel(stack_habitat, trophic_df)
 
 direct_kernels <- list(soil = NA, herbivore = NA, insectivore = NA)
 
-direct_intakes <- intake(spcmdl_direct,
-  "soil -> herbivore"       = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x,  
-  "soil -> insectivore"     = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
+direct_fluxes <- flux(
+    spcmdl_direct,
+    default = 1,          # for all other default is 1
+    normalize = FALSE
+  ) |> # TRUE would weight every link to sum at 1
+  add_flux("soil", "herbivore", ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x) |>
+  add_flux("soil", "insectivore", ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x)
 
 spcmdl_direct_risk <- transfer(
   spcmdl_direct,
   direct_kernels,
-  direct_intakes,
+  direct_fluxes,
   exposure_weighting="potential")
 ```
 

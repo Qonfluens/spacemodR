@@ -1,44 +1,28 @@
-# Apply trophic flux from a resource layer
+# Constructor for Flux Parameters
 
-Computes the contribution of a resource raster to a consumer layer using
-the normalized weight and a flux function stored in the trophic table.
+Initializes the trophic flux table for a spacemodel.
 
 ## Usage
 
 ``` r
-flux(raster, intakes, from, to)
+flux(x, default = 1, normalize = TRUE)
 ```
 
 ## Arguments
 
-- raster:
+- x:
 
-  A `SpatRaster` (or similar) representing exposure from the resource.
+  A \`spacemodel\` object or a \`trophic_tbl\`.
 
-- intakes:
+- default:
 
-  A `trophic_tbl` object that must contain a column `normalized_weight`
-  and a column `flux`.
+  The default function or coefficient for unspecified links (default is
+  1, meaning full transfer: f(x) = x).
 
-- from:
+- normalize:
 
-  Character string, name of the source node.
-
-- to:
-
-  Character string, name of the target node.
+  Logical. Whether to normalize diet weights (default TRUE).
 
 ## Value
 
-A raster object with transformed values.
-
-## Details
-
-The function extracts the link corresponding to `from -> to` from the
-trophic table and applies:
-
-1.  the associated flux function to the raster values
-
-2.  the normalized weight of the link
-
-An error is thrown if no such link exists.
+A \`trophic_tbl\` with an initialized \`flux\` column.

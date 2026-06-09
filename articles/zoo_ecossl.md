@@ -399,7 +399,7 @@ linear values (using `10^x`) before performing the division. To keep our
 model setup clean and easy to update, we will first define a vector
 containing the specific Eco-SSL thresholds for each group, and then
 apply these values within the
-[`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md)
+[`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
 function to configure our `spacemodel` object.
 
 ``` r
@@ -413,17 +413,14 @@ ecossl_vals <- c(
   birdInsect = 0.77
 )
 
-# Build the intake thresholds by transforming the log10 soil (10^x) 
+# Build the Eco-SSL thresholds by transforming the log10 soil (10^x) 
 # and dividing by the specific Eco-SSL value to get the HQ
-ecossl_threshold <- intake(spcmdl_ecossl_h,
-  "soil -> plant"       = ~ 10^x / ecossl_vals["plant"],  
-  "soil -> invert"      = ~ 10^x / ecossl_vals["invert"],
-  "soil -> mamHerb"     = ~ 10^x / ecossl_vals["mamHerb"],
-  "soil -> mamInsect"   = ~ 10^x / ecossl_vals["mamInsect"],
-  "soil -> birdInsect"  = ~ 10^x / ecossl_vals["birdInsect"],
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
+ecossl_threshold <- flux(spcmdl_ecossl_h, default = 1, normalize = FALSE) |>
+  add_flux(from = "soil", to = "plant", value = ~ 10^x / ecossl_vals["plant"]) |>
+  add_flux(from = "soil", to = "invert", value = ~ 10^x / ecossl_vals["invert"]) |>
+  add_flux(from = "soil", to = "mamHerb", value = ~ 10^x / ecossl_vals["mamHerb"]) |>
+  add_flux(from = "soil", to = "mamInsect", value = ~ 10^x / ecossl_vals["mamInsect"]) |>
+  add_flux(from = "soil", to = "birdInsect", value = ~ 10^x / ecossl_vals["birdInsect"])
 
 # Apply the transfer to compute the spatial risk layers
 spcmdl_ecossl_risk <- transfer(

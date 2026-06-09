@@ -1,5 +1,48 @@
 # Changelog
 
+## spacemodR 0.2.0
+
+### Breaking Changes
+
+- **Refactored trophic fluxes interface:** The
+  [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md)
+  function has been completely redesigned and renamed to
+  [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) to
+  better reflect the mathematical and ecological concept of transfer
+  rates.
+- **New pipe-friendly syntax:** The definition of transfer parameters no
+  longer uses multiple named arguments. Users must now initialize the
+  table with
+  [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
+  and chain specific rules using the new
+  [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md)
+  function.
+- **Namespace conflict resolution:** The internal utility function
+  previously named
+  [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
+  (used within the
+  [`transfer()`](https://qonfluens.github.io/spacemodR/reference/transfer.md)
+  function) has been renamed to avoid conflicts with the new main API.
+
+### New Features & Improvements
+
+- **New
+  [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md)
+  function:** Allows for adding transfer rules in a readable, sequential
+  manner (e.g.,
+  `add_flux(from = "soil", to = "plant", value = ~ 10^x / 32)`).
+- **Global target rules:** In
+  [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md),
+  if the source compartment (`from`) is not specified, the rule
+  (`value`) is automatically applied to all links pointing to the target
+  compartment (`to`).
+- **Safe default values:** The
+  [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
+  function now features an explicit `default` parameter. It is highly
+  recommended to use `1` (full transfer) or `0` (no transfer) instead of
+  `NA` to prevent the propagation of missing values during subsequent
+  model calculations.
+
 ## spacemodR 0.1.3
 
 CRAN release: 2026-02-20

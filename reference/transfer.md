@@ -1,7 +1,7 @@
 # Transfer (food, contaminant) across trophic levels
 
 Computes the transfer through a trophic network from lower to higher
-trophic levels using spatial spreading and intake functions.
+trophic levels using spatial spreading and flux functions.
 
 ## Usage
 
@@ -9,7 +9,7 @@ trophic levels using spatial spreading and intake functions.
 transfer(
   spacemodel,
   kernels,
-  intakes = NULL,
+  fluxes = NULL,
   exposure_weighting = "local",
   verbose = FALSE
 )
@@ -25,11 +25,6 @@ transfer(
 - kernels:
 
   A list of kernel parameters for each layer.
-
-- intakes:
-
-  A `trophic_tbl` object (or compatible table) containing normalized
-  weights and flux functions for each trophic link.
 
 - exposure_weighting:
 
@@ -55,6 +50,11 @@ transfer(
 
   Logical. If `TRUE`, prints progress information.
 
+- flux:
+
+  A `trophic_tbl` object (or compatible table) containing normalized
+  weights and flux functions for each trophic link.
+
 ## Value
 
 A named \`spacemodel\` object as a list of spatial layers representing
@@ -72,10 +72,13 @@ For each layer:
 2.  Concentration from each resource is spatially spread using
     `spread()`.
 
-3.  Intake is computed using
-    [`intake()`](https://qonfluens.github.io/spacemodR/reference/intake.md).
+3.  Fluxes is computed using
+    [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
+    and
+    [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md).
 
 4.  Contributions from all resources are summed.
 
-The function assumes that intake weights are already normalized so that,
-for each consumer, the sum of contributions from all resources equals 1.
+The function assumes that trophic weights are already normalized so
+that, for each consumer, the sum of contributions from all resources
+equals 1.

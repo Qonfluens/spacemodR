@@ -20,6 +20,8 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/DBFunc_BirdFuncDat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/DBFunc_MamFuncDat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/FmrBT.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/SSD_ecoSSL_all.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/add_flux.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_link.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/add_nohabitat.html</loc></url>
@@ -28,6 +30,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/calibrate_simple.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/calibrate_trophic.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_dispersal.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/compute_flux.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_kernel.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/compute_levels.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/dispersal.html</loc></url>

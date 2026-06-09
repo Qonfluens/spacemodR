@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -531,76 +531,44 @@ making it the best available surrogate for nocturnal avian traits.</li>
 </div>
 </div>
 <div class="section level2">
-<h2 id="uptake-and-excretion-rate">Uptake and Excretion rate<a class="anchor" aria-label="anchor" href="#uptake-and-excretion-rate"></a>
+<h2 id="dose-of-exposure">Dose of Exposure<a class="anchor" aria-label="anchor" href="#dose-of-exposure"></a>
 </h2>
-<ul>
-<li>Uptake: The uptake rate constant of metals from food (kx,n,in)
-depends on the food ingestion rate constant (kn ) and the metal
-assimilation efficiency from the food matrix (px,a ) (Eqn. 3). The
-assimilation efficiency of cadmium in small mammals generally is low and
-depends on external conditions, such as pH in the gastrointestinal
-tract, available biological ligands in food, and stability of these
-metal complexes in the food matrix [21]. At present, the mechanisms of
-metal uptake via ingestion are not fully understood [20,22]; therefore,
-metal assimilation efficiency cannot be modeled mechanistically.
-Instead, an empirical cadmium assimilation efficiency (px,a ) of 0.51%
-(Supplemental Data; <a href="http://dx.doi.org/10.1897/2006-518.S1" class="external-link uri">http://dx.doi.org/10.1897/2006-518.S1</a>) was used to
-predict the uptake rate constant of cadmium from food (kx,n,in) (Eqn.
-3). This empirical cadmium assimilation efficiency is a geometric mean
-value of data from 10 long-term experimental studies, including various
-experimental designs. kx,n,in n  k ·px,a (3) where kn  food ingestion
-rate constant [kg food/kg body wet wt/d] px,a  assimilation efficiency
-of cadmium from food (empirical value, see Supplemental Data; <a href="http://dx" class="external-link uri">http://dx</a>. doi.org/10.1897/2006-518.S1)
-(0.51) [%]</li>
-</ul>
+<div class="section level3">
+<h3 id="trophic-transfer-equation">Trophic transfer equation<a class="anchor" aria-label="anchor" href="#trophic-transfer-equation"></a>
+</h3>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># k_up_vole</span></span>
-<span><span class="co"># k_ex_vole</span></span></code></pre></div>
-<div class="section level4">
-<h4 id="transfer-equation">Transfer equation<a class="anchor" aria-label="anchor" href="#transfer-equation"></a>
-</h4>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># /!\ Faudrait changer le code pour pouvoir faire un truc de ce tyle :</span></span>
-<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a>direct_intakes <span class="ot">&lt;-</span> <span class="fu">intake</span>(spcmdl_trophic_fixed) <span class="sc">|&gt;</span></span>
-<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>  <span class="fu">add_intake</span>(<span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="sc">~</span> inter_veg <span class="sc">+</span> slope_veg<span class="sc">*</span>x) <span class="sc">|&gt;</span></span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="fu">add_intake</span>(<span class="st">"soil"</span>, <span class="st">"earthworm"</span>, <span class="sc">~</span> inter_veg <span class="sc">+</span> slope_veg<span class="sc">*</span>x) <span class="sc">|&gt;</span></span>
-<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="fu">add_intake</span>(<span class="st">"soil"</span>, <span class="st">"carabid"</span>, <span class="sc">~</span> inter_veg <span class="sc">+</span> slope_veg<span class="sc">*</span>x) <span class="sc">|&gt;</span></span>
-<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  default <span class="ot">=</span> <span class="cn">NA</span>, <span class="co"># for all other default is NA = no transfer or 1 full transfer ?</span></span>
-<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="er">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="co"># </span><span class="al">ATTENTION</span><span class="co"> DANS LES FONCTION, ON AIME TRAVAILLER EN LOG !!!</span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>direct_intakes <span class="ot">&lt;-</span> <span class="fu">intake</span>(spcmdl_trophic_fixed,</span>
-<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="st">"soil -&gt; plant"</span>       <span class="ot">=</span> <span class="er">~</span> inter_veg <span class="sc">+</span> slope_veg<span class="sc">*</span>x,  </span>
-<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="st">"soil -&gt; earthworm"</span>   <span class="ot">=</span> <span class="er">~</span> inter_worm <span class="sc">+</span> slope_worm<span class="sc">*</span>x, </span>
-<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  <span class="st">"soil -&gt; carabid"</span>     <span class="ot">=</span> <span class="er">~</span> inter_carab <span class="sc">+</span> slope_carab<span class="sc">*</span>x, </span>
-<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>   <span class="co"># mamHerb</span></span>
-<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  <span class="st">"soil -&gt; mamHerb"</span>     <span class="ot">=</span> <span class="er">~</span> b_soil_mamHerb <span class="sc">/</span> b_mamHerb <span class="sc">*</span> <span class="er">/</span><span class="fl">0.36</span>,</span>
-<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="st">"plant -&gt; mamHerb"</span>    <span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a>  <span class="st">"earthworm -&gt; mamHerb"</span><span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a>  <span class="st">"carabid -&gt; mamHerb"</span>  <span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a>  <span class="co"># mamInsect</span></span>
-<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a>  <span class="st">"soil -&gt; mamInsect"</span>     <span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a>  <span class="st">"plant -&gt; mamInsect"</span>    <span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a>  <span class="st">"earthworm -&gt; mamInsect"</span><span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a>  <span class="st">"carabid -&gt; mamInsect"</span>  <span class="ot">=</span> <span class="er">~</span> <span class="dv">10</span><span class="sc">^</span>x<span class="sc">/</span><span class="fl">0.77</span>,</span>
-<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a>  <span class="at">default =</span> <span class="dv">1</span>, <span class="co"># for all other default is 1</span></span>
-<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a>  <span class="at">normalize =</span> <span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
-<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a>)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">direct_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span></span>
+<span>    <span class="va">spcmdl_trophic_fixed</span>,</span>
+<span>    default <span class="op">=</span> <span class="fl">1</span>,    <span class="co"># for all other default is 1</span></span>
+<span>    normalize<span class="op">=</span><span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
+<span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"earthworm"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"carabid"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="dispersion">dispersion<a class="anchor" aria-label="anchor" href="#dispersion"></a>
+<h3 id="population-dispersion-in-landscape">Population dispersion in landscape<a class="anchor" aria-label="anchor" href="#population-dispersion-in-landscape"></a>
 </h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># no dispersal</span></span>
 <span><span class="va">fixed_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  soil  <span class="op">=</span> <span class="cn">NA</span>, plant <span class="op">=</span> <span class="cn">NA</span>, earthworm <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  carabid<span class="op">=</span><span class="cn">NA</span>,  mamHerb <span class="op">=</span> <span class="cn">NA</span>, mamInsect <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl_trophic_fixed_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_trophic_fixed</span>,</span>
 <span>  <span class="va">fixed_kernels</span>,</span>
-<span>  <span class="va">direct_intakes</span>,</span>
+<span>  <span class="va">direct_fluxes</span>,</span>
 <span>  exposure_weighting<span class="op">=</span><span class="st">"potential"</span><span class="op">)</span></span></code></pre></div>
 </div>
+<div class="section level3">
+<h3 id="computing-population-exposure">Computing Population Exposure<a class="anchor" aria-label="anchor" href="#computing-population-exposure"></a>
+</h3>
+</div>
+</div>
+<div class="section level2">
+<h2 id="risk-based-on-ssd">Risk based on SSD<a class="anchor" aria-label="anchor" href="#risk-based-on-ssd"></a>
+</h2>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

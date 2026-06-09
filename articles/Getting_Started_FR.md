@@ -256,18 +256,16 @@ alimentaire grâce à la fonction
 spcmdl_dispersal[["sol"]][] <- ground_cd
 
 # 2. On définit les équations de transfert (Facteurs de Bioaccumulation / Bioconcentration)
-intakes <- intake(spcmdl_dispersal,
-  "sol -> plante" = ~ 10^x / 32,      # Equation spécifique pour les plantes
-  "plante -> herbivore" = 0.5,         # Facteur simple pour l'herbivore
-  "herbivore -> carnivore" = 0.8,     # Facteur simple pour le carnivore
-  default = 1
-)
+fluxes <- flux(spcmdl_dispersal, default = 1) |>
+  add_flux("soil", "plant",  ~ 10^x / 32) |> # Equation spécifique pour les plantes
+  add_flux("soil", "herbivore",  0.5) |>     # Facteur simple pour l'herbivore
+  add_flux("herbivore", "carnivore",  0.8)   # Facteur simple pour le carnivore
 
 # 3. On rassemble nos noyaux de dispersion pour le calcul de l'exposition
 kernels <- list(sol = NA, plante = NA, herbivore = k_herb, carnivore = k_carn)
 
 # 4. Calcul du transfert global dans l'écosystème
-spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, intakes)
+spcmdl_transfer <- transfer(spcmdl_dispersal, kernels, fluxes)
 
 # Visualisation de la contamination absorbée par le carnivore
 color_transfer <- colorRampPalette(c("white", "#A33D0A"))(255)

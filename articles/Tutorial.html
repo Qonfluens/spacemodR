@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -455,19 +455,17 @@ implemented a dispersal dependent of the potential trophic links.</p>
 <span><span class="co">#&gt; sp121 sp10, sp12      2</span></span>
 <span><span class="co">#&gt; sp22  sp12, sp22      1</span></span></code></pre></div>
 <div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">test_intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>,</span>
+<code class="sourceCode R"><span><span class="va">test_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, default <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># sol to sp10 is a coef 0.4</span></span>
-<span>  <span class="st">"sol -&gt; sp10"</span> <span class="op">=</span> <span class="fl">0.4</span>,</span>
-<span>  <span class="co"># General rule: sp12 uptake with factor 0.1</span></span>
-<span>  <span class="st">"sp12"</span> <span class="op">=</span> <span class="fl">0.1</span>,  </span>
-<span>  <span class="co"># Exception: when sp12 feed on sp10, it's a square function</span></span>
-<span>  <span class="st">"sp10 -&gt; sp12"</span> <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="fl">10</span>,</span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"sol"</span>, to <span class="op">=</span> <span class="st">"sp10"</span>, value <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># General rule: sp12 uptake with factor 0.1 (applies to ALL links to sp12)</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>to <span class="op">=</span> <span class="st">"sp12"</span>, value <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># Exception: when sp12 feeds on sp10, it's a square function (overwrites the general rule above)</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"sp10"</span>, to <span class="op">=</span> <span class="st">"sp12"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># General rule: sp22 has a complex function</span></span>
-<span>  <span class="st">"sp22"</span> <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">0.1</span>,</span>
-<span>  </span>
-<span>  default <span class="op">=</span> <span class="fl">1</span> <span class="co"># for all other default is 1</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="va">kernels</span>, <span class="va">test_intakes</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>to <span class="op">=</span> <span class="st">"sp22"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">0.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="va">kernels</span>, <span class="va">test_fluxes</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">color_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, col<span class="op">=</span><span class="va">color_transfer</span><span class="op">)</span></span></code></pre></div>

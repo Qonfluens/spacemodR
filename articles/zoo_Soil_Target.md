@@ -143,26 +143,24 @@ kernels <- list(
 )
 ```
 
-### Step 4: Parameterizing the Transfer Intakes
+### Step 4: Parameterizing the Transfer Fluxes
 
 Now we define how much contamination transfers along the links we
 created. We use the equations derived from the linear regressions in the
 introduction.
 
 For instance, the linear model for herbivores yielded roughly
-$`y = 0.2x - 1`$, meaning the intake formula can be written as
+$`y = 0.2x - 1`$, meaning the flux formula can be written as
 `10^(-1 + 0.2*x)`.
 
 ``` r
 
-simple_intakes <- intake(spcmdl_simple,
-  "soil -> mamHerb" = ~ 10^(-1 + 0.2*x),
-  "soil -> mamInsect" = ~ 10^(-0.2 + 0.3*x),
-  default = 1 # Default multiplier for any unassigned links
-)
+simple_fluxes <- flux(spcmdl_simple, default = 1) |>
+  add_flux("soil", "mamHerb", ~ 10^(-1 + 0.2*x)) |>
+  add_flux("soil", "mamInsect", ~ 10^(-0.2 + 0.3*x))
 
-# Apply the kernels and intakes to compute the transfer through the model
-spcmdl_transfer <- transfer(spcmdl_simple, kernels, simple_intakes)
+# Apply the kernels and fluxes to compute the transfer through the model
+spcmdl_transfer <- transfer(spcmdl_simple, kernels, simple_fluxes)
 ```
 
 ``` r
@@ -270,12 +268,12 @@ target species.
 
 First, we extract the median (50th percentile) parameter values from our
 fitted model to use in our equations. Next, we set up the spatial
-components: we initialize the spacemodel with the soil, herbivore, and
+components: we initialize the `spacemodel` with the soil, herbivore, and
 insectivore layers, establish the direct trophic links, and set all
 dispersal kernels to NA (since this is a fixed-point model where
-individuals do not move). Finally, we define the intake formulas using
-our extracted parameters and run the transfer() function to propagate
-the contamination across every pixel of the grid.
+individuals do not move). Finally, we define the flux formulas using our
+extracted parameters and run the transfer() function to propagate the
+contamination across every pixel of the grid.
 
 ``` r
 
@@ -298,17 +296,14 @@ spcmdl_direct <- spacemodel(stack_habitat, trophic_df)
 
 direct_kernels <- list(soil = NA, herbivore = NA, insectivore = NA)
 
-direct_intakes <- intake(spcmdl_direct,
-  "soil -> herbivore"       = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x,  
-  "soil -> insectivore"     = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x,
-  default = 1, # for all other default is 1
-  normalize = FALSE # TRUE would weight every link to sum at 1
-)
+direct_fluxes <- flux(spcmdl_direct, default = 1, normalize = FALSE) |>
+  add_flux(from = "soil", to = "herbivore", value = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_herbivore*x) |>
+  add_flux(from = "soil", to = "insectivore", value = ~ ls_q50$beta0 + ls_q50$beta1*x + ls_q50$beta_insectivore*x)
 
 spcmdl_direct_risk <- transfer(
   spcmdl_direct,
   direct_kernels,
-  direct_intakes,
+  direct_fluxes,
   exposure_weighting="potential")
 ```
 

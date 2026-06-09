@@ -152,6 +152,10 @@ for full details.
   : Mammal Functional Traits Dataset (EltonTraits 1.0)
 - [`FmrBT`](https://qonfluens.github.io/spacemodR/reference/FmrBT.md) :
   Field Metabolic Rates Database (FmrBT)
+- [`SSD_ecoSSL_all`](https://qonfluens.github.io/spacemodR/reference/SSD_ecoSSL_all.md)
+  : Eco-SSL Toxicity Data for Multiple Taxonomic Groups
+- [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md)
+  : Add a Flux Rule
 - [`add_habitat()`](https://qonfluens.github.io/spacemodR/reference/add_habitat.md)
   : Add habitat zones to a Habitat object
 - [`add_link()`](https://qonfluens.github.io/spacemodR/reference/add_link.md)
@@ -168,6 +172,8 @@ for full details.
   : Calibrate trophic transfer model
 - [`compute_dispersal()`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
   : Compute dispersal or spread map (Generic Engine)
+- [`compute_flux()`](https://qonfluens.github.io/spacemodR/reference/compute_flux.md)
+  : Apply trophic flux from a resource layer
 - [`compute_kernel()`](https://qonfluens.github.io/spacemodR/reference/compute_kernel.md)
   : Create a 2D Gaussian motion kernel as a SpatRaster
 - [`dispersal()`](https://qonfluens.github.io/spacemodR/reference/dispersal.md)
@@ -175,7 +181,7 @@ for full details.
 - [`earthworm_cd`](https://qonfluens.github.io/spacemodR/reference/earthworm_cd.md)
   : Data concentration Cd Soil - Earthworm
 - [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) :
-  Apply trophic flux from a resource layer
+  Constructor for Flux Parameters
 - [`get_departements_for_roi()`](https://qonfluens.github.io/spacemodR/reference/get_departements_for_roi.md)
   : Identify codes of departments intersecting a region of interest
 - [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md)

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -207,24 +207,22 @@ dispersal by setting the movement kernels to <code>NA</code>.</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="step-4-parameterizing-the-transfer-intakes">Step 4: Parameterizing the Transfer Intakes<a class="anchor" aria-label="anchor" href="#step-4-parameterizing-the-transfer-intakes"></a>
+<h3 id="step-4-parameterizing-the-transfer-fluxes">Step 4: Parameterizing the Transfer Fluxes<a class="anchor" aria-label="anchor" href="#step-4-parameterizing-the-transfer-fluxes"></a>
 </h3>
 <p>Now we define how much contamination transfers along the links we
 created. We use the equations derived from the linear regressions in the
 introduction.</p>
 <p>For instance, the linear model for herbivores yielded roughly
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>=</mo><mn>0.2</mn><mi>x</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">y = 0.2x - 1</annotation></semantics></math>,
-meaning the intake formula can be written as
+meaning the flux formula can be written as
 <code>10^(-1 + 0.2*x)</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">simple_intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_simple</span>,</span>
-<span>  <span class="st">"soil -&gt; mamHerb"</span> <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="fl">0.2</span><span class="op">*</span><span class="va">x</span><span class="op">)</span>,</span>
-<span>  <span class="st">"soil -&gt; mamInsect"</span> <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">0.2</span> <span class="op">+</span> <span class="fl">0.3</span><span class="op">*</span><span class="va">x</span><span class="op">)</span>,</span>
-<span>  default <span class="op">=</span> <span class="fl">1</span> <span class="co"># Default multiplier for any unassigned links</span></span>
-<span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">simple_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_simple</span>, default <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamHerb"</span>, <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="fl">0.2</span><span class="op">*</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamInsect"</span>, <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">0.2</span> <span class="op">+</span> <span class="fl">0.3</span><span class="op">*</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Apply the kernels and intakes to compute the transfer through the model</span></span>
-<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_simple</span>, <span class="va">kernels</span>, <span class="va">simple_intakes</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co"># Apply the kernels and fluxes to compute the transfer through the model</span></span>
+<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_simple</span>, <span class="va">kernels</span>, <span class="va">simple_fluxes</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Soil_Target_files/figure-html/map_transfer-1.png" class="r-plt" alt="" width="960"></p>
@@ -312,12 +310,12 @@ to the entire landscape to map the predicted Cadmium concentrations for
 our target species.</p>
 <p>First, we extract the median (50th percentile) parameter values from
 our fitted model to use in our equations. Next, we set up the spatial
-components: we initialize the spacemodel with the soil, herbivore, and
-insectivore layers, establish the direct trophic links, and set all
-dispersal kernels to NA (since this is a fixed-point model where
-individuals do not move). Finally, we define the intake formulas using
-our extracted parameters and run the transfer() function to propagate
-the contamination across every pixel of the grid.</p>
+components: we initialize the <code>spacemodel</code> with the soil,
+herbivore, and insectivore layers, establish the direct trophic links,
+and set all dispersal kernels to NA (since this is a fixed-point model
+where individuals do not move). Finally, we define the flux formulas
+using our extracted parameters and run the transfer() function to
+propagate the contamination across every pixel of the grid.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dp_q50</span> <span class="op">&lt;-</span> <span class="va">df_pars</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">par</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -335,17 +333,14 @@ the contamination across every pixel of the grid.</p>
 <span></span>
 <span><span class="va">direct_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>soil <span class="op">=</span> <span class="cn">NA</span>, herbivore <span class="op">=</span> <span class="cn">NA</span>, insectivore <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">direct_intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_direct</span>,</span>
-<span>  <span class="st">"soil -&gt; herbivore"</span>       <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_herbivore</span><span class="op">*</span><span class="va">x</span>,  </span>
-<span>  <span class="st">"soil -&gt; insectivore"</span>     <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_insectivore</span><span class="op">*</span><span class="va">x</span>,</span>
-<span>  default <span class="op">=</span> <span class="fl">1</span>, <span class="co"># for all other default is 1</span></span>
-<span>  normalize <span class="op">=</span> <span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">direct_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_direct</span>, default <span class="op">=</span> <span class="fl">1</span>, normalize <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"soil"</span>, to <span class="op">=</span> <span class="st">"herbivore"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_herbivore</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"soil"</span>, to <span class="op">=</span> <span class="st">"insectivore"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta0</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta1</span><span class="op">*</span><span class="va">x</span> <span class="op">+</span> <span class="va">ls_q50</span><span class="op">$</span><span class="va">beta_insectivore</span><span class="op">*</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spcmdl_direct_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_direct</span>,</span>
 <span>  <span class="va">direct_kernels</span>,</span>
-<span>  <span class="va">direct_intakes</span>,</span>
+<span>  <span class="va">direct_fluxes</span>,</span>
 <span>  exposure_weighting<span class="op">=</span><span class="st">"potential"</span><span class="op">)</span></span></code></pre></div>
 <p>The <code><a href="../reference/transfer.html">transfer()</a></code> function outputs the predictions in a
 log10 scale, inheriting the scale of our input equations. To visualize

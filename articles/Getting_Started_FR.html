@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -303,18 +303,16 @@ alimentaire grâce à la fonction <code><a href="../reference/transfer.html">tra
 <span><span class="va">spcmdl_dispersal</span><span class="op">[[</span><span class="st">"sol"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ground_cd</span></span>
 <span></span>
 <span><span class="co"># 2. On définit les équations de transfert (Facteurs de Bioaccumulation / Bioconcentration)</span></span>
-<span><span class="va">intakes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/intake.html">intake</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>,</span>
-<span>  <span class="st">"sol -&gt; plante"</span> <span class="op">=</span> <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="fl">32</span>,      <span class="co"># Equation spécifique pour les plantes</span></span>
-<span>  <span class="st">"plante -&gt; herbivore"</span> <span class="op">=</span> <span class="fl">0.5</span>,         <span class="co"># Facteur simple pour l'herbivore</span></span>
-<span>  <span class="st">"herbivore -&gt; carnivore"</span> <span class="op">=</span> <span class="fl">0.8</span>,     <span class="co"># Facteur simple pour le carnivore</span></span>
-<span>  default <span class="op">=</span> <span class="fl">1</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, default <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>,  <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">/</span> <span class="fl">32</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="co"># Equation spécifique pour les plantes</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"herbivore"</span>,  <span class="fl">0.5</span><span class="op">)</span> <span class="op">|&gt;</span>     <span class="co"># Facteur simple pour l'herbivore</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"herbivore"</span>, <span class="st">"carnivore"</span>,  <span class="fl">0.8</span><span class="op">)</span>   <span class="co"># Facteur simple pour le carnivore</span></span>
 <span></span>
 <span><span class="co"># 3. On rassemble nos noyaux de dispersion pour le calcul de l'exposition</span></span>
 <span><span class="va">kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>sol <span class="op">=</span> <span class="cn">NA</span>, plante <span class="op">=</span> <span class="cn">NA</span>, herbivore <span class="op">=</span> <span class="va">k_herb</span>, carnivore <span class="op">=</span> <span class="va">k_carn</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4. Calcul du transfert global dans l'écosystème</span></span>
-<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="va">kernels</span>, <span class="va">intakes</span><span class="op">)</span></span>
+<span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="va">kernels</span>, <span class="va">fluxes</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Visualisation de la contamination absorbée par le carnivore</span></span>
 <span><span class="va">color_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
