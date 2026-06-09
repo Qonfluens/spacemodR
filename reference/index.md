@@ -18,6 +18,8 @@
   : Add links to a trophic table
 - [`add_nohabitat()`](https://qonfluens.github.io/spacemodR/reference/add_nohabitat.md)
   : Add non-habitat zones to a Habitat object
+- [`apply_flux()`](https://qonfluens.github.io/spacemodR/reference/apply_flux.md)
+  : Apply trophic flux from a resource layer
 - [`bappet_cd`](https://qonfluens.github.io/spacemodR/reference/bappet_cd.md)
   : Data concentration Cd Soil - Veetation extracted from BAPPET
 - [`calibrate_direct()`](https://qonfluens.github.io/spacemodR/reference/calibrate_direct.md)
@@ -28,8 +30,6 @@
   : Calibrate trophic transfer model
 - [`compute_dispersal()`](https://qonfluens.github.io/spacemodR/reference/compute_dispersal.md)
   : Compute dispersal or spread map (Generic Engine)
-- [`compute_flux()`](https://qonfluens.github.io/spacemodR/reference/compute_flux.md)
-  : Apply trophic flux from a resource layer
 - [`compute_kernel()`](https://qonfluens.github.io/spacemodR/reference/compute_kernel.md)
   : Create a 2D Gaussian motion kernel as a SpatRaster
 - [`dispersal()`](https://qonfluens.github.io/spacemodR/reference/dispersal.md)

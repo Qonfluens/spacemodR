@@ -84,6 +84,11 @@ Must contain an attribute <code>trophic_tbl</code> of class <code>trophic_tbl</c
 <dd><p>A list of kernel parameters for each layer.</p></dd>
 
 
+<dt id="arg-fluxes">fluxes<a class="anchor" aria-label="anchor" href="#arg-fluxes"></a></dt>
+<dd><p>A <code>trophic_tbl</code> object (or compatible table) containing
+normalized weights and flux functions for each trophic link.</p></dd>
+
+
 <dt id="arg-exposure-weighting">exposure_weighting<a class="anchor" aria-label="anchor" href="#arg-exposure-weighting"></a></dt>
 <dd><p>Character. Defines how the realized exposure is calculated
 based on the predator's presence. Options are:</p><ul><li><p><code>"local"</code> (Default): Weight exposure by the local habitat value (`predator_habitat`).
@@ -101,11 +106,6 @@ based on the predator's presence. Options are:</p><ul><li><p><code>"local"</code
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical. If <code>TRUE</code>, prints progress information.</p></dd>
 
-
-<dt id="arg-flux">flux<a class="anchor" aria-label="anchor" href="#arg-flux"></a></dt>
-<dd><p>A <code>trophic_tbl</code> object (or compatible table) containing
-normalized weights and flux functions for each trophic link.</p></dd>
-
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -118,9 +118,9 @@ normalized weights and flux functions for each trophic link.</p></dd>
 by the <code>level</code> attribute of the trophic table.</p>
 <p>For each layer:</p><ol><li><p>Resources (lower neighbors) are identified.</p></li>
 <li><p>Concentration from each resource is spatially spread using <code>spread()</code>.</p></li>
-<li><p>Fluxes is computed using <code><a href="flux.html">flux()</a></code> and <code><a href="add_flux.html">add_flux()</a></code>.</p></li>
+<li><p>Flux is computed using <code><a href="apply_flux.html">apply_flux()</a></code>.</p></li>
 <li><p>Contributions from all resources are summed.</p></li>
-</ol><p>The function assumes that trophic weights are already normalized so that,
+</ol><p>The function assumes that flux weights are already normalized so that,
 for each consumer, the sum of contributions from all resources equals 1.</p>
     </div>
 

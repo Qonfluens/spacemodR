@@ -169,9 +169,6 @@ logarithm):</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>c</mi><mi>a</mi><mi>r</mi><mi>a</mi><mi>b</mi><mi>i</mi><mi>d</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>1</mn><mo>+</mo><mn>0.6</mn><mo>*</mo><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
 \log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
 </annotation></semantics></math></p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">inter_carab</span> <span class="op">=</span> <span class="op">-</span><span class="fl">1</span></span>
-<span><span class="va">slope_carab</span> <span class="op">=</span> <span class="fl">0.6</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -216,7 +213,7 @@ average age of the consumer
 </h3>
 <p>The diet and body mass of 5401 mammals and 9994 birds are in the
 attached datasets.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"DBFunc_MamFuncDat"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"DBFunc_BirdFuncDat"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level4">
@@ -224,7 +221,7 @@ attached datasets.</p>
 </h4>
 <p>In this dataset <code>DBFunc_MamFuncDat</code>, we can look at the
 estimated diet of all voles species as well as their mean body mass.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diet_apodemus</span> <span class="op">=</span> <span class="va">DBFunc_MamFuncDat</span><span class="op">[</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"Apodemus"</span>, <span class="va">DBFunc_MamFuncDat</span><span class="op">$</span><span class="va">Scientific</span><span class="op">)</span>,</span>
 <span>  <span class="op">]</span></span>
@@ -256,7 +253,7 @@ estimated diet of all voles species as well as their mean body mass.</p>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>    panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="960"></p>
 <div class="section level5">
 <h5 id="concise-diet-descriptions-eltontraits-1-0">Concise Diet Descriptions (EltonTraits 1.0)<a class="anchor" aria-label="anchor" href="#concise-diet-descriptions-eltontraits-1-0"></a>
 </h5>
@@ -302,7 +299,7 @@ study vs. genus-level extrapolation).</li>
 <div class="section level4">
 <h4 id="small-mammals-voles-and-shrew">Small mammals: voles and shrew<a class="anchor" aria-label="anchor" href="#small-mammals-voles-and-shrew"></a>
 </h4>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diet_mammal</span> <span class="op">&lt;-</span> <span class="va">DBFunc_MamFuncDat</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">Scientific</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
@@ -336,7 +333,7 @@ study vs. genus-level extrapolation).</li>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>    panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="960"></p>
 <p>We can compared the results with what is used in the Berisp
 documentation:</p>
 <table class="table">
@@ -398,7 +395,7 @@ russula</em>)</td>
 <div class="section level4">
 <h4 id="birds-little-owl-and-black-bird">Birds: little owl and black bird<a class="anchor" aria-label="anchor" href="#birds-little-owl-and-black-bird"></a>
 </h4>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">diet_bird</span> <span class="op">&lt;-</span> <span class="va">DBFunc_BirdFuncDat</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">Scientific</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
@@ -432,7 +429,7 @@ russula</em>)</td>
 <span>    axis.text.x <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>angle <span class="op">=</span> <span class="fl">45</span>, hjust <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
 <span>    panel.grid.minor <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 <div class="section level3">
@@ -441,7 +438,7 @@ russula</em>)</td>
 <p>We have the energy needs of 749 species, 97 mammals, 107 birds, 170
 fishes, 51 reptiles, 11 amphibians, 110 crustacean, 65 arthropods, 75
 protozoa</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"FmrBT"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level5">
 <h5 id="close-species">close species<a class="anchor" aria-label="anchor" href="#close-species"></a>
@@ -470,7 +467,7 @@ pennsylvanicus</em>) and <em>Arvicola</em> belong to the same family,
 Cricetidae, sharing identical microtine (vole-like) metabolic and
 toxicokinetic traits.</p></li>
 </ul>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">energy_mammal</span> <span class="op">&lt;-</span> <span class="va">FmrBT</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span></span>
 <span>    <span class="va">SpeciesVerbatim</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -494,7 +491,7 @@ toxicokinetic traits.</p></li>
 <span>    legend.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span>,</span>
 <span>    legend.position <span class="op">=</span> <span class="st">"right"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="960"></p>
 <ul>
 <li>
 <em>Athene noctua</em> (Little Owl): true owls (Strigiformes) are
@@ -505,7 +502,7 @@ family, nightjars share a nocturnal, insectivorous niche with small owls
 and belong to the same broader evolutionary landbird/Strisores lineage,
 making it the best available surrogate for nocturnal avian traits.</li>
 </ul>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">energy_mammal</span> <span class="op">&lt;-</span> <span class="va">FmrBT</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">SpeciesVerbatim</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>      <span class="st">"Turdus merula"</span>, <span class="st">"Phalaenoptilus nuttallii"</span><span class="op">)</span></span>
@@ -526,7 +523,7 @@ making it the best available surrogate for nocturnal avian traits.</li>
 <span>    legend.title <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_text</a></span><span class="op">(</span>face <span class="op">=</span> <span class="st">"bold"</span><span class="op">)</span>,</span>
 <span>    legend.position <span class="op">=</span> <span class="st">"right"</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-16-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 </div>
@@ -536,25 +533,48 @@ making it the best available surrogate for nocturnal avian traits.</li>
 <div class="section level3">
 <h3 id="trophic-transfer-equation">Trophic transfer equation<a class="anchor" aria-label="anchor" href="#trophic-transfer-equation"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">direct_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span></span>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>p</mi><mi>l</mi><mi>a</mi><mi>n</mi><mi>t</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>0.475</mn><mo>+</mo><mn>0.546</mn><mo>*</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\ln(C_{plant}) = - 0.475 + 0.546 * \ln(C_{soil}) 
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>e</mi><mi>a</mi><mi>r</mi><mi>t</mi><mi>h</mi><mi>w</mi><mi>o</mi><mi>r</mi><mi>m</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mn>2.114</mn><mo>+</mo><mn>0.795</mn><mo>*</mo><mrow><mi mathvariant="normal">ln</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\ln(C_{earthworm}) =  2.114 + 0.795 * \ln(C_{soil})
+</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>c</mi><mi>a</mi><mi>r</mi><mi>a</mi><mi>b</mi><mi>i</mi><mi>d</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>1</mn><mo>+</mo><mn>0.6</mn><mo>*</mo><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
+</annotation></semantics></math></p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">FIRbw_mamHerb</span> <span class="op">=</span> <span class="fl">0.0875</span> <span class="co"># kg dw/kg bw/d</span></span>
+<span><span class="va">FIRbw_mamInsect</span> <span class="op">=</span> <span class="fl">0.209</span> <span class="co"># kg dw/kg bw/d</span></span>
+<span></span>
+<span><span class="va">direct_doses</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span></span>
 <span>    <span class="va">spcmdl_trophic_fixed</span>,</span>
 <span>    default <span class="op">=</span> <span class="fl">1</span>,    <span class="co"># for all other default is 1</span></span>
 <span>    normalize<span class="op">=</span><span class="cn">FALSE</span> <span class="co"># TRUE would weight every link to sum at 1</span></span>
 <span>  <span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"earthworm"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"carabid"</span>, <span class="op">~</span> <span class="va">inter_veg</span> <span class="op">+</span> <span class="va">slope_veg</span><span class="op">*</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="co"># log(10^x) to change log10 to Neperian log.</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"plant"</span>, <span class="op">~</span> <span class="op">-</span> <span class="fl">0.475</span> <span class="op">+</span> <span class="fl">0.546</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"earthworm"</span>, <span class="op">~</span> <span class="fl">2.114</span> <span class="op">+</span> <span class="fl">0.795</span><span class="op">*</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"carabid"</span>, <span class="op">~</span> <span class="op">-</span><span class="fl">1</span> <span class="op">+</span> <span class="fl">0.6</span><span class="op">*</span><span class="va">x</span><span class="op">)</span></span>
+<span>  <span class="co"># mamHerb: compute only the dose to which link proportion applied</span></span>
+<span>  <span class="co"># Then the ratio is applied to body rescale to the dose /body weight</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamHerb"</span>, <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">*</span> <span class="va">FIRbw_mamHerb</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"plant"</span>, <span class="st">"mamHerb"</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">*</span> <span class="va">FIRbw_mamHerb</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"earthworm"</span>, <span class="st">"mamHerb"</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">*</span> <span class="va">FIRbw_mamHerb</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"carabid"</span>, <span class="st">"mamHerb"</span>, <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">*</span> <span class="va">FIRbw_mamHerb</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="co"># mamInsect: compute only the dose to which link proportion applied</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"soil"</span>, <span class="st">"mamInsect"</span>, <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">*</span> <span class="va">FIRbw_mamInsect</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"earthworm"</span>, <span class="st">"mamInsect"</span>, <span class="op">~</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">*</span> <span class="va">FIRbw_mamInsect</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span><span class="st">"carabid"</span>, <span class="st">"mamInsect"</span>, <span class="op">~</span> <span class="fl">10</span><span class="op">^</span><span class="va">x</span> <span class="op">*</span> <span class="va">FIRbw_mamInsect</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="population-dispersion-in-landscape">Population dispersion in landscape<a class="anchor" aria-label="anchor" href="#population-dispersion-in-landscape"></a>
 </h3>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># no dispersal</span></span>
 <span><span class="va">fixed_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  soil  <span class="op">=</span> <span class="cn">NA</span>, plant <span class="op">=</span> <span class="cn">NA</span>, earthworm <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  carabid<span class="op">=</span><span class="cn">NA</span>,  mamHerb <span class="op">=</span> <span class="cn">NA</span>, mamInsect <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl_trophic_fixed_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_trophic_fixed</span>,</span>
 <span>  <span class="va">fixed_kernels</span>,</span>

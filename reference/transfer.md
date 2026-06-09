@@ -26,6 +26,11 @@ transfer(
 
   A list of kernel parameters for each layer.
 
+- fluxes:
+
+  A `trophic_tbl` object (or compatible table) containing normalized
+  weights and flux functions for each trophic link.
+
 - exposure_weighting:
 
   Character. Defines how the realized exposure is calculated based on
@@ -50,11 +55,6 @@ transfer(
 
   Logical. If `TRUE`, prints progress information.
 
-- flux:
-
-  A `trophic_tbl` object (or compatible table) containing normalized
-  weights and flux functions for each trophic link.
-
 ## Value
 
 A named \`spacemodel\` object as a list of spatial layers representing
@@ -72,13 +72,10 @@ For each layer:
 2.  Concentration from each resource is spatially spread using
     `spread()`.
 
-3.  Fluxes is computed using
-    [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
-    and
-    [`add_flux()`](https://qonfluens.github.io/spacemodR/reference/add_flux.md).
+3.  Flux is computed using
+    [`apply_flux()`](https://qonfluens.github.io/spacemodR/reference/apply_flux.md).
 
 4.  Contributions from all resources are summed.
 
-The function assumes that trophic weights are already normalized so
-that, for each consumer, the sum of contributions from all resources
-equals 1.
+The function assumes that flux weights are already normalized so that,
+for each consumer, the sum of contributions from all resources equals 1.

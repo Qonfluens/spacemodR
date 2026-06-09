@@ -94,12 +94,6 @@ In Berisp, authors use the following equation:
 \log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
 ```
 
-``` r
-
-inter_carab = -1
-slope_carab = 0.6
-```
-
 ## Transfer of food and contaminant
 
 ``` math
@@ -168,7 +162,7 @@ ggplot(diet_long, aes(x = Diet_Category, y = Value, color = Scientific)) +
   )
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-10-1.png)
 
 ##### Concise Diet Descriptions (EltonTraits 1.0)
 
@@ -229,7 +223,7 @@ ggplot(diet_long, aes(x = Diet_Category, y = Value, color = Scientific)) +
   )
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-12-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png)
 
 We can compared the results with what is used in the Berisp
 documentation:
@@ -280,7 +274,7 @@ ggplot(diet_long, aes(x = Diet_Category, y = Value, color = Scientific)) +
   )
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-13-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-12-1.png)
 
 ### Energy Needs
 
@@ -346,7 +340,7 @@ ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = Specie
   )
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-15-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-14-1.png)
 
 - *Athene noctua* (Little Owl): true owls (Strigiformes) are completely
   absent from this dataset. The closest relative available is
@@ -380,22 +374,48 @@ ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = Specie
   )
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-16-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-15-1.png)
 
 ## Dose of Exposure
 
 ### Trophic transfer equation
 
+``` math
+\ln(C_{plant}) = - 0.475 + 0.546 * \ln(C_{soil}) 
+```
+
+``` math
+\ln(C_{earthworm}) =  2.114 + 0.795 * \ln(C_{soil})
+```
+
+``` math
+\log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
+```
+
 ``` r
 
-direct_fluxes <- flux(
+FIRbw_mamHerb = 0.0875 # kg dw/kg bw/d
+FIRbw_mamInsect = 0.209 # kg dw/kg bw/d
+
+direct_doses <- flux(
     spcmdl_trophic_fixed,
     default = 1,    # for all other default is 1
     normalize=FALSE # TRUE would weight every link to sum at 1
   ) |>
-  add_flux("soil", "plant", ~ inter_veg + slope_veg*x) |>
-  add_flux("soil", "earthworm", ~ inter_veg + slope_veg*x) |>
-  add_flux("soil", "carabid", ~ inter_veg + slope_veg*x)
+  # log(10^x) to change log10 to Neperian log.
+  add_flux("soil", "plant", ~ - 0.475 + 0.546*log(10^x)) |>
+  add_flux("soil", "earthworm", ~ 2.114 + 0.795*log(10^x)) |>
+  add_flux("soil", "carabid", ~ -1 + 0.6*x)
+  # mamHerb: compute only the dose to which link proportion applied
+  # Then the ratio is applied to body rescale to the dose /body weight
+  add_flux("soil", "mamHerb", ~ 10^x * FIRbw_mamHerb) |>
+  add_flux("plant", "mamHerb", ~ exp(x) * FIRbw_mamHerb) |>
+  add_flux("earthworm", "mamHerb", ~ exp(x) * FIRbw_mamHerb) |>
+  add_flux("carabid", "mamHerb", ~ 10^x * FIRbw_mamHerb) |>
+  # mamInsect: compute only the dose to which link proportion applied
+  add_flux("soil", "mamInsect", 10^x * FIRbw_mamInsect) |>
+  add_flux("earthworm", "mamInsect", ~ exp(x) * FIRbw_mamInsect) |>
+  add_flux("carabid", "mamInsect", ~ 10^x * FIRbw_mamInsect)
 ```
 
 ### Population dispersion in landscape
