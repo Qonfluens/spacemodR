@@ -292,6 +292,9 @@ compute_levels <- function(edges) {
 #' @param x A \code{trophic_tbl} object.
 #' @param shift To shift x_axis between trophic level and avoid
 #'   the potential overlapping of arrows.
+#' @param colors A named character vector of colors (hexadecimal or standard R color names)
+#'   where the names match the node names in the trophic table. If NULL, default
+#'   ggplot2 colors are used.
 #' @param ... Additional arguments (not used, for S3 consistency).
 #'
 #' @details
@@ -310,10 +313,15 @@ compute_levels <- function(edges) {
 #'   add_link("a", "b") |>
 #'   add_link("b", "c")
 #'
+#' # Plot with default colors
 #' plot(net)
 #'
+#' # Plot with custom colors
+#' my_pal <- c("a" = "brown", "b" = "green", "c" = "blue")
+#' plot(net, colors = my_pal)
+#'
 #' @export
-plot.trophic_tbl <- function(x, shift=TRUE, ...) {
+plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, ...) {
   stopifnot(inherits(x, "trophic_tbl"))
 
   levels <- attr(x, "level")
@@ -323,7 +331,7 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
   node_df <- do.call(rbind, lapply(unique(levels), function(lvl) {
     nds <- nodes[levels == lvl]
     shuff <- ifelse(shift, 1/max(levels)^2 * lvl^2/2, 0)
-    center <- 1 + (max(length(nds)) -1) /2 # default was -1
+    center <- 1 + (max(length(nds)) - 1) / 2
     data.frame(
       node = nds,
       x = seq_along(nds) - center + shuff,
@@ -341,9 +349,9 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
 
   # Merge pour récupérer les coordonnées numériques
   edges <- merge(edges, node_df, by.x = "from", by.y = "node")
-  edges <- merge(edges, node_df, by.x = "to", by.y = "node", suffixes = c("_from","_to"))
+  edges <- merge(edges, node_df, by.x = "to", by.y = "node", suffixes = c("_from", "_to"))
 
-  # Forcer les coordonnées à numeric (par sécurité)
+  # Forcer les coordonnées à numeric
   edges$x_from <- as.numeric(edges$x_from)
   edges$y_from <- as.numeric(edges$y_from)
   edges$x_to   <- as.numeric(edges$x_to)
@@ -352,36 +360,47 @@ plot.trophic_tbl <- function(x, shift=TRUE, ...) {
   node_df$x <- as.numeric(node_df$x)
   node_df$y <- as.numeric(node_df$y)
 
-
-  ggplot2::ggplot() +
+  # Construction de base du graphique
+  p <- ggplot2::ggplot() +
     # arêtes orientées
     ggplot2::geom_segment(
       data = edges,
       ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to),
-      arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm"))
+      arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
+      color = "grey40" # Rend les flèches un peu plus visibles que le noir pur
     ) +
-    # noeuds
+    # MODIFICATION : On map la couleur du point ET du texte sur le nom du noeud
     ggplot2::geom_point(
       data = node_df,
-      ggplot2::aes(x = x, y = y),
-      alpha=0.6, color="grey",
-      size = 4
+      ggplot2::aes(x = x, y = y, color = node),
+      alpha = 0.8,
+      size = 6 # Augmenté légèrement pour que la couleur soit bien visible sous le texte
     ) +
-    # labels
+    # MODIFICATION : Le texte prend aussi la couleur (optionnel, sinon changer pour color="black")
     ggplot2::geom_text(
       data = node_df,
-      ggplot2::aes(x = x, y = y, label = node),
-      vjust = -1
+      ggplot2::aes(x = x, y = y, label = node, color = node),
+      vjust = -1.2,
+      fontface = "bold"
     ) +
     ggplot2::scale_y_continuous(
       breaks = sort(unique(levels)),
-      limits = c(1,max(levels)+0.5)) +
+      limits = c(1, max(levels) + 0.5)
+    ) +
     ggplot2::labs(
       x = "Node index within trophic level",
       y = "Trophic level",
-      title = "Trophic network"
+      title = "Trophic network",
+      color = "Species"
     ) +
     ggplot2::theme_minimal()
+
+  # AJOUT : Si l'utilisateur fournit une palette personnalisée, on l'applique
+  if (!is.null(colors)) {
+    p <- p + ggplot2::scale_color_manual(values = colors)
+  }
+
+  return(p)
 }
 
 ####################################
