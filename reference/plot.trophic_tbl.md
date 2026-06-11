@@ -7,7 +7,7 @@ ggplot2.
 
 ``` r
 # S3 method for class 'trophic_tbl'
-plot(x, shift = TRUE, ...)
+plot(x, shift = TRUE, colors = NULL, ...)
 ```
 
 ## Arguments
@@ -20,6 +20,12 @@ plot(x, shift = TRUE, ...)
 
   To shift x_axis between trophic level and avoid the potential
   overlapping of arrows.
+
+- colors:
+
+  A named character vector of colors (hexadecimal or standard R color
+  names) where the names match the node names in the trophic table. If
+  NULL, default ggplot2 colors are used.
 
 - ...:
 
@@ -49,6 +55,12 @@ net <- trophic() |>
   add_link("a", "b") |>
   add_link("b", "c")
 
+# Plot with default colors
 plot(net)
+
+
+# Plot with custom colors
+my_pal <- c("a" = "brown", "b" = "green", "c" = "blue")
+plot(net, colors = my_pal)
 
 ```
