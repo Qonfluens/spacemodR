@@ -43,7 +43,7 @@ navbar:
           href: articles/zoo_ecossl.html
         - text: "Spatial Soil-Target Transfer"
           href: articles/zoo_Soil_Target.html
-        - text: "Spatial Trophic Transfer"
+        - text: "Spatial Trophic Transfer (Berisp-like)"
           href: articles/zoo_Berisp_full.html
 
     news:

@@ -64,7 +64,9 @@ ggplot() +
   labs(title="Land Cover in the Region of Interest (ROI)")
 ```
 
-From these vector polygons, we define **habitats** for our species. A habitat is a combination of favorable, unfavorable, or neutral zones. These geometries are then rasterized (converted into regular grids) to prepare them for modeling.
+From these vector polygons, we define **habitats** for our species. 
+A habitat is a combination of favorable, unfavorable, or neutral zones. 
+These geometries are then rasterized (converted into regular grids) to prepare them for modeling.
 
 
 ```{r build_habitat}
@@ -98,7 +100,6 @@ Currently, there are 935 species, including 499 birds, 215 mammals,
 136 reptiles, and 85 amphibians. 
 
 For example, for the common vole (*Microtus arvalis*):
-
 
 ```{r map_hab_microtus}
 microtus_hab <- join_ocsge_species(ocsge_metaleurop, "Microtus_arvalis")

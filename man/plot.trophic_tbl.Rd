@@ -4,13 +4,17 @@
 \alias{plot.trophic_tbl}
 \title{Plot a trophic table}
 \usage{
-\method{plot}{trophic_tbl}(x, shift = TRUE, ...)
+\method{plot}{trophic_tbl}(x, shift = TRUE, colors = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{trophic_tbl} object.}
 
 \item{shift}{To shift x_axis between trophic level and avoid
 the potential overlapping of arrows.}
+
+\item{colors}{A named character vector of colors (hexadecimal or standard R color names)
+where the names match the node names in the trophic table. If NULL, default
+ggplot2 colors are used.}
 
 \item{...}{Additional arguments (not used, for S3 consistency).}
 }
@@ -34,6 +38,11 @@ net <- trophic() |>
   add_link("a", "b") |>
   add_link("b", "c")
 
+# Plot with default colors
 plot(net)
+
+# Plot with custom colors
+my_pal <- c("a" = "brown", "b" = "green", "c" = "blue")
+plot(net, colors = my_pal)
 
 }
