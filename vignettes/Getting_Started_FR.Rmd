@@ -83,6 +83,7 @@ layer_plant = ocsge_metaleurop$code_cs %in%
 
 ```
 
+
 ```{r map_sol, fig.height=6}
 habitat_sol = habitat() |>
   add_habitat(ocsge_metaleurop[layer_soil_natural,]) |>

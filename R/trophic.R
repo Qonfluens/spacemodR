@@ -293,8 +293,9 @@ compute_levels <- function(edges) {
 #' @param shift To shift x_axis between trophic level and avoid
 #'   the potential overlapping of arrows.
 #' @param colors A named character vector of colors (hexadecimal or standard R color names)
-#'   where the names match the node names in the trophic table. If NULL, default
-#'   ggplot2 colors are used.
+#'   where the names match the node names in the trophic table. If NULL, grey colors are used.
+#' @param use_weight Logical. If TRUE, width of arrow is proportional to link weight
+#'   (normalized to 1 per target node). Default is FALSE.
 #' @param ... Additional arguments (not used, for S3 consistency).
 #'
 #' @details
@@ -321,7 +322,7 @@ compute_levels <- function(edges) {
 #' plot(net, colors = my_pal)
 #'
 #' @export
-plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, ...) {
+plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE, ...) {
   stopifnot(inherits(x, "trophic_tbl"))
 
   levels <- attr(x, "level")
@@ -344,8 +345,14 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, ...) {
   edges <- data.frame(
     from = sapply(x$link, `[[`, "from"),
     to   = sapply(x$link, `[[`, "to"),
+    weight = x$weight,
     stringsAsFactors = FALSE
   )
+  # Normalisation à 1 par nœud cible (proies d'un même prédateur)
+  if (use_weight) {
+    sums <- tapply(edges$weight, edges$to, sum)
+    edges$weight_norm <- edges$weight / sums[edges$to]
+  }
 
   # Merge pour récupérer les coordonnées numériques
   edges <- merge(edges, node_df, by.x = "from", by.y = "node")
@@ -361,27 +368,43 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, ...) {
   node_df$y <- as.numeric(node_df$y)
 
   # Construction de base du graphique
-  p <- ggplot2::ggplot() +
-    # arêtes orientées
-    ggplot2::geom_segment(
-      data = edges,
-      ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to),
-      arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
-      color = "grey40" # Rend les flèches un peu plus visibles que le noir pur
-    ) +
-    # MODIFICATION : On map la couleur du point ET du texte sur le nom du noeud
+  p <- ggplot2::ggplot()
+
+  # arêtes orientées
+  if (use_weight) {
+    p <- p +
+      ggplot2::geom_segment(
+        data = edges,
+        ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to, linewidth = weight_norm),
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
+        color = "grey40"
+      ) +
+      ggplot2::scale_linewidth_continuous(range = c(0.2, 2.5), guide = "none") # Ajuste l'épaisseur min/max ici
+  } else {
+    p <- p +
+      ggplot2::geom_segment(
+        data = edges,
+        ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to),
+        arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
+        color = "grey40"
+      )
+  }
+
+  p <- p +
+    # Points
     ggplot2::geom_point(
       data = node_df,
       ggplot2::aes(x = x, y = y, color = node),
       alpha = 0.8,
-      size = 6 # Augmenté légèrement pour que la couleur soit bien visible sous le texte
+      size = 6
     ) +
-    # MODIFICATION : Le texte prend aussi la couleur (optionnel, sinon changer pour color="black")
+    # Texte
     ggplot2::geom_text(
       data = node_df,
       ggplot2::aes(x = x, y = y, label = node, color = node),
       vjust = -1.2,
-      fontface = "bold"
+      fontface = "bold",
+      show.legend = FALSE
     ) +
     ggplot2::scale_y_continuous(
       breaks = sort(unique(levels)),
@@ -395,8 +418,13 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, ...) {
     ) +
     ggplot2::theme_minimal()
 
-  # AJOUT : Si l'utilisateur fournit une palette personnalisée, on l'applique
-  if (!is.null(colors)) {
+  # Gestion des couleurs par défaut vs personnalisées
+  if (is.null(colors)) {
+    # Si 'colors' n'est pas renseigné, on met tout en gris et on masque la légende
+    default_colors <- stats::setNames(rep("grey60", length(nodes)), nodes)
+    p <- p + ggplot2::scale_color_manual(values = default_colors, guide = "none")
+  } else {
+    # Si 'colors' est renseigné, on applique la palette personnalisée
     p <- p + ggplot2::scale_color_manual(values = colors)
   }
 
