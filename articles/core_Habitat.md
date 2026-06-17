@@ -22,6 +22,65 @@ library(leaflet)
 library(patchwork)
 ```
 
+## The database construction
+
+To build the habitat database for spacemod, we transitioned from
+traditional static mapping to a dynamic semantic analysis. Here is a
+breakdown of how this new methodology compares to previous standards.
+
+### The Original Framework (O’Connor et al., 2024 ; @oconnor2024habitat)
+
+The foundational method described by O’Connor et al. (2024) relies on an
+“expert-based” crosswalk to define optimal habitats for European
+terrestrial vertebrates. It links a European land systems map—which
+accounts for both land cover and land use intensity—to standardized
+habitat classifications from GlobCover and the IUCN Red List. This
+approach assigns simple, discrete suitability scores: 2 for optimal
+habitat, 1 for secondary habitat, and 0 for unsuitable. These scores
+were then manually penalized by subtracting points if specific keywords
+related to land use intensity or threats (e.g., agricultural
+intensification) appeared in the species’ IUCN descriptions. Ultimately,
+this generated Area of Habitat (AOH) maps, filtering existing occurrence
+maps to show simple presence or absence at a 1 km² resolution.
+
+### The LLM-Assisted Approach for spacemod
+
+Our approach steps away from rigid keyword matching and discrete
+scoring, moving toward a semantic analysis of a species’ ecological
+requirements.Instead of using the broad European land systems, this
+database utilizes the fine-scale French OCS-GE (Occupation du Sol à
+Grande Échelle) nomenclature. Each OCS-GE code was enriched with precise
+ecological context. For example, paved roads are described as creating a
+“barrier effect,” while mineral soils are noted as “thermophilic.”Using
+a Large Language Model (Gemini), we fed the AI free-text descriptions of
+both preferred and avoided habitats (sourced from EEA databases). The
+model conceptually analyzed these texts against our enriched OCS-GE
+descriptions.
+
+Instead of a single presence/absence score, the model simultaneously
+generates four continuous variables (on a scale of 0 to 10) that capture
+finer landscape ecology concepts: \* `weight_global`: Overall habitat
+suitability (closest to the traditional AOH score). \*
+`weight_movement`: Landscape permeability for species dispersion. \*
+`weight_foraging`: Habitat attractiveness specifically for feeding and
+resource acquisition. \* `resistance`: The impedance or barrier effect
+of the environment, heavily informed by the “avoided-habitat”
+descriptions.
+
+### The Fundamental Difference
+
+This new method represents a major shift in both scale and
+functionality. The original methodology relied on rigid keyword
+penalties to output a discrete matrix (0, 1, or 2), answering a simple
+question: can the species live in this pixel? By leveraging natural
+language understanding, our method generates a continuous matrix (0-10)
+that distinguishes between an environment where a species simply
+survives, one it actively seeks for food, and one it merely uses for
+transit. These variables are specifically designed to be injected into
+complex spatial ecological models (such as graph theory or
+Circuitscape), offering a much more nuanced view of landscape
+connectivity than traditional AOH mapping.
+
 ## Defining Habitat
 
 ### Weighted species habitat with OCS-GE layer for *Apodemus sylvaticus*

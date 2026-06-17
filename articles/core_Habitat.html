@@ -108,6 +108,69 @@ the Wood mouse (Apodemus sylvaticus).</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://patchwork.data-imaginist.com" class="external-link">patchwork</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="the-database-construction">The database construction<a class="anchor" aria-label="anchor" href="#the-database-construction"></a>
+</h2>
+<p>To build the habitat database for spacemod, we transitioned from
+traditional static mapping to a dynamic semantic analysis. Here is a
+breakdown of how this new methodology compares to previous
+standards.</p>
+<div class="section level3">
+<h3 id="the-original-framework-oconnor-et-al--2024-oconnor2024habitat">The Original Framework (O’Connor et al., 2024 ; <span class="citation">@oconnor2024habitat</span>)<a class="anchor" aria-label="anchor" href="#the-original-framework-oconnor-et-al--2024-oconnor2024habitat"></a>
+</h3>
+<p>The foundational method described by O’Connor et al. (2024) relies on
+an “expert-based” crosswalk to define optimal habitats for European
+terrestrial vertebrates. It links a European land systems map—which
+accounts for both land cover and land use intensity—to standardized
+habitat classifications from GlobCover and the IUCN Red List. This
+approach assigns simple, discrete suitability scores: 2 for optimal
+habitat, 1 for secondary habitat, and 0 for unsuitable. These scores
+were then manually penalized by subtracting points if specific keywords
+related to land use intensity or threats (e.g., agricultural
+intensification) appeared in the species’ IUCN descriptions. Ultimately,
+this generated Area of Habitat (AOH) maps, filtering existing occurrence
+maps to show simple presence or absence at a 1 km² resolution.</p>
+</div>
+<div class="section level3">
+<h3 id="the-llm-assisted-approach-for-spacemod">The LLM-Assisted Approach for spacemod<a class="anchor" aria-label="anchor" href="#the-llm-assisted-approach-for-spacemod"></a>
+</h3>
+<p>Our approach steps away from rigid keyword matching and discrete
+scoring, moving toward a semantic analysis of a species’ ecological
+requirements.Instead of using the broad European land systems, this
+database utilizes the fine-scale French OCS-GE (Occupation du Sol à
+Grande Échelle) nomenclature. Each OCS-GE code was enriched with precise
+ecological context. For example, paved roads are described as creating a
+“barrier effect,” while mineral soils are noted as “thermophilic.”Using
+a Large Language Model (Gemini), we fed the AI free-text descriptions of
+both preferred and avoided habitats (sourced from EEA databases). The
+model conceptually analyzed these texts against our enriched OCS-GE
+descriptions.</p>
+<p>Instead of a single presence/absence score, the model simultaneously
+generates four continuous variables (on a scale of 0 to 10) that capture
+finer landscape ecology concepts: * <code>weight_global</code>: Overall
+habitat suitability (closest to the traditional AOH score). *
+<code>weight_movement</code>: Landscape permeability for species
+dispersion. * <code>weight_foraging</code>: Habitat attractiveness
+specifically for feeding and resource acquisition. *
+<code>resistance</code>: The impedance or barrier effect of the
+environment, heavily informed by the “avoided-habitat” descriptions.</p>
+</div>
+<div class="section level3">
+<h3 id="the-fundamental-difference">The Fundamental Difference<a class="anchor" aria-label="anchor" href="#the-fundamental-difference"></a>
+</h3>
+<p>This new method represents a major shift in both scale and
+functionality. The original methodology relied on rigid keyword
+penalties to output a discrete matrix (0, 1, or 2), answering a simple
+question: can the species live in this pixel? By leveraging natural
+language understanding, our method generates a continuous matrix (0-10)
+that distinguishes between an environment where a species simply
+survives, one it actively seeks for food, and one it merely uses for
+transit. These variables are specifically designed to be injected into
+complex spatial ecological models (such as graph theory or
+Circuitscape), offering a much more nuanced view of landscape
+connectivity than traditional AOH mapping.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="defining-habitat">Defining Habitat<a class="anchor" aria-label="anchor" href="#defining-habitat"></a>
 </h2>
 <div class="section level3">

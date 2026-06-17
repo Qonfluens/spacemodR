@@ -85,10 +85,12 @@ foraging), 45% vegetation, and 45% earthworms.
 
 ``` r
 
-trophic_df <- trophic() |>
+trophic_df_init <- trophic() |>
   add_link("soil", "plant", 1) |>
-  add_link("soil", "earthworm", 1) |>
-  # beetle
+  add_link("soil", "earthworm", 1)
+
+# beetle and beetles
+trophic_df <- trophic_df_init |>
   add_link("soil", "beetle", 0.1) |>
   add_link("plant", "beetle", 0.45) |>
   add_link("earthworm", "beetle", 0.45)
@@ -96,7 +98,7 @@ trophic_df <- trophic() |>
 
 ``` r
 
-plot(trophic_df, colors = species_colors)
+plot(trophic_df_init, colors = species_colors)
 ```
 
 ![](zoo_Berisp_full_files/figure-html/plot_early_trophic-1.png)
@@ -360,6 +362,199 @@ plot(trophic_df, colors = species_colors, use_weight=TRUE)
 
 ![](zoo_Berisp_full_files/figure-html/plot_full_trophic-1.png)
 
+### Food Ingestion Rate per Body Weight
+
+We have the energy needs of 749 species, 97 mammals, 107 birds, 170
+fishes, 51 reptiles, 11 amphibians, 110 crustacean, 65 arthropods, 75
+protozoa
+
+``` r
+
+data("FmrBT")
+```
+
+##### close species
+
+The list is missing some species.
+
+- Sorex and Crocidura (Shrews): the list lacks true shrews (Soricidae).
+  When seeking a metabolic surrogate for temperate shrews (Sorex spp.)
+  within this dataset, small temperate insectivorous bats, such as
+  *Myotis lucifugus* and *Plecotus auritus*, serve as excellent
+  physiological equivalents. Like true shrews, these bats are
+  lightweight (often weighing between 5 and 12 grams) and operate under
+  immense thermal pressure from temperate and boreal climates. Because
+  they are strictly insectivorous, they share a highly active foraging
+  strategy that demands a continuous supply of high-protein, easily
+  digestible prey. Most importantly, the extreme energetic cost of
+  flapping flight combined with their tiny body size forces these bats
+  to run a hyper-metabolic “engine.”
+
+- *Myodes glareolus* (Bank Vole): the list is highly enriched with
+  rodents that are phylogenetically very close to the bank vole. Most
+  notably, *Cleithrionomys rutilus* belongs to the exact same genus (as
+  Myodes and *Cleithrionomys* are synonymous in modern taxonomy).
+  Additionally, species from the genera *Microtus* (like *M. agrestis*
+  and *M. pennsylvanicus*) and *Arvicola* belong to the same family,
+  Cricetidae, sharing identical microtine (vole-like) metabolic and
+  toxicokinetic traits.
+
+``` r
+
+energy_mammal <- FmrBT |>
+  filter(
+    SpeciesVerbatim %in% c(
+      "Apodemus sylvaticus", "Plecotus auritus", "Myotis lucifugus",
+      "Cleithrionomys rutilus",
+      "Microtus agrestis", "Microtus pennsylvanicus")
+  )
+
+# plot
+ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = SpeciesVerbatim)) +
+  geom_point(size = 3.5, alpha = 0.8) + 
+  labs(
+    title = "Field Metabolic Rate (FMR) vs. Body Mass in Small Mammals",
+    x = "Body Mass (g)",
+    y = "Field Metabolic Rate (kJ/day/g)",
+    color = "Species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-7-1.png)
+
+- *Athene noctua* (Little Owl): true owls (Strigiformes) are completely
+  absent from this dataset. The closest relative available is
+  *Phalaenoptilus nuttallii* (the common poorwill), which belongs to the
+  *Caprimulgiformes* (nightjars). While it is a distinct family,
+  nightjars share a nocturnal, insectivorous niche with small owls and
+  belong to the same broader evolutionary landbird/Strisores lineage,
+  making it the best available surrogate for nocturnal avian traits.
+
+``` r
+
+energy_mammal <- FmrBT |>
+  filter(SpeciesVerbatim %in% c(
+      "Turdus merula", "Phalaenoptilus nuttallii")
+  )
+
+# plot
+ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = SpeciesVerbatim)) +
+  geom_point(size = 3.5, alpha = 0.8) + 
+  labs(
+    title = "Field Metabolic Rate (FMR) vs. Body Mass in Small Mammals",
+    x = "Body Mass (g)",
+    y = "Field Metabolic Rate (kJ/day/g)",
+    color = "Species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+    legend.title = element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-8-1.png)
+
+#### FIR weighted
+
+``` r
+
+# --- INSECTES ---
+bw_beetle = 55 * 10**-3 # 55 mg see Zygmunt et al. 2006: Body mass and caloric value of the ground beetle (Pterostichus oblongopunctatus) (Coleoptera, Carabidae) along a gradient of heavy metal pollution
+FIRbw_beetle = 0.51 # Pocock et al. 2020 : Body mass and caloric value of the ground beetle (Pterostichus oblongopunctatus) (Coleoptera, Carabidae) along a gradient of heavy metal pollution
+FIR_beetle = FIRbw_beetle * bw_beetle
+
+# --- MAMMIFÈRES ---
+bw_myodes = 20 # à vérifier
+FIRbw_myodes = 0.3 # à vérifier
+FIR_myodes = FIRbw_myodes * bw_myodes
+
+bw_microtus = 25 # à vérifier
+FIRbw_microtus = 0.45 # à vérifier
+FIR_microtus = FIRbw_microtus * bw_microtus
+
+bw_apodemus = 21.7 # g POLARIS
+FIRbw_apodemus = 0.206 # g/d/g POLARIS
+FIR_apodemus = FIRbw_apodemus * bw_apodemus
+
+bw_sorex = 9.7 # g POLARIS
+FIRbw_sorex = 13.3 # g/d/g POLARIS
+FIR_sorex = FIRbw_sorex * bw_sorex
+
+bw_crocidura = 11.6 # à vérifier
+FIRbw_crocidura = 13.3 # POLARIS sur Sorex
+FIR_crocidura = FIRbw_crocidura * bw_crocidura
+
+# --- OISEAUX ---
+bw_columba = 490 # POLARIS - Tier 2
+FIRbw_columba = 0.074 # POLARIS - Tier 2
+FIR_columba = FIRbw_columba * bw_columba
+
+bw_turdus = 113
+DEE_turdus = 263 # kJ/d - POLARIS
+FIRbw_turdus = 0.5 # POLARIS - Tier 2, between 0.185 (seeds) and 1.01 (slugs)
+FIR_turdus = FIRbw_turdus * bw_turdus
+
+bw_athene = 180 # à vérifier
+FIRbw_athene = 0.30 # à vérifier
+FIR_athene = FIRbw_athene * bw_athene
+
+trophic_df_FIRbw <- trophic_df_init |>
+  add_link("soil", "beetle", 0.1 * FIR_beetle) |>
+  add_link("plant", "beetle", 0.45 * FIR_beetle) |>
+  add_link("earthworm", "beetle", 0.45 * FIR_beetle ) |>
+  # myodes
+  add_link("soil", "myodes", 0.02 * FIR_myodes) |>
+  add_link("plant", "myodes", 0.9 * FIR_myodes) |>
+  add_link("earthworm", "myodes", 0.04 * FIR_myodes) |>
+  add_link("beetle", "myodes", 0.04 * FIR_myodes) |>
+  # microtus
+  add_link("soil", "microtus", 0.02 * FIR_microtus) |>
+  add_link("plant", "microtus", 0.98* FIR_microtus) |>
+  # wood mouse
+  add_link("soil", "apodemus", 0.02 * FIR_apodemus) |>
+  add_link("plant", "apodemus", 0.82 * FIR_apodemus) |>
+  add_link("earthworm", "apodemus", 0.08 * FIR_apodemus) |>
+  add_link("beetle", "apodemus", 0.08 * FIR_apodemus) |>
+  # sorex
+  add_link("soil", "sorex", 0.02 * FIR_sorex) |>
+  add_link("earthworm", "sorex", 0.49 * FIR_sorex) |>
+  add_link("beetle", "sorex", 0.49 * FIR_sorex) |>
+  # crocidura
+  add_link("soil", "crocidura", 0.02 * FIR_crocidura) |>
+  add_link("earthworm", "crocidura", 0.49 * FIR_crocidura) |>
+  add_link("beetle", "crocidura", 0.49 * FIR_crocidura) |>
+  # columba
+  add_link("plant", "columba", 1* FIR_columba) |>
+  # turdus
+  add_link("plant", "turdus", 0.4 * FIR_turdus) |>
+  add_link("earthworm", "turdus", 0.3 * FIR_turdus) |>
+  add_link("beetle", "turdus", 0.3 * FIR_turdus) |>
+  # athene
+  add_link("earthworm", "athene", 0.35 * FIR_athene) |>
+  add_link("beetle", "athene", 0.35 * FIR_athene) |>
+  add_link("myodes", "athene", 0.06 * FIR_athene) |>
+  add_link("microtus", "athene", 0.06 * FIR_athene) |>
+  add_link("apodemus", "athene", 0.06 * FIR_athene) |>
+  add_link("sorex", "athene", 0.06 * FIR_athene) |>
+  add_link("crocidura", "athene", 0.06 * FIR_athene)
+```
+
+``` r
+
+# NOTE 'use_weight' is Normalized !!!
+plot(trophic_df_FIRbw, colors = species_colors, use_weight=TRUE)
+```
+
+![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw-1.png)
+
 ## Habitat
 
 Once again, we load data from a site in northern France.
@@ -465,7 +660,7 @@ microtus_habitat <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weig
 plot(microtus_habitat, main="Microtus arvalis, (green=habitat, red=non-habitat)")
 ```
 
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-8-1.png)
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png)
 
 ``` r
 
@@ -619,9 +814,47 @@ plot(spcmdl_berisp_init)
 
 ![](zoo_Berisp_full_files/figure-html/init_spcmdl_berisp-1.png)
 
-## Contamination, bioaccumulation, biomagnification of the Cadmium
+## Fluxes
 
-### Direct soil-target transfer for plant and earthworm
+There are several pathways of contamination, which can be divided into
+two main categories:
+
+1.  Direct contamination: This occurs when an organism absorbs a
+    pollutant directly from its environment. Examples include a fish
+    exposed to waterborne contaminants, an earthworm absorbing
+    pollutants from the soil, or flying arthropods and birds exposed to
+    airborne pollutants. A single organism can also have multiple direct
+    exposure routes; for instance, benthic (sediment-dwelling)
+    invertebrates can be contaminated by both the sediment and the
+    overlying water. To model this, a simple equation is usually
+    sufficient, potentially accounting for environmental properties
+    (e.g., soil pH, organic matter, clay percentage) and
+    species-specific traits (e.g., how a plant might modify the
+    soil-plant interaction).
+2.  Trophic contamination: This refers to contamination through dietary
+    intake. To accurately model this route, it is necessary to know the
+    organism’s diet composition (food items consumed), the biomass flux
+    per kilogram of the individual, and the contaminant flux, which is
+    calculated by estimating the contaminant concentration within each
+    specific food resource.
+
+A second challenging aspect for the model is differentiating between
+exposures (the doses to which organisms are exposed) and accumulated
+concentrations.
+
+- For organisms undergoing direct exposure, there is no need to
+  calculate dietary contamination fluxes. The organism is exposed to
+  100% of the surrounding medium—and therefore the pollution—and the
+  direct flux equation translates this contamination straight into a
+  body burden.
+- For trophic contamination, however, it is essential to know the
+  biomass of each specific item in the diet to determine the actual
+  exposure (by multiplying the ingestion rates by the resource
+  concentrations), and finally to calculate the body burdens. These
+  steps can be broken down into separate components, but this is exactly
+  where careful attention is required.
+
+### Fluxes: Direct contamination (soil-target transfer for plant and earthworm)
 
 #### Vegetation
 
@@ -732,12 +965,34 @@ In Eco-SSL, the following equation is given (see Neperian logarithm):
 \ln(C_{earthworm}) = 0.795 * \ln(C_{soil}) + 2.114
 ```
 
-### Trophic transfer
+#### `spacemodel` edit: implementing soil-vegetation and soil-earthworm fluxes
 
-In Terrasys the equation of transfer is given by:
+``` r
+
+# 1. Assign the actual concentration grid into the "soil" layer
+# The Cd in ground layer is in log10(Cd)
+spcmdl_berisp_flux <- spcmdl_berisp_init
+spcmdl_berisp_flux[["soil"]][] <- ground_cd
+
+# 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
+fluxes <- flux(
+    spcmdl_berisp_flux,
+    default = 1,    # for all other default is 1
+    normalize=FALSE # TRUE would weight every link to sum at 1
+  ) |>
+  add_flux("soil", "plant",  ~ -0.488 + 0.494 * x) |>
+  add_flux("soil", "earthworm",  ~ 0.596 + 0.983 * x)
+```
+
+### Fluxes: Trophic Contamination (Dietary Exposure)
+
+#### A little bit of theory
+
+In the Terrasys software, using the framework of the US-EPA, the
+equation of transfer is given by:
 
 ``` math
-C_{consumer} = k_{met, consumer} \times BTF_{consumer} \times FIR_{consumer}\times \sum_i C_{resource,i} \times p_{i,consumer}  
+C_{consumer} = k_{met, consumer} \times BTF_{consumer} \times \frac{FIR_{consumer}}{b_{consumer}} \times \sum_i C_{resource,i} \times p_{i,consumer}  
 ```
 
 with:
@@ -746,13 +1001,39 @@ with:
   the consumer
 - $`BTF_{consumer}`$: the biotransfer factor for the consumer in
   $`day/g`$
-- $`FIR_{consumer}`$: the Food Ingestion Rate in
-  $`g food / g bw / day`$.
+- $`FIR_{consumer}`$: the Food Ingestion Rate in $`g food / day`$.
+- $`b_{consumer}`$: individual/item biomass of consumer $`[g]`$ (in
+  average).
 - $`k_{met, consumer}`$: the coefficient of metabolisation. Default is
   1.0 is Terrasys.
 
-The equation of transfer of contaminant from one species to the other is
-given by:
+In the EFSA guidelines for risk assessment on Birds and Mammals,
+@efsa2023era, the equation of dose of contaminant to which a target is
+exposed to is given by:
+
+``` math
+D_{consumer} = FIR_{consumer} \times \sum_{i} \frac{C_{resource,i}}{b_{consumer}} \times p_{i,consumer} \times PT_{consumer}
+```
+
+where variable name are already defined except these:
+
+- $`D_{consumer}`$: dose to which the consumer is exposed to (not yet in
+  body burden),
+- $`PT_{consumer}`$: proportion of the consumer in the area of the
+  contaminated resources (or within the treated area) (spatial
+  overlapping),
+- $`b_{consumer}`$: individual/item biomass of consumer $`[g]`$ (in
+  average).
+
+The difference between the dose and the internal concentration is gevin
+in terrasys by:
+
+``` math
+k_{met, consumer} \times BTF_{consumer} 
+```
+
+Finally, in the original Berisp documentation, the following equation is
+used to model the trophic transfer:
 
 ``` math
 C_{consumer} = \frac{b_{resource}}{b_{consumer}} \times  C_{resource} \times \frac{k_{up}}{k_{out}} \left( 1 - \exp^{- c_{out} \times a} \right)
@@ -770,17 +1051,21 @@ where:
 - $`k_{out}`$: excretion rate of food, $`[day^{-1}]`$
 - $`a`$: average age of the consumer $`[day]`$,
 
+We can see that $`b_{resource}`$ is the value given by
+$`FIR_{consumer} \times p_{i,consumer}`$ in previous equations used in
+Terrasys software or by the EFSA.
+
 Further assumptions:
 
 1.  We could reduce complexity by assuming a single
-    $`k_{upout} = k_{up}/k_{out}`$ paramater since parameterisation of
-    $`k_{up}`$ and $`k_{out}`$ are not identifiable in this equation.
-    The idea is to re-use the $`k_{upout} = k_{met} \times BTF`$ from
-    the Terrasys model. .
-2.  We also are assuming individuals is old enough to reach a stability
-    of contamination, so as:
+    $`BF_{resource, consumer} = k_{up}/k_{out}`$ paramater since
+    parameterisation of $`k_{up}`$ and $`k_{out}`$ are not identifiable
+    in this equation. The idea is to re-use the \$BF\_{resource,
+    consumer} = k\_{met} BTF\_{consumer} \$ from the Terrasys model. .
+2.  We can also assume that individuals are old enough to reach a
+    stability of contamination, so as:
     ``` math
-    C_{consumer} = \frac{b_{resource}}{b_{consumer}} \times  C_{resource} \times k_{upout}
+    C_{consumer} = \frac{b_{resource}}{b_{consumer}} \times  C_{resource} \times BF_{resource, consumer}
     ```
 3.  the $`b_{resource}`$ is the Food Ingestion Rate of the consumer
     ($`[g food / g consumer / day]`$) times the proportion of that
@@ -789,10 +1074,16 @@ Further assumptions:
 With this assumption, the equation is:
 
 ``` math
-C_{consumer} = p_{resource, consumer} \times FIR_{consumer} \times  C_{resource} \times k_{met,consumer}
+C_{consumer} = \frac{FIR_{consumer}}{b_{consumer}} \times \sum_i p_{i, consumer} \times   C_{i} \times  BF_{i, consumer}
 ```
 
-#### Carabid
+#### Fluxes of Biomass FIRbw
+
+##### `spacemodel` edit: implementing fluxes of biomass
+
+#### Fluxes of Contaminants
+
+##### Carabid
 
 In Berisp, authors use the following direct soil-target equation:
 
@@ -800,10 +1091,10 @@ In Berisp, authors use the following direct soil-target equation:
 \log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
 ```
 
-In our model, ground beetles are plants and earthworm. So we are going
+In our model, ground beetles eats plants and earthworm. So we are going
 to use a transfer model.
 
-In Terrasys software, the equation was:
+In Terrasys software, the equation for the BTF was given by:
 
 ``` math
 \log_{10}(BTF_{soil_invertebrates}) = 1.588 - 0.578 \times \log_{10}(k_{ow})
@@ -811,15 +1102,17 @@ In Terrasys software, the equation was:
 
 with:
 
-- $`BCF_i`$: bioconcentration factor
-- $`k_{ow}`$: octanol /water partition coefficient, with the value of
-  $`\log(k_{ow}) = -1.65`$ for Cadmium.
+- $`BTF_i`$: biotransfer factor
+- $`k_{ow}`$: octanol /water partition coefficient.
+
+But the problem is that $`1.588 - 0.578 * (-1.65))=`$ would give a
+$`BTF`$ of
 
 ``` math
 C_{\text{terrestrial invertebrates}} = BTF_veg_inv × C_vegetation
 ```
 
-### Mammals
+##### Mammals
 
 In Terrasys software, the equation for the BTF from the US-EPA (1999c)
 was:
@@ -828,7 +1121,7 @@ was:
 \log_{10}(BTF_{mammal}) = -7.6 + \log_{10}(k_{ow})
 ```
 
-### Birds
+##### Birds
 
 In Terrasys software, the equation for the BTF from the US-EPA (1999c)
 was:
@@ -836,8 +1129,23 @@ was:
 ``` math
 BTF_{bird} = 0.8 BTF_{mammal} = 0.8 \times \left( 10^{-7.6 + \log_{10}(k_{ow})}\right)
 ```
+\####`spacemodel` edit: implementing fluxes of contaminant
 
-## Population dispersion in landscape
+``` r
+
+# 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
+fluxes <- fluxes |>
+  # beetle
+  add_flux("soil", "beetle", ~ x) |>
+  add_flux("plant", "beetle", ~ exp(x) * FIRbw_mamHerb) |>
+  add_flux("earthworm", "beetle", ~ exp(x) * FIRbw_mamHerb) |>
+  # myodes
+  add_flux("soil", "myodes", 10^x * FIRbw_mamInsect) |>
+  add_flux("earthworm", "myodes", ~ exp(x) * FIRbw_mamInsect) |>
+  add_flux("carabid", "myodes", ~ 10^x * FIRbw_mamInsect)
+```
+
+## Movement of population (extended habitat) dispersion in landscape
 
 ``` r
 
@@ -852,106 +1160,6 @@ spcmdl_dispersal <- spcmdl_trophic_fixed |>
 ```
 
 ## Transfer of food and contaminant
-
-### Energy Needs
-
-We have the energy needs of 749 species, 97 mammals, 107 birds, 170
-fishes, 51 reptiles, 11 amphibians, 110 crustacean, 65 arthropods, 75
-protozoa
-
-``` r
-
-data("FmrBT")
-```
-
-##### close species
-
-The list is missing some species.
-
-- Sorex and Crocidura (Shrews): the list lacks true shrews (Soricidae).
-  When seeking a metabolic surrogate for temperate shrews (Sorex spp.)
-  within this dataset, small temperate insectivorous bats, such as
-  *Myotis lucifugus* and *Plecotus auritus*, serve as excellent
-  physiological equivalents. Like true shrews, these bats are
-  lightweight (often weighing between 5 and 12 grams) and operate under
-  immense thermal pressure from temperate and boreal climates. Because
-  they are strictly insectivorous, they share a highly active foraging
-  strategy that demands a continuous supply of high-protein, easily
-  digestible prey. Most importantly, the extreme energetic cost of
-  flapping flight combined with their tiny body size forces these bats
-  to run a hyper-metabolic “engine.”
-
-- *Myodes glareolus* (Bank Vole): the list is highly enriched with
-  rodents that are phylogenetically very close to the bank vole. Most
-  notably, *Cleithrionomys rutilus* belongs to the exact same genus (as
-  Myodes and *Cleithrionomys* are synonymous in modern taxonomy).
-  Additionally, species from the genera *Microtus* (like *M. agrestis*
-  and *M. pennsylvanicus*) and *Arvicola* belong to the same family,
-  Cricetidae, sharing identical microtine (vole-like) metabolic and
-  toxicokinetic traits.
-
-``` r
-
-energy_mammal <- FmrBT |>
-  filter(
-    SpeciesVerbatim %in% c(
-      "Apodemus sylvaticus", "Plecotus auritus", "Myotis lucifugus",
-      "Cleithrionomys rutilus",
-      "Microtus agrestis", "Microtus pennsylvanicus")
-  )
-
-# plot
-ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = SpeciesVerbatim)) +
-  geom_point(size = 3.5, alpha = 0.8) + 
-  labs(
-    title = "Field Metabolic Rate (FMR) vs. Body Mass in Small Mammals",
-    x = "Body Mass (g)",
-    y = "Field Metabolic Rate (kJ/day/g)",
-    color = "Species"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
-    legend.title = element_text(face = "bold"),
-    legend.position = "right"
-  )
-```
-
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-14-1.png)
-
-- *Athene noctua* (Little Owl): true owls (Strigiformes) are completely
-  absent from this dataset. The closest relative available is
-  *Phalaenoptilus nuttallii* (the common poorwill), which belongs to the
-  *Caprimulgiformes* (nightjars). While it is a distinct family,
-  nightjars share a nocturnal, insectivorous niche with small owls and
-  belong to the same broader evolutionary landbird/Strisores lineage,
-  making it the best available surrogate for nocturnal avian traits.
-
-``` r
-
-energy_mammal <- FmrBT |>
-  filter(SpeciesVerbatim %in% c(
-      "Turdus merula", "Phalaenoptilus nuttallii")
-  )
-
-# plot
-ggplot(data = energy_mammal, aes(x = Mass_g, y = FMR_kJ_d/Mass_g, color = SpeciesVerbatim)) +
-  geom_point(size = 3.5, alpha = 0.8) + 
-  labs(
-    title = "Field Metabolic Rate (FMR) vs. Body Mass in Small Mammals",
-    x = "Body Mass (g)",
-    y = "Field Metabolic Rate (kJ/day/g)",
-    color = "Species"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
-    legend.title = element_text(face = "bold"),
-    legend.position = "right"
-  )
-```
-
-![](zoo_Berisp_full_files/figure-html/unnamed-chunk-15-1.png)
 
 ## Dose of Exposure
 

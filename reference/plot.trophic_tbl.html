@@ -60,7 +60,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'trophic_tbl'</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, shift <span class="op">=</span> <span class="cn">TRUE</span>, colors <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, shift <span class="op">=</span> <span class="cn">TRUE</span>, colors <span class="op">=</span> <span class="cn">NULL</span>, use_weight <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -78,8 +78,12 @@ the potential overlapping of arrows.</p></dd>
 
 <dt id="arg-colors">colors<a class="anchor" aria-label="anchor" href="#arg-colors"></a></dt>
 <dd><p>A named character vector of colors (hexadecimal or standard R color names)
-where the names match the node names in the trophic table. If NULL, default
-ggplot2 colors are used.</p></dd>
+where the names match the node names in the trophic table. If NULL, grey colors are used.</p></dd>
+
+
+<dt id="arg-use-weight">use_weight<a class="anchor" aria-label="anchor" href="#arg-use-weight"></a></dt>
+<dd><p>Logical. If TRUE, width of arrow is proportional to link weight
+(normalized to 1 per target node). Default is FALSE.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
