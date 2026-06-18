@@ -59,7 +59,7 @@
 - [`ocsge_metaleurop`](https://qonfluens.github.io/spacemodR/reference/ocsge_metaleurop.md)
   : SF object defining very simplified OCS-GE soil cover metaleurop
 - [`ocsge_species_dict`](https://qonfluens.github.io/spacemodR/reference/ocsge_species_dict.md)
-  : Valued weight between OCSGE layer and species
+  : Valued weights and resistance between OCS-GE layers and species
 - [`plot(`*`<habitat>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.habitat.md)
   : Plot a Habitat object
 - [`plot(`*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.trophic_tbl.md)

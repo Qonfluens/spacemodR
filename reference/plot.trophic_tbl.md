@@ -7,7 +7,13 @@ ggplot2.
 
 ``` r
 # S3 method for class 'trophic_tbl'
-plot(x, shift = TRUE, colors = NULL, use_weight = FALSE, ...)
+plot(
+  x,
+  shift = TRUE,
+  colors = NULL,
+  edge_width = c("none", "raw", "norm_target", "norm_source"),
+  ...
+)
 ```
 
 ## Arguments
@@ -25,12 +31,15 @@ plot(x, shift = TRUE, colors = NULL, use_weight = FALSE, ...)
 
   A named character vector of colors (hexadecimal or standard R color
   names) where the names match the node names in the trophic table. If
-  NULL, grey colors are used.
+  NULL, default ggplot2 colors are used.
 
-- use_weight:
+- edge_width:
 
-  Logical. If TRUE, width of arrow is proportional to link weight
-  (normalized to 1 per target node). Default is FALSE.
+  A character string indicating how to scale the width of the arrows.
+  Must be one of "none" (default), "raw" (uses the raw weights),
+  "norm_target" (normalizes weights to sum to 1 for each target/to
+  node), or "norm_source" (normalizes weights to sum to 1 for each
+  source/from node).
 
 - ...:
 

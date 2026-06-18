@@ -494,7 +494,7 @@ organisms).</li>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"sorex"</span>, <span class="st">"athene"</span>, <span class="fl">0.06</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"crocidura"</span>, <span class="st">"athene"</span>, <span class="fl">0.06</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, colors <span class="op">=</span> <span class="va">species_colors</span>, use_weight<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, colors <span class="op">=</span> <span class="va">species_colors</span>, edge_width<span class="op">=</span><span class="st">"norm_target"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/plot_full_trophic-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
@@ -674,10 +674,15 @@ making it the best available surrogate for nocturnal avian traits.</li>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"apodemus"</span>, <span class="st">"athene"</span>, <span class="fl">0.06</span> <span class="op">*</span> <span class="va">FIR_athene</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"sorex"</span>, <span class="st">"athene"</span>, <span class="fl">0.06</span> <span class="op">*</span> <span class="va">FIR_athene</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"crocidura"</span>, <span class="st">"athene"</span>, <span class="fl">0.06</span> <span class="op">*</span> <span class="va">FIR_athene</span><span class="op">)</span></span></code></pre></div>
+<p>We can normalize on <code>target</code> (sum to 1 for each target/to
+node):</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># NOTE 'use_weight' is Normalized !!!</span></span>
-<span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df_FIRbw</span>, colors <span class="op">=</span> <span class="va">species_colors</span>, use_weight<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw-1.png" class="r-plt" alt="" width="960"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df_FIRbw</span>, colors <span class="op">=</span> <span class="va">species_colors</span>, edge_width<span class="op">=</span><span class="st">"norm_target"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw_norm_target-1.png" class="r-plt" alt="" width="960"></p>
+<p>or we can normalize for the whole graph (uses the raw weights):</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df_FIRbw</span>, colors <span class="op">=</span> <span class="va">species_colors</span>, edge_width<span class="op">=</span><span class="st">"raw"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw_raw-1.png" class="r-plt" alt="" width="960"></p>
 </div>
 </div>
 </div>
@@ -688,7 +693,7 @@ making it the best available surrogate for nocturnal avian traits.</li>
 <p>Here, we use the provided data (<code>ocsge_metaleurop</code> and
 <code>roi_metaleurop</code>) along with the <code>ggplot2</code> package
 for visualization.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Load a study area (e.g., the Metaleurop site) and its land cover data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"roi_metaleurop"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"ocsge_metaleurop"</span><span class="op">)</span></span>
@@ -704,7 +709,7 @@ for visualization.</p>
 our species. A habitat is a combination of favorable, unfavorable, or
 neutral zones. These geometries are then rasterized (converted into
 regular grids) to prepare them for modeling.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Habitat definition based on OSGE codes (which are in the `ocsge_metaleurop` table)</span></span>
 <span><span class="va">layer_soil_natural</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS1.2.1"</span>,<span class="st">"CS2.1.1.1"</span>,<span class="st">"CS2.1.1.2"</span>,<span class="st">"CS2.1.1.3"</span>, <span class="st">"CS2.1.2"</span>,<span class="st">"CS2.1.3"</span>,<span class="st">"CS2.2.1"</span>,<span class="st">"CS2.2.3"</span><span class="op">)</span></span>
@@ -712,19 +717,19 @@ regular grids) to prepare them for modeling.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS1.1.1.1"</span>, <span class="st">"CS1.1.1.2"</span>, <span class="st">"CS1.1.2.1"</span><span class="op">)</span></span>
 <span><span class="va">layer_plant</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> </span>
 <span>   <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS2.1.1.1"</span>, <span class="st">"CS2.1.1.2"</span>, <span class="st">"CS2.1.1.3"</span>, <span class="st">"CS2.1.3"</span>, <span class="st">"CS2.2.1"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_soil</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_natural</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_artificial</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_soil</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_sol-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_plant</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_plant</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_artificial</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>We assume that earthworm and beetle have the same habitat that soil:
 everywhere there is soil, it is an habitat for earthworm and beetle.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_earthworm</span> <span class="op">=</span> <span class="va">habitat_soil</span></span>
 <span><span class="va">habitat_beetle</span> <span class="op">=</span> <span class="va">habitat_soil</span></span></code></pre></div>
 <div class="section level3">
@@ -742,67 +747,67 @@ dispersion. * <code>weight_foraging</code>: Habitat attractiveness
 specifically for feeding and resource acquisition. *
 <code>resistance</code>: The impedance or barrier effect of the
 environment, heavily informed by the “avoided-habitat” descriptions.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"ocsge_species_dict"</span><span class="op">)</span></span></code></pre></div>
 <p>This database includes 935 species, including 499 birds, 215 mammals,
 136 reptiles, and 85 amphibians.</p>
 <p>For example, for the common vole (<em>Microtus arvalis</em>):</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">microtus_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Microtus_arvalis"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_microtus-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">microtus_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">[</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">microtus_habitat</span>, main<span class="op">=</span><span class="st">"Microtus arvalis, (green=habitat, red=non-habitat)"</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myodes_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Myodes_glareolus"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">myodes_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_myodes-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">myodes_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">myodes_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">myodes_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">myodes_hab</span><span class="op">[</span><span class="va">myodes_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">apodemus_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Apodemus_sylvaticus"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">apodemus_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_apodemus-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">apodemus_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">apodemus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">apodemus_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">apodemus_hab</span><span class="op">[</span><span class="va">apodemus_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sorex_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Sorex_araneus"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">sorex_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_sorex-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sorex_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">sorex_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">sorex_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">sorex_hab</span><span class="op">[</span><span class="va">sorex_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">crocidura_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Crocidura_russula"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_crocidura-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">crocidura_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">sorex_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">sorex_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">sorex_hab</span><span class="op">[</span><span class="va">sorex_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">columba_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Columba_palumbus"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">columba_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_columba-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">columba_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">columba_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">columba_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">columba_hab</span><span class="op">[</span><span class="va">columba_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turdus_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Turdus_merula"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">turdus_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_turdus-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">turdus_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">turdus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">turdus_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">turdus_hab</span><span class="op">[</span><span class="va">turdus_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">athene_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Athene_noctua"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">athene_hab</span><span class="op">)</span></span></code></pre></div>
 <p><img src="zoo_Berisp_full_files/figure-html/map_hab_athene-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">athene_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">athene_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">athene_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">athene_hab</span><span class="op">[</span><span class="va">athene_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -813,10 +818,10 @@ environment, heavily informed by the “avoided-habitat” descriptions.</p>
 habitats based on a default layer, here <code>cd_ground</code>. This
 allows us to have the same landscape grid so we can successfully overlay
 all the layers.</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Loading a background concentration raster for a contaminant (Cadmium)</span></span>
 <span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># We initialize habitat grids (rasters) for each level</span></span>
 <span><span class="va">rast_soil</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_soil</span><span class="op">)</span></span>
 <span><span class="va">rast_plant</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_plant</span><span class="op">)</span></span>
@@ -847,7 +852,7 @@ all the layers.</p>
 <div class="section level3">
 <h3 id="create-the-spacemodel">Create the spacemodel<a class="anchor" aria-label="anchor" href="#create-the-spacemodel"></a>
 </h3>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl_berisp_init</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_berisp_init</span><span class="op">)</span></span></code></pre></div>
@@ -901,10 +906,10 @@ earthworm)<a class="anchor" aria-label="anchor" href="#fluxes-direct-contaminati
 <div class="section level4">
 <h4 id="vegetation">Vegetation<a class="anchor" aria-label="anchor" href="#vegetation"></a>
 </h4>
-<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"bappet_cd"</span><span class="op">)</span></span>
 <span><span class="va">plt_bappet_cd</span> <span class="op">=</span> <span class="va">bappet_cd</span><span class="op">[</span><span class="va">bappet_cd</span><span class="op">$</span><span class="va">extraction</span><span class="op">==</span><span class="st">"Totale"</span>,<span class="op">]</span></span></code></pre></div>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_simple_veg_cd</span> <span class="op">&lt;-</span> <span class="fu">load_safe</span><span class="op">(</span><span class="st">"raw_data/fit_simple_veg_cd.rds"</span><span class="op">)</span></span>
 <span><span class="va">fit_pars</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">fit_simple_veg_cd</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta0"</span>, <span class="st">"beta1"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">xseq</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">bappet_cd</span><span class="op">$</span><span class="va">log10_media_mean</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">bappet_cd</span><span class="op">$</span><span class="va">log10_media_mean</span><span class="op">)</span>, length.out<span class="op">=</span><span class="fl">100</span><span class="op">)</span></span>
@@ -918,7 +923,7 @@ earthworm)<a class="anchor" aria-label="anchor" href="#fluxes-direct-contaminati
 <span>  y_qinf95 <span class="op">=</span> <span class="va">yseq_q</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span>,</span>
 <span>  y_qsup95 <span class="op">=</span> <span class="va">yseq_q</span><span class="op">[</span><span class="fl">3</span>,<span class="op">]</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">plt_bappet_cd</span>,</span>
@@ -943,9 +948,9 @@ logarithm):</p>
 <div class="section level4">
 <h4 id="earthworm">Earthworm<a class="anchor" aria-label="anchor" href="#earthworm"></a>
 </h4>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"earthworm_cd"</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"earthworm_cd"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit_simple_worm_cd</span> <span class="op">&lt;-</span> <span class="fu">load_safe</span><span class="op">(</span><span class="st">"raw_data/fit_simple_worm_cd.rds"</span><span class="op">)</span></span>
 <span><span class="va">fit_pars</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-extract.html" class="external-link">extract</a></span><span class="op">(</span><span class="va">fit_simple_worm_cd</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"beta0"</span>, <span class="st">"beta1"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">xseq</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">earthworm_cd</span><span class="op">$</span><span class="va">log10_cd_soil</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">earthworm_cd</span><span class="op">$</span><span class="va">log10_cd_soil</span><span class="op">)</span>, length.out<span class="op">=</span><span class="fl">100</span><span class="op">)</span></span>
@@ -959,7 +964,7 @@ logarithm):</p>
 <span>  y_qinf95 <span class="op">=</span> <span class="va">yseq_q</span><span class="op">[</span><span class="fl">1</span>,<span class="op">]</span>,</span>
 <span>  y_qsup95 <span class="op">=</span> <span class="va">yseq_q</span><span class="op">[</span><span class="fl">3</span>,<span class="op">]</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">earthworm_cd</span>,</span>
@@ -986,7 +991,7 @@ logarithm):</p>
 <code>spacemodel</code> edit: implementing soil-vegetation and
 soil-earthworm fluxes<a class="anchor" aria-label="anchor" href="#spacemodel-edit-implementing-soil-vegetation-and-soil-earthworm-fluxes"></a>
 </h4>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. Assign the actual concentration grid into the "soil" layer</span></span>
 <span><span class="co"># The Cd in ground layer is in log10(Cd)</span></span>
 <span><span class="va">spcmdl_berisp_flux</span> <span class="op">&lt;-</span> <span class="va">spcmdl_berisp_init</span></span>
@@ -1194,9 +1199,10 @@ C_{\text{terrestrial invertebrates}} = BTF_veg_inv × C_vegetation
 (1999c) was:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>B</mi><mi>T</mi><msub><mi>F</mi><mrow><mi>b</mi><mi>i</mi><mi>r</mi><mi>d</mi></mrow></msub><mo>=</mo><mn>0.8</mn><mi>B</mi><mi>T</mi><msub><mi>F</mi><mrow><mi>m</mi><mi>a</mi><mi>m</mi><mi>m</mi><mi>a</mi><mi>l</mi></mrow></msub><mo>=</mo><mn>0.8</mn><mo>×</mo><mrow><mo stretchy="true" form="prefix">(</mo><msup><mn>10</mn><mrow><mi>−</mi><mn>7.6</mn><mo>+</mo><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mo stretchy="false" form="prefix">(</mo><msub><mi>k</mi><mrow><mi>o</mi><mi>w</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">
 BTF_{bird} = 0.8 BTF_{mammal} = 0.8 \times \left( 10^{-7.6 + \log_{10}(k_{ow})}\right)
-</annotation></semantics></math> ####<code>spacemodel</code> edit:
-implementing fluxes of contaminant</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+</annotation></semantics></math></p>
+<p>####<code>spacemodel</code> edit: implementing fluxes of
+contaminant</p>
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)</span></span>
 <span><span class="va">fluxes</span> <span class="op">&lt;-</span> <span class="va">fluxes</span> <span class="op">|&gt;</span></span>
 <span>  <span class="co"># beetle</span></span>
@@ -1215,7 +1221,7 @@ implementing fluxes of contaminant</p>
 <h2 id="movement-of-population-extended-habitat-dispersion-in-landscape">Movement of population (extended habitat) dispersion in
 landscape<a class="anchor" aria-label="anchor" href="#movement-of-population-extended-habitat-dispersion-in-landscape"></a>
 </h2>
-<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calcul des noyaux de dispersion en fonction d'un rayon de mobilité (ex: en pixels)</span></span>
 <span><span class="va">k_herb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">50</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="va">k_carn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">150</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span></span>
@@ -1244,7 +1250,7 @@ landscape<a class="anchor" aria-label="anchor" href="#movement-of-population-ext
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>c</mi><mi>a</mi><mi>r</mi><mi>a</mi><mi>b</mi><mi>i</mi><mi>d</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo><mo>=</mo><mi>−</mi><mn>1</mn><mo>+</mo><mn>0.6</mn><mo>*</mo><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mo stretchy="false" form="prefix">(</mo><msub><mi>C</mi><mrow><mi>s</mi><mi>o</mi><mi>i</mi><mi>l</mi></mrow></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
 \log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
 </annotation></semantics></math></p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">FIRbw_mamHerb</span> <span class="op">=</span> <span class="fl">0.0875</span> <span class="co"># kg dw/kg bw/d</span></span>
 <span><span class="va">FIRbw_mamInsect</span> <span class="op">=</span> <span class="fl">0.209</span> <span class="co"># kg dw/kg bw/d</span></span>
 <span></span>
@@ -1285,7 +1291,7 @@ log(A_{feed}) = 0.7006 \log(bw_{bird}) - 1.3379
 </h3>
 <p>We asssume foragning kernel are the same as the dispersal (habitat)
 kernels</p>
-<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">foraging_kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  soil  <span class="op">=</span> <span class="cn">NA</span>, plant <span class="op">=</span> <span class="cn">NA</span>, earthworm <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  carabid<span class="op">=</span><span class="cn">NA</span>,  mamHerb <span class="op">=</span> <span class="va">k_herb</span>, mamInsect <span class="op">=</span> <span class="va">k_carn</span><span class="op">)</span></span></code></pre></div>
@@ -1293,7 +1299,7 @@ kernels</p>
 <div class="section level3">
 <h3 id="computing-population-exposure">Computing Population Exposure<a class="anchor" aria-label="anchor" href="#computing-population-exposure"></a>
 </h3>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl_exposure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span></span>
 <span>  <span class="va">spcmdl_dispersal</span>,</span>
 <span>  <span class="va">fixed_kernels</span>,</span>
@@ -1304,7 +1310,7 @@ kernels</p>
 <div class="section level2">
 <h2 id="risk-based-on-ssd">Risk based on SSD<a class="anchor" aria-label="anchor" href="#risk-based-on-ssd"></a>
 </h2>
-<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Reference thresholds for each component</span></span>
 <span><span class="va">thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>soil <span class="op">=</span> <span class="fl">1</span>, plant <span class="op">=</span> <span class="fl">32</span>, earthworm <span class="op">=</span> <span class="fl">140</span>, carabid <span class="op">=</span> <span class="fl">140</span>,</span>
 <span>                mamHerb<span class="op">=</span><span class="fl">73</span>, mamInsect<span class="op">=</span><span class="fl">0.36</span><span class="op">)</span></span>

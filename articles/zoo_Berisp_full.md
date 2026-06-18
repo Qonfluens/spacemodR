@@ -357,7 +357,7 @@ trophic_df <- trophic_df |>
 
 ``` r
 
-plot(trophic_df, colors = species_colors, use_weight=TRUE)
+plot(trophic_df, colors = species_colors, edge_width="norm_target")
 ```
 
 ![](zoo_Berisp_full_files/figure-html/plot_full_trophic-1.png)
@@ -547,13 +547,23 @@ trophic_df_FIRbw <- trophic_df_init |>
   add_link("crocidura", "athene", 0.06 * FIR_athene)
 ```
 
+We can normalize on `target` (sum to 1 for each target/to node):
+
 ``` r
 
-# NOTE 'use_weight' is Normalized !!!
-plot(trophic_df_FIRbw, colors = species_colors, use_weight=TRUE)
+plot(trophic_df_FIRbw, colors = species_colors, edge_width="norm_target")
 ```
 
-![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw-1.png)
+![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw_norm_target-1.png)
+
+or we can normalize for the whole graph (uses the raw weights):
+
+``` r
+
+plot(trophic_df_FIRbw, colors = species_colors, edge_width="raw")
+```
+
+![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw_raw-1.png)
 
 ## Habitat
 
@@ -1129,6 +1139,7 @@ was:
 ``` math
 BTF_{bird} = 0.8 BTF_{mammal} = 0.8 \times \left( 10^{-7.6 + \log_{10}(k_{ow})}\right)
 ```
+
 \####`spacemodel` edit: implementing fluxes of contaminant
 
 ``` r
