@@ -4,7 +4,13 @@
 \alias{plot.trophic_tbl}
 \title{Plot a trophic table}
 \usage{
-\method{plot}{trophic_tbl}(x, shift = TRUE, colors = NULL, use_weight = FALSE, ...)
+\method{plot}{trophic_tbl}(
+  x,
+  shift = TRUE,
+  colors = NULL,
+  edge_width = c("none", "raw", "norm_target", "norm_source"),
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{trophic_tbl} object.}
@@ -13,10 +19,13 @@
 the potential overlapping of arrows.}
 
 \item{colors}{A named character vector of colors (hexadecimal or standard R color names)
-where the names match the node names in the trophic table. If NULL, grey colors are used.}
+where the names match the node names in the trophic table. If NULL, default
+ggplot2 colors are used.}
 
-\item{use_weight}{Logical. If TRUE, width of arrow is proportional to link weight
-(normalized to 1 per target node). Default is FALSE.}
+\item{edge_width}{A character string indicating how to scale the width of the arrows.
+Must be one of "none" (default), "raw" (uses the raw weights), "norm_target"
+(normalizes weights to sum to 1 for each target/to node), or "norm_source"
+(normalizes weights to sum to 1 for each source/from node).}
 
 \item{...}{Additional arguments (not used, for S3 consistency).}
 }

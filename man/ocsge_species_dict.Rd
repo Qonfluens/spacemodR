@@ -3,17 +3,51 @@
 \docType{data}
 \name{ocsge_species_dict}
 \alias{ocsge_species_dict}
-\title{Valued weight between OCSGE layer and species}
+\title{Valued weights and resistance between OCS-GE layers and species}
 \format{
-An object of class \code{data.frame} with 13090 rows and 6 columns.
+A data frame with the following columns:
+\describe{
+  \item{nom_espece}{Character. The scientific name of the species.}
+  \item{code_cs}{Character. The OCS-GE layer code (e.g., "CS 1.1.1.1").}
+  \item{weight_global}{Numeric (0-10). The overall habitat suitability of the OCS-GE layer for the species.}
+  \item{weight_movement}{Numeric (0-10). The permeability of the layer, representing how easily the species can disperse through it.}
+  \item{weight_foraging}{Numeric (0-10). The suitability of the layer specifically for feeding and resource acquisition.}
+  \item{resistance}{Numeric (0-10). The impedance or barrier effect of the layer, heavily influenced by known avoided habitats.}
+}
 }
 \usage{
 data(ocsge_species_dict)
 }
 \description{
-Valued weight between OCSGE layer and species
+A dataset providing detailed ecological scores linking European terrestrial
+vertebrate species to French OCS-GE (Occupation du Sol à Grande Échelle) land cover classes.
+
+Unlike traditional expert-based crosswalks that assign simple presence/absence or
+discrete suitability scores (e.g., 0, 1, 2), this dataset was generated using a Large
+Language Model (LLM - Google Gemini). The model semantically analyzed free-text
+descriptions of preferred and avoided habitats (derived from the EEA dataset) against
+ecological definitions of OCS-GE classes to infer granular scores (0 to 10).
+
+These scores are specifically designed for spatial ecology modeling, separating general
+suitability from movement permeability and foraging potential.
+}
+\details{
+The methodology differs significantly from global Area of Habitat (AOH) approaches.
+While global AOH maps rely on hard-coded rules and keyword-based penalties to score
+land use intensity, this dataset leverages AI to interpret complex ecological nuances
+(e.g., thermophily, physical barriers, seasonal cover) described in the OCS-GE standard.
 }
 \examples{
 data(ocsge_species_dict)
+head(ocsge_species_dict)
+
+}
+\references{
+The underlying conceptual framework for linking terrestrial vertebrate species to
+European land systems, as well as the baseline habitat descriptions, draws inspiration from:
+
+O'Connor, L. M. J., Renaud, J., Dou, Y., Karger, D. N., Maiorano, L., Verburg, P. H., &
+Thuiller, W. (2024). Habitat Suitability of European Land Systems for Terrestrial Vertebrates.
+\emph{Global Ecology and Biogeography}, 33(11), e13903.
 }
 \keyword{datasets}

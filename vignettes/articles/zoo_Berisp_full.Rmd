@@ -347,7 +347,7 @@ trophic_df <- trophic_df |>
 
 
 ```{r plot_full_trophic}
-plot(trophic_df, colors = species_colors, use_weight=TRUE)
+plot(trophic_df, colors = species_colors, edge_width="norm_target")
 ```
 
 ## Food Ingestion Rate per Body Weight
@@ -505,10 +505,16 @@ trophic_df_FIRbw <- trophic_df_init |>
   add_link("crocidura", "athene", 0.06 * FIR_athene)
 ```
 
+We can normalize on `target` (sum to 1 for each target/to node):
 
-```{r plot_full_trophic_FIRbw}
-# NOTE 'use_weight' is Normalized !!!
-plot(trophic_df_FIRbw, colors = species_colors, use_weight=TRUE)
+```{r plot_full_trophic_FIRbw_norm_target}
+plot(trophic_df_FIRbw, colors = species_colors, edge_width="norm_target")
+```
+
+or we can normalize for the whole graph (uses the raw weights):
+
+```{r plot_full_trophic_FIRbw_raw}
+plot(trophic_df_FIRbw, colors = species_colors, edge_width="raw")
 ```
 
 # Habitat
@@ -954,6 +960,7 @@ In Terrasys software, the equation for the BTF from the US-EPA (1999c) was:
 $$
 BTF_{bird} = 0.8 BTF_{mammal} = 0.8 \times \left( 10^{-7.6 + \log_{10}(k_{ow})}\right)
 $$
+
 ####`spacemodel` edit: implementing fluxes of contaminant
 
 ```{r fluxes_trophic_soil_organism, eval=FALSE}

@@ -285,6 +285,7 @@ compute_levels <- function(edges) {
   validate_trophic_tbl(res)
 }
 
+
 #' Plot a trophic table
 #'
 #' Creates a simple graphical representation of a trophic network using ggplot2.
@@ -293,9 +294,12 @@ compute_levels <- function(edges) {
 #' @param shift To shift x_axis between trophic level and avoid
 #'   the potential overlapping of arrows.
 #' @param colors A named character vector of colors (hexadecimal or standard R color names)
-#'   where the names match the node names in the trophic table. If NULL, grey colors are used.
-#' @param use_weight Logical. If TRUE, width of arrow is proportional to link weight
-#'   (normalized to 1 per target node). Default is FALSE.
+#'   where the names match the node names in the trophic table. If NULL, default
+#'   ggplot2 colors are used.
+#' @param edge_width A character string indicating how to scale the width of the arrows.
+#'   Must be one of "none" (default), "raw" (uses the raw weights), "norm_target"
+#'   (normalizes weights to sum to 1 for each target/to node), or "norm_source"
+#'   (normalizes weights to sum to 1 for each source/from node).
 #' @param ... Additional arguments (not used, for S3 consistency).
 #'
 #' @details
@@ -322,7 +326,12 @@ compute_levels <- function(edges) {
 #' plot(net, colors = my_pal)
 #'
 #' @export
-plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE, ...) {
+plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL,
+                             edge_width = c("none", "raw", "norm_target", "norm_source"),
+                             ...) {
+
+  edge_width <- match.arg(edge_width)
+
   stopifnot(inherits(x, "trophic_tbl"))
 
   levels <- attr(x, "level")
@@ -348,10 +357,19 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE,
     weight = x$weight,
     stringsAsFactors = FALSE
   )
-  # Normalisation à 1 par nœud cible (proies d'un même prédateur)
-  if (use_weight) {
-    sums <- tapply(edges$weight, edges$to, sum)
-    edges$weight_norm <- edges$weight / sums[edges$to]
+
+  # Calcul des poids d'affichage selon l'option choisie
+  if (edge_width == "norm_target") {
+    sums_to <- tapply(edges$weight, edges$to, sum)
+    edges$plot_weight <- edges$weight / sums_to[edges$to]
+    legend_name <- "Weight\n(Norm. Target)"
+  } else if (edge_width == "norm_source") {
+    sums_from <- tapply(edges$weight, edges$from, sum)
+    edges$plot_weight <- edges$weight / sums_from[edges$from]
+    legend_name <- "Weight\n(Norm. Source)"
+  } else if (edge_width == "raw") {
+    edges$plot_weight <- edges$weight
+    legend_name <- "Weight\n(Raw)"
   }
 
   # Merge pour récupérer les coordonnées numériques
@@ -370,16 +388,15 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE,
   # Construction de base du graphique
   p <- ggplot2::ggplot()
 
-  # arêtes orientées
-  if (use_weight) {
+  if (edge_width != "none") {
     p <- p +
       ggplot2::geom_segment(
         data = edges,
-        ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to, linewidth = weight_norm),
+        ggplot2::aes(x = x_from, y = y_from, xend = x_to, yend = y_to, linewidth = plot_weight),
         arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")),
         color = "grey40"
       ) +
-      ggplot2::scale_linewidth_continuous(range = c(0.2, 2.5), guide = "none") # Ajuste l'épaisseur min/max ici
+      ggplot2::scale_linewidth_continuous(range = c(0.5, 3), name = legend_name)
   } else {
     p <- p +
       ggplot2::geom_segment(
@@ -391,20 +408,17 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE,
   }
 
   p <- p +
-    # Points
     ggplot2::geom_point(
       data = node_df,
       ggplot2::aes(x = x, y = y, color = node),
       alpha = 0.8,
       size = 6
     ) +
-    # Texte
     ggplot2::geom_text(
       data = node_df,
       ggplot2::aes(x = x, y = y, label = node, color = node),
       vjust = -1.2,
-      fontface = "bold",
-      show.legend = FALSE
+      fontface = "bold"
     ) +
     ggplot2::scale_y_continuous(
       breaks = sort(unique(levels)),
@@ -418,13 +432,7 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL, use_weight = FALSE,
     ) +
     ggplot2::theme_minimal()
 
-  # Gestion des couleurs par défaut vs personnalisées
-  if (is.null(colors)) {
-    # Si 'colors' n'est pas renseigné, on met tout en gris et on masque la légende
-    default_colors <- stats::setNames(rep("grey60", length(nodes)), nodes)
-    p <- p + ggplot2::scale_color_manual(values = default_colors, guide = "none")
-  } else {
-    # Si 'colors' est renseigné, on applique la palette personnalisée
+  if (!is.null(colors)) {
     p <- p + ggplot2::scale_color_manual(values = colors)
   }
 
