@@ -418,7 +418,8 @@ plot.trophic_tbl <- function(x, shift = TRUE, colors = NULL,
       data = node_df,
       ggplot2::aes(x = x, y = y, label = node, color = node),
       vjust = -1.2,
-      fontface = "bold"
+      fontface = "bold",
+      show.legend = FALSE
     ) +
     ggplot2::scale_y_continuous(
       breaks = sort(unique(levels)),
