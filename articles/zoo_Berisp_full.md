@@ -10,6 +10,7 @@ library(stringr)
 library(dplyr)
 library(tidyr)
 library(terra)
+library(purrr)
 ```
 
 ## Trophic web
@@ -506,7 +507,7 @@ bw_athene = 180 # à vérifier
 FIRbw_athene = 0.30 # à vérifier
 FIR_athene = FIRbw_athene * bw_athene
 
-trophic_df_FIRbw <- trophic_df_init |>
+trophic_df_FIR <- trophic_df_init |>
   add_link("soil", "beetle", 0.1 * FIR_beetle) |>
   add_link("plant", "beetle", 0.45 * FIR_beetle) |>
   add_link("earthworm", "beetle", 0.45 * FIR_beetle ) |>
@@ -551,12 +552,68 @@ We can normalize on `target` (sum to 1 for each target/to node):
 
 ``` r
 
-plot(trophic_df_FIRbw, colors = species_colors, edge_width="norm_target")
+plot(trophic_df_FIR, colors = species_colors, edge_width="norm_target")
 ```
 
-![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIRbw_norm_target-1.png)
+![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIR_norm_target-1.png)
 
-or we can normalize for the whole graph (uses the raw weights):
+or we can normalize for the whole graph (uses the raw weights).
+
+``` r
+
+plot(trophic_df_FIR, colors = species_colors, edge_width="raw")
+```
+
+![](zoo_Berisp_full_files/figure-html/plot_full_trophic_FIR_raw-1.png)
+
+Here we have the daily food ingestion rate per body weight (FIRbw).
+
+And we see that shrews having a high FIRbw, would as have a strong
+potential intake rate of the contaminant.
+
+``` r
+
+
+trophic_df_FIRbw <- trophic_df_init |>
+  add_link("soil", "beetle", 0.1 * FIRbw_beetle) |>
+  add_link("plant", "beetle", 0.45 * FIRbw_beetle) |>
+  add_link("earthworm", "beetle", 0.45 * FIRbw_beetle ) |>
+  # myodes
+  add_link("soil", "myodes", 0.02 * FIRbw_myodes) |>
+  add_link("plant", "myodes", 0.9 * FIRbw_myodes) |>
+  add_link("earthworm", "myodes", 0.04 * FIRbw_myodes) |>
+  add_link("beetle", "myodes", 0.04 * FIRbw_myodes) |>
+  # microtus
+  add_link("soil", "microtus", 0.02 * FIRbw_microtus) |>
+  add_link("plant", "microtus", 0.98* FIRbw_microtus) |>
+  # wood mouse
+  add_link("soil", "apodemus", 0.02 * FIRbw_apodemus) |>
+  add_link("plant", "apodemus", 0.82 * FIRbw_apodemus) |>
+  add_link("earthworm", "apodemus", 0.08 * FIRbw_apodemus) |>
+  add_link("beetle", "apodemus", 0.08 * FIRbw_apodemus) |>
+  # sorex
+  add_link("soil", "sorex", 0.02 * FIRbw_sorex) |>
+  add_link("earthworm", "sorex", 0.49 * FIRbw_sorex) |>
+  add_link("beetle", "sorex", 0.49 * FIRbw_sorex) |>
+  # crocidura
+  add_link("soil", "crocidura", 0.02 * FIRbw_crocidura) |>
+  add_link("earthworm", "crocidura", 0.49 * FIRbw_crocidura) |>
+  add_link("beetle", "crocidura", 0.49 * FIRbw_crocidura) |>
+  # columba
+  add_link("plant", "columba", 1* FIRbw_columba) |>
+  # turdus
+  add_link("plant", "turdus", 0.4 * FIRbw_turdus) |>
+  add_link("earthworm", "turdus", 0.3 * FIRbw_turdus) |>
+  add_link("beetle", "turdus", 0.3 * FIRbw_turdus) |>
+  # athene
+  add_link("earthworm", "athene", 0.35 * FIRbw_athene) |>
+  add_link("beetle", "athene", 0.35 * FIRbw_athene) |>
+  add_link("myodes", "athene", 0.06 * FIRbw_athene) |>
+  add_link("microtus", "athene", 0.06 * FIRbw_athene) |>
+  add_link("apodemus", "athene", 0.06 * FIRbw_athene) |>
+  add_link("sorex", "athene", 0.06 * FIRbw_athene) |>
+  add_link("crocidura", "athene", 0.06 * FIRbw_athene)
+```
 
 ``` r
 
@@ -1140,128 +1197,478 @@ was:
 BTF_{bird} = 0.8 BTF_{mammal} = 0.8 \times \left( 10^{-7.6 + \log_{10}(k_{ow})}\right)
 ```
 
-\####`spacemodel` edit: implementing fluxes of contaminant
+##### `spacemodel` edit: implementing fluxes of contaminant
 
 ``` r
 
-# 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
-fluxes <- fluxes |>
-  # beetle
-  add_flux("soil", "beetle", ~ x) |>
-  add_flux("plant", "beetle", ~ exp(x) * FIRbw_mamHerb) |>
-  add_flux("earthworm", "beetle", ~ exp(x) * FIRbw_mamHerb) |>
-  # myodes
-  add_flux("soil", "myodes", 10^x * FIRbw_mamInsect) |>
-  add_flux("earthworm", "myodes", ~ exp(x) * FIRbw_mamInsect) |>
-  add_flux("carabid", "myodes", ~ 10^x * FIRbw_mamInsect)
+# Définition des facteurs de biotransfert (BTF)
+BTF_beetle <- 0.1   
+BTF_mammal <- 0.08  
+BTF_bird   <- 0.8 * BTF_mammal # = 0.04
+
+# Définition des transferts de flux dans le spacemodel
+fluxes <- flux(
+    spcmdl_berisp_flux,
+    default = 1,
+    normalize = FALSE
+  ) |>
+  # 1. Contamination directe (les équations donnent le log10 de la concentration)
+  add_flux("soil", "plant",  ~ -0.488 + 0.494 * x) |>
+  add_flux("soil", "earthworm",  ~ 0.596 + 0.983 * x) |>
+  # 2. Invertébrés (beetle)
+  add_flux("soil", "beetle", ~ 10^x * FIRbw_beetle * BTF_beetle) |>
+  add_flux("plant", "beetle", ~ 10^x * FIRbw_beetle * BTF_beetle) |>
+  add_flux("earthworm", "beetle", ~ 10^x * FIRbw_beetle * BTF_beetle) |>
+  # 3. Mammifères - Myodes (Bank vole)
+  add_flux("soil", "myodes", ~ 10^x * FIRbw_myodes * BTF_mammal) |>
+  add_flux("plant", "myodes", ~ 10^x * FIRbw_myodes * BTF_mammal) |>
+  add_flux("earthworm", "myodes", ~ 10^x * FIRbw_myodes * BTF_mammal) |>
+  add_flux("beetle", "myodes", ~ 10^x * FIRbw_myodes * BTF_mammal) |>
+  # 4. Mammifères - Microtus (Common vole)
+  add_flux("soil", "microtus", ~ 10^x * FIRbw_microtus * BTF_mammal) |>
+  add_flux("plant", "microtus", ~ 10^x * FIRbw_microtus * BTF_mammal) |>
+  # 5. Mammifères - Apodemus (Wood mouse)
+  add_flux("soil", "apodemus", ~ 10^x * FIRbw_apodemus * BTF_mammal) |>
+  add_flux("plant", "apodemus", ~ 10^x * FIRbw_apodemus * BTF_mammal) |>
+  add_flux("earthworm", "apodemus", ~ 10^x * FIRbw_apodemus * BTF_mammal) |>
+  add_flux("beetle", "apodemus", ~ 10^x * FIRbw_apodemus * BTF_mammal) |>
+  # 6. Mammifères - Musaraignes (Sorex & Crocidura)
+  add_flux("soil", "sorex", ~ 10^x * FIRbw_sorex * BTF_mammal) |>
+  add_flux("earthworm", "sorex", ~ 10^x * FIRbw_sorex * BTF_mammal) |>
+  add_flux("beetle", "sorex", ~ 10^x * FIRbw_sorex * BTF_mammal) |>
+  add_flux("soil", "crocidura", ~ 10^x * FIRbw_crocidura * BTF_mammal) |>
+  add_flux("earthworm", "crocidura", ~ 10^x * FIRbw_crocidura * BTF_mammal) |>
+  add_flux("beetle", "crocidura", ~ 10^x * FIRbw_crocidura * BTF_mammal) |>
+  # 7. Oiseaux - Pigeon (Columba)
+  add_flux("plant", "columba", ~ 10^x * FIRbw_columba * BTF_bird) |>
+  # 8. Oiseaux - Merle noir (Turdus)
+  add_flux("plant", "turdus", ~ 10^x * FIRbw_turdus * BTF_bird) |>
+  add_flux("earthworm", "turdus", ~ 10^x * FIRbw_turdus * BTF_bird) |>
+  add_flux("beetle", "turdus", ~ 10^x * FIRbw_turdus * BTF_bird) |>
+  # 9. Oiseaux - Chouette chevêche (Athene) - Super prédateur
+  add_flux("earthworm", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("beetle", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("myodes", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("microtus", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("apodemus", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("sorex", "athene", ~ 10^x * FIRbw_athene * BTF_bird) |>
+  add_flux("crocidura", "athene", ~ 10^x * FIRbw_athene * BTF_bird)
 ```
 
 ## Movement of population (extended habitat) dispersion in landscape
 
 ``` r
 
-# Calcul des noyaux de dispersion en fonction d'un rayon de mobilité (ex: en pixels)
-k_herb <- compute_kernel(radius=50, GSD=25, size_std=0.5)
-k_carn <- compute_kernel(radius=150, GSD=25, size_std=0.5)
+# Calcul des noyaux de dispersion en fonction de l'écologie spatiale (rayons de mobilité)
+# Invertébrés terrestres
+k_beetle    <- compute_kernel(radius=10, GSD=25, size_std=0.1)
 
-# Application de la dispersion sur le spacemodel
-spcmdl_dispersal <- spcmdl_trophic_fixed |>
-  dispersal("herbivore", method="convolution", method_option=list(kernel=k_herb)) |>
-  dispersal("carnivore", method="convolution", method_option=list(kernel=k_carn))
+# Micromammifères (Rongeurs et Insectivores)
+k_sorex     <- compute_kernel(radius=25, GSD=25, size_std=0.1)
+k_crocidura <- compute_kernel(radius=25, GSD=25, size_std=0.1)
+k_microtus  <- compute_kernel(radius=30, GSD=25, size_std=0.1)
+k_myodes    <- compute_kernel(radius=40, GSD=25, size_std=0.1)
+k_apodemus  <- compute_kernel(radius=60, GSD=25, size_std=0.1)
+
+# Oiseaux
+k_turdus    <- compute_kernel(radius=150, GSD=25, size_std=0.1)
+k_columba   <- compute_kernel(radius=300, GSD=25, size_std=0.1)
+k_athene    <- compute_kernel(radius=800, GSD=25, size_std=0.1)
 ```
+
+#### Representation of kernels
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-16-1.png)
+
+### Compute dispersal
+
+``` r
+
+# Application de la dispersion sur l'objet spacemodel (avec les flux calculés précédemment)
+spcmdl_dispersal_init <- spcmdl_berisp_init |>
+  dispersal("beetle",    method="convolution", method_option=list(kernel=k_beetle)) |>
+  dispersal("sorex",     method="convolution", method_option=list(kernel=k_sorex)) |>
+  dispersal("crocidura", method="convolution", method_option=list(kernel=k_crocidura)) |>
+  dispersal("microtus",  method="convolution", method_option=list(kernel=k_microtus)) |>
+  dispersal("myodes",    method="convolution", method_option=list(kernel=k_myodes)) |>
+  dispersal("apodemus",  method="convolution", method_option=list(kernel=k_apodemus)) |>
+  dispersal("turdus",    method="convolution", method_option=list(kernel=k_turdus)) |>
+  dispersal("columba",   method="convolution", method_option=list(kernel=k_columba)) |>
+  dispersal("athene",    method="convolution", method_option=list(kernel=k_athene))
+```
+
+``` r
+
+plot(spcmdl_dispersal_init)
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-18-1.png)
+
+That we can normalized:
+
+``` r
+
+species_to_scale <- c("myodes", "microtus", "apodemus", "sorex", "crocidura", 
+                      "columba", "turdus", "athene")
+spcmdl_dispersal_init[[species_to_scale]] <- spcmdl_dispersal_init[[species_to_scale]] / 10
+plot(spcmdl_dispersal_init)
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-19-1.png)
+
+``` r
+
+# Application de la dispersion sur l'objet spacemodel (avec les flux calculés précédemment)
+spcmdl_dispersal_flux <- spcmdl_berisp_flux |>
+  dispersal("beetle",    method="convolution", method_option=list(kernel=k_beetle)) |>
+  dispersal("sorex",     method="convolution", method_option=list(kernel=k_sorex)) |>
+  dispersal("crocidura", method="convolution", method_option=list(kernel=k_crocidura)) |>
+  dispersal("microtus",  method="convolution", method_option=list(kernel=k_microtus)) |>
+  dispersal("myodes",    method="convolution", method_option=list(kernel=k_myodes)) |>
+  dispersal("apodemus",  method="convolution", method_option=list(kernel=k_apodemus)) |>
+  dispersal("turdus",    method="convolution", method_option=list(kernel=k_turdus)) |>
+  dispersal("columba",   method="convolution", method_option=list(kernel=k_columba)) |>
+  dispersal("athene",    method="convolution", method_option=list(kernel=k_athene))
+```
+
+``` r
+
+plot(spcmdl_dispersal_flux)
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-21-1.png)
 
 ## Transfer of food and contaminant
 
-## Dose of Exposure
+To extract both the exposure (ingested dose) and the impregnation (body
+burden) without running the model twice, we can use a simple
+mathematical trick. Because our trophic network must propagate the body
+burden from prey to predator, the spatial model calculates the final
+tissue concentrations by default. However, since the transfer equation
+for all our animals is strictly linear—where Body Burden = Exposure ×
+BTF—we can easily retrieve the initial exposure post-simulation using
+the inverse operation: Exposure = Body Burden / BTF. Here is how to
+implement this cleanly in R to extract both metrics from your final
+spatial model:
 
-### Trophic transfer equation
+### Compute impregnation
 
-``` math
-\ln(C_{plant}) = - 0.475 + 0.546 * \ln(C_{soil}) 
+``` r
+
+# Calculate the final exposure/body burden for all species in the food web
+spcmdl_impregnation <- transfer(
+  spcmdl_dispersal_flux,
+  fluxes,
+  exposure_weighting = "potential" 
+)
+plot(spcmdl_impregnation)
 ```
 
-``` math
-\ln(C_{earthworm}) =  2.114 + 0.795 * \ln(C_{soil})
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-22-1.png)
+
+### Extract exposure
+
+``` r
+
+# Extraire TOUTES les couches du SpatRaster dans un seul data.frame
+df_all <- as.data.frame(spcmdl_impregnation, na.rm = TRUE)
+
+# Transformer le tableau "large" (1 colonne = 1 espèce) 
+# en format "long" (1 ligne = 1 observation d'une espèce)
+df_long <- pivot_longer(
+  df_all,
+  cols = everything(),
+  names_to = "species",
+  values_to = "concentration"
+)
+
+# Créer le graphique de densité globale
+ggplot(df_long, aes(x = concentration, fill = species, color = species)) +
+  geom_density(alpha = 0.4) + 
+  scale_fill_manual(values = species_colors) +
+  scale_color_manual(values = species_colors) +
+  theme_minimal(base_size = 14) +
+  scale_x_sqrt() +
+  labs(
+    title = "Distribution of Body-burden",
+    x = "Body-burden",
+    y = "Density",
+    fill = "Species",
+    color = "Species"
+  ) +
+  theme(
+    legend.position = "right"
+  )
 ```
 
-``` math
-\log(C_{carabid}) = -1 + 0.6 * \log(C_{soil})
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-23-1.png)
+
+#### Extraction of exposure
+
+``` r
+
+BTF_values <- c(
+  beetle    = BTF_beetle,
+  myodes    = BTF_mammal, 
+  microtus  = BTF_mammal, 
+  apodemus  = BTF_mammal, 
+  sorex     = BTF_mammal, 
+  crocidura = BTF_mammal,
+  columba   = BTF_bird, 
+  turdus    = BTF_bird, 
+  athene    = BTF_bird
+)
+species_names <- names(BTF_values)
+rast_impregnation <- spcmdl_impregnation[species_names]
+rast_exposure <- rast_impregnation / BTF_values
+
+# On crée une copie exacte du spacemodel d'imprégnation
+spcmdl_exposure <- spcmdl_impregnation
+spcmdl_exposure[[species_names]] <- spcmdl_exposure[[species_names]] / BTF_values
 ```
 
 ``` r
 
-FIRbw_mamHerb = 0.0875 # kg dw/kg bw/d
-FIRbw_mamInsect = 0.209 # kg dw/kg bw/d
-
-direct_doses <- flux(
-    spcmdl_dispersal,
-    default = 1,    # for all other default is 1
-    normalize=FALSE # TRUE would weight every link to sum at 1
-  ) |>
-  # log(10^x) to change log10 to Neperian log.
-  add_flux("soil", "plant", ~ - 0.475 + 0.546*log(10^x)) |>
-  add_flux("soil", "earthworm", ~ 2.114 + 0.795*log(10^x)) |>
-  add_flux("soil", "carabid", ~ -1 + 0.6*x)
-  # mamHerb: compute only the dose to which link proportion applied
-  # Then the ratio is applied to body rescale to the dose /body weight
-  add_flux("soil", "mamHerb", ~ 10^x * FIRbw_mamHerb) |>
-  add_flux("plant", "mamHerb", ~ exp(x) * FIRbw_mamHerb) |>
-  add_flux("earthworm", "mamHerb", ~ exp(x) * FIRbw_mamHerb) |>
-  add_flux("carabid", "mamHerb", ~ 10^x * FIRbw_mamHerb) |>
-  # mamInsect: compute only the dose to which link proportion applied
-  add_flux("soil", "mamInsect", 10^x * FIRbw_mamInsect) |>
-  add_flux("earthworm", "mamInsect", ~ exp(x) * FIRbw_mamInsect) |>
-  add_flux("carabid", "mamInsect", ~ 10^x * FIRbw_mamInsect)
+plot(spcmdl_exposure)
 ```
 
-## Feeding area in bird
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-25-1.png)
 
-page 273 de Terrsys, for predatory birds:
-
-``` math
-log(A_{feed}) = 1.2658 \log(bw_{bird}) - 1.194
-```
-
-for herbivorous birds:
-
-``` math
-log(A_{feed}) = 0.7006 \log(bw_{bird}) - 1.3379
-```
-
-### Foraging kernel
-
-We asssume foragning kernel are the same as the dispersal (habitat)
-kernels
+### Compared to data
 
 ``` r
 
-foraging_kernels <- list(
-  soil  = NA, plant = NA, earthworm = NA,
-  carabid=NA,  mamHerb = k_herb, mamInsect = k_carn)
+data("earthworm_cd")
+
+ggplot() +
+  theme_minimal() +
+  geom_point(data=earthworm_cd, aes(x=log10_cd_soil, y=log10_cd_worm)) +
+  geom_point(data=df_all, aes(x=soil, y=earthworm), col="red")
 ```
 
-### Computing Population Exposure
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-26-1.png)
 
 ``` r
 
-spcmdl_exposure <- transfer(
-  spcmdl_dispersal,
-  fixed_kernels,
-  direct_fluxes,
-  exposure_weighting="potential")
+
+data("sf_micromammals")
+
+df_all_longer <- df_all %>%
+  dplyr::select(soil, myodes, microtus, apodemus, sorex, crocidura) %>%
+  tidyr::pivot_longer(
+    cols = c("myodes", "microtus", "apodemus", "sorex", "crocidura"),
+    names_to = "genus",
+    values_to = "concentration"
+  )
+
+ggplot() +
+  theme_minimal() +
+  scale_x_log10() +
+  scale_y_log10(limits=c(1e-3,NA)) +
+  geom_point(data=sf_micromammals, aes(x=cd_S, y=cd_WB_FW, color=genus)) +
+  geom_line(data=df_all_longer, aes(x=10^soil, y=concentration, color=genus)) +
+  facet_grid(~genus)
 ```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-26-2.png)
 
 ## Risk based on SSD
 
+### Define threshold
+
 ``` r
 
-# Reference thresholds for each component
-thresholds <- c(soil = 1, plant = 32, earthworm = 140, carabid = 140,
-                mamHerb=73, mamInsect=0.36)
-# Align the vector's order with the raster layers' order (very important!)
-ordered_thresholds <- thresholds[names(spcmdl_10)]
-# Calculate the risk index: Concentration / Threshold
-spcmdl_risk <- spcmdl_10 / ordered_thresholds
-# Re-attach the trophic metadata since the division created a new object
-spcmdl_risk <- spacemodel(spcmdl_risk, attr(spcmdl_transfer, "trophic_tbl"))
+data("SSD_ecoSSL_all")
 ```
+
+#### plants
+
+``` r
+
+ssd_cd_plant <- SSD_ecoSSL_all |>
+  dplyr::filter(
+    compound == "Cadmium",
+    species_group == "Plant",
+    !is.na(tox_value)
+  )
+
+# Create the plot
+ggplot(data = ssd_cd_plant, aes(x = order_tox_value, y = tox_value, color = ERE_full)) +
+  theme_minimal(base_size = 14) +
+  # geom_hline(yintercept = 32, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  facet_wrap(~ ERE_full, scales = "free_x") +
+  scale_y_log10(labels = label_number()) +
+  scale_color_viridis_d(option = "plasma", guide = "none") +
+  labs(
+    title = "Plant Sensitivity to Cadmium (Soil)",
+    subtitle = "Distribution of toxicity values by effect type (ERE)",
+    x = "Order of Toxicity",
+    y = "Soil concentration (mg/kg dry weight)"
+  ) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold", size = 10)
+  )
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-28-1.png)
+
+#### Invertebrates
+
+``` r
+
+ssd_cd_invert <- SSD_ecoSSL_all |>
+  dplyr::filter(
+    compound == "Cadmium",
+    grepl("Invert", species_group), # Flexible filter for Invertebrates
+    !is.na(tox_value)
+  )
+
+ggplot(data = ssd_cd_invert, aes(x = order_tox_value, y = tox_value, color = ERE_full)) +
+  theme_minimal(base_size = 14) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  facet_wrap(~ ERE_full, scales = "free_x", ncol=4) +
+  scale_y_log10(labels = label_number()) +
+  scale_color_viridis_d(option = "viridis", guide = "none") +
+  labs(
+    title = "Invertebrate Sensitivity to Cadmium (Soil)",
+    subtitle = "Distribution of toxicity values by effect type (ERE)",
+    x = "Order of Toxicity",
+    y = "Soil concentration (mg/kg dry weight)"
+  ) +
+  theme(panel.grid.minor = element_blank(), strip.text = element_text(face = "bold"))
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-29-1.png)
+
+#### Mammals
+
+``` r
+
+ssd_cd_mammal <- SSD_ecoSSL_all |>
+  dplyr::filter(
+    compound == "Cadmium",
+    grepl("Mammal", species_group),
+    !is.na(tox_value)
+  )
+
+ggplot(data = ssd_cd_mammal, aes(x = order_tox_value, y = tox_value, color = ERE_full)) +
+  theme_minimal(base_size = 14) +
+  # geom_hline(yintercept = 0.77, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  facet_wrap(~ ERE_full, scales = "free_x") +
+  scale_y_log10(labels = label_number()) +
+  scale_color_viridis_d(option = "magma", guide = "none") + 
+  labs(
+    title = "Mammal Sensitivity to Cadmium",
+    subtitle = "Distribution of toxicity values (Daily Dose) by effect type",
+    x = "Order of Toxicity",
+    y = "Daily dose (mg/kg body weight / day)"
+  ) +
+  theme(panel.grid.minor = element_blank(), strip.text = element_text(face = "bold"))
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-30-1.png)
+
+#### Birds
+
+``` r
+
+ssd_cd_avian <- SSD_ecoSSL_all |>
+  dplyr::filter(
+    compound == "Cadmium",
+    grepl("Avian", species_group),
+    !is.na(tox_value)
+  )
+
+ggplot(data = ssd_cd_avian, aes(x = order_tox_value, y = tox_value, color = ERE_full)) +
+  theme_minimal(base_size = 14) +
+  # geom_hline(yintercept = 1.47, linetype = "dashed", color = "red", linewidth = 1) +
+  geom_point(size = 2.5, alpha = 0.8) +
+  facet_wrap(~ ERE_full, scales = "free_x") +
+  scale_y_log10(labels = label_number()) +
+  scale_color_viridis_d(option = "cividis", guide = "none") +
+  labs(
+    title = "Bird Sensitivity (Avian) to Cadmium",
+    subtitle = "Distribution of toxicity values (Daily Dose) by effect type",
+    x = "Order of Toxicity",
+    y = "Daily dose (mg/kg body weight / day)"
+  ) +
+  theme(panel.grid.minor = element_blank(), strip.text = element_text(face = "bold"))
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-31-1.png)
+
+### Risk Maps
+
+#### Mortality
+
+``` r
+
+probs=0.5
+plant_mortality = ssd_cd_plant[ssd_cd_plant$ERE_full=="Growth",]
+plant_mortality_thrshld = quantile(plant_mortality$tox_value, probs=probs, na.rm=TRUE) |>
+  as.numeric()
+
+invert_mortality = ssd_cd_invert[ssd_cd_invert$ERE_full=="Mortality",]
+invert_mortality_thrshld = quantile(invert_mortality$tox_value, probs=0.1, na.rm=TRUE)|>
+  as.numeric()
+
+mammal_mortality = ssd_cd_mammal[ssd_cd_mammal$ERE_full=="Mortality",]
+mammal_mortality_thrshld = quantile(mammal_mortality$tox_value, probs=probs, na.rm=TRUE)|>
+  as.numeric()
+
+bird_mortality = ssd_cd_avian[ssd_cd_avian$ERE_full=="Mortality",]
+bird_mortality_thrshld = quantile(bird_mortality$tox_value, probs=probs, na.rm=TRUE)|>
+  as.numeric()
+
+# Reference thresholds for each component
+# Reference thresholds for each component (Toutes les espèces incluses)
+thresholds <- c(
+  soil = 1,
+  plant = plant_mortality_thrshld,
+  earthworm = invert_mortality_thrshld,
+  beetle = invert_mortality_thrshld,
+  myodes = mammal_mortality_thrshld,
+  microtus = mammal_mortality_thrshld,
+  apodemus = mammal_mortality_thrshld,
+  sorex = mammal_mortality_thrshld,
+  crocidura = mammal_mortality_thrshld,
+  columba = bird_mortality_thrshld,
+  turdus = bird_mortality_thrshld,
+  athene = bird_mortality_thrshld
+)
+
+# Align the vector's order with the raster layers' order (very important!)
+ordered_thresholds <- thresholds[names(spcmdl_exposure)]
+# Calculate the risk index: Concentration / Threshold
+spcmdl_risk <- spcmdl_exposure / ordered_thresholds
+# Re-attach the trophic metadata since the division created a new object
+spcmdl_risk <- spacemodel(spcmdl_risk, attr(spcmdl_exposure, "trophic_tbl"))
+```
+
+``` r
+
+# Risk colors
+breaks_risk <- c(-Inf, 0.1, 0.5, 1, 5, 10, Inf)
+cols_risk <- c(
+  "darkgreen",   # 0 - 0.1
+  "green",       # 0.1 - 0.5
+  "lightgreen",  # 0.5 - 1
+  "yellow",      # 1 - 5
+  "saddlebrown", # 5 - 10
+  "#4A2C2A"      # > 10
+)
+
+names_keep <- names(spcmdl_risk)[names(spcmdl_risk) != "soil"]
+spcmdl_risk_sub <- spcmdl_risk[[names_keep]]
+
+terra::plot(spcmdl_risk_sub,
+            breaks = breaks_risk,
+            col = cols_risk)
+```
+
+![](zoo_Berisp_full_files/figure-html/unnamed-chunk-33-1.png)
+
+### VS Eco-SSL

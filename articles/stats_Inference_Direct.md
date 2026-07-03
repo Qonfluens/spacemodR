@@ -19,7 +19,7 @@
     #> 
     #>     intersect, setdiff, setequal, union
     #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
-    #> terra 1.9.27
+    #> terra 1.9.34
     #> 
     #> Attaching package: 'terra'
     #> The following object is masked from 'package:rstan':
