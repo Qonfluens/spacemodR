@@ -1193,7 +1193,7 @@ are in ppm.
 
 BTF_beetle <- 0.1   
 BTF_mammal_herb <- 0.05
-BTF_mammal_ins <- 0.0001 # 0.08
+BTF_mammal_ins <- 0.025 # 0.08
 BTF_bird   <- 0.04  # (0.8 * 0.05)
 species_traits <- species_traits %>%
   mutate(
