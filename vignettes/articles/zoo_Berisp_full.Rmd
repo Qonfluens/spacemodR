@@ -1079,19 +1079,19 @@ fluxes <- flux(
 ```{r}
 # Calcul des noyaux de dispersion en fonction de l'écologie spatiale (rayons de mobilité)
 # Invertébrés terrestres
-k_beetle    <- compute_kernel(radius=10, GSD=25, size_std=0.1)
+k_beetle    <- compute_kernel(radius=10, GSD=25, size_std=0.5)
 
 # Micromammifères (Rongeurs et Insectivores)
-k_sorex     <- compute_kernel(radius=25, GSD=25, size_std=0.1)
-k_crocidura <- compute_kernel(radius=25, GSD=25, size_std=0.1)
-k_microtus  <- compute_kernel(radius=30, GSD=25, size_std=0.1)
-k_myodes    <- compute_kernel(radius=40, GSD=25, size_std=0.1)
-k_apodemus  <- compute_kernel(radius=60, GSD=25, size_std=0.1)
+k_sorex     <- compute_kernel(radius=25, GSD=25, size_std=0.05)
+k_crocidura <- compute_kernel(radius=25, GSD=25, size_std=0.05)
+k_microtus  <- compute_kernel(radius=30, GSD=25, size_std=0.05)
+k_myodes    <- compute_kernel(radius=40, GSD=25, size_std=0.05)
+k_apodemus  <- compute_kernel(radius=60, GSD=25, size_std=0.05)
 
 # Oiseaux
-k_turdus    <- compute_kernel(radius=150, GSD=25, size_std=0.1)
-k_columba   <- compute_kernel(radius=300, GSD=25, size_std=0.1)
-k_athene    <- compute_kernel(radius=800, GSD=25, size_std=0.1)
+k_turdus    <- compute_kernel(radius=150, GSD=25, size_std=0.05)
+k_columba   <- compute_kernel(radius=300, GSD=25, size_std=0.05)
+k_athene    <- compute_kernel(radius=800, GSD=25, size_std=0.01)
 ```
 
 
@@ -1361,30 +1361,8 @@ df_all_longer <- df_all |>
 data("sf_micromammals")
 sf_micromammals <- sf_micromammals |>
   mutate(genus = factor(tolower(genus), levels = micromammals_order))
-
-ggplot() +
-  theme_minimal(base_size = 14) +
-  scale_x_log10() +
-  scale_y_log10(limits = c(1e-3, NA)) +
-  # Apply custom colors
-  scale_color_manual(values = species_colors) +
-  # Observed data (Points)
-  geom_point(data = sf_micromammals, aes(x = cd_S, y = cd_WB_FW, color = genus), alpha = 0.6) +
-  # Modeled data (Transfer/fit line)
-  geom_point(data = df_all_longer, aes(x = 10^soil, y = concentration, color = genus), shape=4) +
-  # Faceting: Respects the factor order defined above
-  facet_grid(~genus) +
-  labs(
-    title = "Observation vs Trophic Model of Body Burden Micromammals",
-    x = "Soil Concentration (Log Scale)",
-    y = "Body Concentration (Log Scale)",
-    color = "Genus"
-  ) +
-  theme(
-    legend.position = "bottom",
-    panel.grid.minor = element_blank()
-  )
 ```
+
 
 ```{r}
 ggplot() +
@@ -1402,25 +1380,34 @@ ggplot() +
     aes(x = 10^soil, y = concentration, color = genus), 
     shape = 4, 
     size = 1,      # Plus petit
-    alpha = 0.2    # Forte transparence pour ne pas surcharger
+    alpha = 0.2    # Forte transparence
   ) +
-  
-  # 2. OBSERVATIONS EN PREMIER PLAN (Cercles avec bordure noire)
+  # 3. OBSERVATIONS EN PREMIER PLAN (Cercles avec bordure noire)
   geom_point(
     data = sf_micromammals, 
     aes(x = cd_S, y = cd_WB_FW, fill = genus), 
-    shape = 21,          # Cercle remplissable
-    color = "black",     # Bordure noire pour le contraste
-    size = 2.5,          # Plus grand
-    stroke = 0.5,        # Épaisseur de la bordure
+    shape = 21,          
+    color = "black",     
+    size = 2.5,          
+    stroke = 0.5,        
     alpha = 0.9
+  ) +
+    # 2. MODÈLE LINÉAIRE SUR LES Simulation(Ligne orange)
+  geom_smooth(
+    data = df_all_longer,                       # <- Changement ici !
+    aes(x = 10^soil, y = concentration),                  # <- Changement ici !
+    method = "lm",           
+    color = "orange",        
+    fill = "orange",         
+    alpha = 0.4,             
+    linewidth = 1            
   ) +
   
   facet_grid(~genus) +
   
   labs(
     title = "Observation vs Trophic Model of Body Burden in Micromammals",
-    subtitle = "Crosses (x) = Model Predictions | Circles (o) = Field Observations",
+    subtitle = "Crosses (x) = Model | Circles (o) = Field Observations | Orange = model Data LM fit",
     x = "Soil Concentration (Log Scale)",
     y = "Body Concentration (Log Scale)",
     color = "Genus",
@@ -1429,10 +1416,9 @@ ggplot() +
   theme(
     legend.position = "bottom",
     panel.grid.minor = element_blank(),
-    strip.text = element_text(face = "bold", size = 12) # Met les noms d'espèces bien en évidence
+    strip.text = element_text(face = "bold", size = 12)
   )
 ```
-
 
 
 # Risk based on SSD
