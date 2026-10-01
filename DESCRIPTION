@@ -36,7 +36,8 @@ Suggests:
     scales,
     purrr,
     tidyr,
-    leaflet
+    leaflet,
+    gstat
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends: 

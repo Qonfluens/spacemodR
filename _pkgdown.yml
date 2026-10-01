@@ -21,6 +21,8 @@ navbar:
     simulation:
       text: "🧩️ Core Guides"
       menu:
+        - text: "Soil Contamination Maps (Kriging)"
+          href: articles/core_Soil_Kriging.html
         - text: "Habitat Layer"
           href: articles/core_Habitat.html
         - text: "Landscape Connectivity (Omniscape)"
