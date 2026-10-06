@@ -33,6 +33,41 @@
 #' @keywords datasets
 "ref_ocsge"
 
+#' Nomenclature and render colors of EUNIS land cover classes
+#'
+#' @description
+#' Code / label / render-color lookup table for the EEA "Ecosystem Type Map
+#' v3.1, terrestrial part" ArcGIS service, at both EUNIS Level 1 (9 broad
+#' classes) and Level 2 (46 detailed classes). It is used internally by
+#' \code{\link{get_eunis_data}} to decode the service's exported image back
+#' into EUNIS codes, since that service publishes no raw-value raster
+#' endpoint.
+#'
+#' @format A data frame with the following columns:
+#' \describe{
+#'   \item{level}{Character. \code{"L1"} or \code{"L2"}.}
+#'   \item{code}{Character. The EUNIS code (e.g. \code{"J1"} at L2, \code{"J"} at L1).}
+#'   \item{nomenclature}{Character. The class label.}
+#'   \item{couleur}{Character. The hex render color used by the source ArcGIS service.}
+#'   \item{r, g, b}{Integer (0-255). The render color, split into channels for exact matching.}
+#' }
+#'
+#' @details
+#' At \code{level == "L2"}, two pairs of classes share an identical render
+#' color and cannot be distinguished from the exported image alone:
+#' \code{D5}/\code{F6} and \code{D6}/\code{F7}. \code{level == "L1"} has no
+#' such collision. See \code{\link{get_eunis_data}} for how this is handled.
+#'
+#' @source European Environment Agency, "Ecosystem Type Map v3.1, terrestrial
+#' part": \url{https://bio.discomap.eea.europa.eu/arcgis/rest/services/Ecosystem/EcosystemTypeMap_v3_1_Terrestrial/MapServer}
+#'
+#' @usage data(ref_eunis)
+#'
+#' @examples
+#' data(ref_eunis)
+#' @keywords datasets
+"ref_eunis"
+
 #' DataBase of collected MicroMammals species
 #'
 #' @usage data(sf_micromammals)
