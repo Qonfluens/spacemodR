@@ -8,6 +8,8 @@
   Connectivity](https://qonfluens.github.io/spacemodR/articles/core_Habitat.md):
 - [Using Julia Omniscape to run Landscape
   Connectivity](https://qonfluens.github.io/spacemodR/articles/core_Omniscape_Connectivity.md):
+- [Soil contamination maps by
+  kriging](https://qonfluens.github.io/spacemodR/articles/core_Soil_Kriging.md):
 - [Getting Started: Overview of
   spacemodR](https://qonfluens.github.io/spacemodR/articles/Getting_Started_EN.md):
 - [Getting Started: Vue d'ensemble de

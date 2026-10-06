@@ -23,7 +23,8 @@
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -69,6 +70,8 @@
 <strong>New <code><a href="../reference/add_flux.html">add_flux()</a></code> function:</strong> Allows for adding transfer rules in a readable, sequential manner (e.g., <code>add_flux(from = "soil", to = "plant", value = ~ 10^x / 32)</code>).</li>
 <li>
 <strong>Global target rules:</strong> In <code><a href="../reference/add_flux.html">add_flux()</a></code>, if the source compartment (<code>from</code>) is not specified, the rule (<code>value</code>) is automatically applied to all links pointing to the target compartment (<code>to</code>).</li>
+<li>
+<strong>Soil interpolation (kriging):</strong> new functions to build soil contamination rasters from sampling points, without additional dependency: <code><a href="../reference/soil_variogram.html">soil_variogram()</a></code>, <code><a href="../reference/fit_soil_variogram.html">fit_soil_variogram()</a></code>, <code><a href="../reference/soil_vgm.html">soil_vgm()</a></code>, <code><a href="../reference/krige_soil.html">krige_soil()</a></code> (ordinary kriging or kriging with external drift), <code><a href="../reference/cv_soil.html">cv_soil()</a></code> (random or spatial-block cross-validation), <code><a href="../reference/kernel_smooth_soil.html">kernel_smooth_soil()</a></code> (Gaussian smoothing reusing <code><a href="../reference/compute_kernel.html">compute_kernel()</a></code>), <code><a href="../reference/soil_grid.html">soil_grid()</a></code> and <code><a href="../reference/source_covariates.html">source_covariates()</a></code> (distance / wind covariates around a point source). New dataset <code>soil_metaleurop</code> (595 soil Cd, Pb, Zn samples) and new article “Soil contamination maps by kriging”.</li>
 <li>
 <strong>Safe default values:</strong> The <code><a href="../reference/flux.html">flux()</a></code> function now features an explicit <code>default</code> parameter. It is highly recommended to use <code>1</code> (full transfer) or <code>0</code> (no transfer) instead of <code>NA</code> to prevent the propagation of missing values during subsequent model calculations.</li>
 </ul></div>
@@ -118,7 +121,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

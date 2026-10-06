@@ -23,7 +23,8 @@
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
+  <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -168,6 +169,13 @@
 
         <dt>
 
+          <code><a href="cv_soil.html">cv_soil()</a></code>
+
+        </dt>
+        <dd>Cross-validate a soil interpolation method</dd>
+
+        <dt>
+
           <code><a href="dispersal.html">dispersal()</a></code>
 
         </dt>
@@ -182,6 +190,13 @@
 
         <dt>
 
+          <code><a href="fit_soil_variogram.html">fit_soil_variogram()</a></code>
+
+        </dt>
+        <dd>Fit a variogram model to an empirical soil variogram</dd>
+
+        <dt>
+
           <code><a href="flux.html">flux()</a></code>
 
         </dt>
@@ -193,6 +208,13 @@
 
         </dt>
         <dd>Identify codes of departments intersecting a region of interest</dd>
+
+        <dt>
+
+          <code><a href="get_eunis_data.html">get_eunis_data()</a></code>
+
+        </dt>
+        <dd>Efficiently retrieve EUNIS land cover data from the EEA Ecosystem Type Map</dd>
 
         <dt>
 
@@ -228,6 +250,20 @@
 
         </dt>
         <dd>Join OCSGE Spatial Data with Species Traits</dd>
+
+        <dt>
+
+          <code><a href="kernel_smooth_soil.html">kernel_smooth_soil()</a></code>
+
+        </dt>
+        <dd>Gaussian kernel smoothing of soil concentrations</dd>
+
+        <dt>
+
+          <code><a href="krige_soil.html">krige_soil()</a></code>
+
+        </dt>
+        <dd>Krige soil concentrations into a raster</dd>
 
         <dt>
 
@@ -273,6 +309,13 @@
 
         <dt>
 
+          <code><a href="plot.soil_vgm.html">plot(<i>&lt;soil_vgm&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Plot an empirical variogram and its fitted model(s)</dd>
+
+        <dt>
+
           <code><a href="plot.trophic_tbl.html">plot(<i>&lt;trophic_tbl&gt;</i>)</a></code>
 
         </dt>
@@ -291,6 +334,13 @@
 
         </dt>
         <dd>Create a RasterStack from a list of rasters and names</dd>
+
+        <dt>
+
+          <code><a href="ref_eunis.html">ref_eunis</a></code>
+
+        </dt>
+        <dd>Nomenclature and render colors of EUNIS land cover classes</dd>
 
         <dt>
 
@@ -315,6 +365,41 @@
 
         <dt>
 
+          <code><a href="soil_grid.html">soil_grid()</a></code>
+
+        </dt>
+        <dd>Build a regular raster grid around sampling points</dd>
+
+        <dt>
+
+          <code><a href="soil_metaleurop.html">soil_metaleurop</a></code>
+
+        </dt>
+        <dd>Soil metal concentrations sampled around the former Metaleurop smelter</dd>
+
+        <dt>
+
+          <code><a href="soil_variogram.html">soil_variogram()</a></code>
+
+        </dt>
+        <dd>Empirical semi-variogram of soil concentrations</dd>
+
+        <dt>
+
+          <code><a href="soil_vgm.html">soil_vgm()</a></code>
+
+        </dt>
+        <dd>Build a variogram model by hand</dd>
+
+        <dt>
+
+          <code><a href="source_covariates.html">source_covariates()</a></code>
+
+        </dt>
+        <dd>Distance and wind covariates around a contamination source</dd>
+
+        <dt>
+
           <code><a href="spacemodR-package.html">spacemodR-package</a></code> <code><a href="spacemodR-package.html">spacemodR</a></code>
 
         </dt>
@@ -333,6 +418,13 @@
 
         </dt>
         <dd>Subset method for trophic_tbl</dd>
+
+        <dt>
+
+          <code><a href="summary.soil_cv.html">summary(<i>&lt;soil_cv&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise a cross-validation</dd>
 
         <dt>
 
@@ -356,7 +448,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

@@ -35,6 +35,25 @@
   if the source compartment (`from`) is not specified, the rule
   (`value`) is automatically applied to all links pointing to the target
   compartment (`to`).
+- **Soil interpolation (kriging):** new functions to build soil
+  contamination rasters from sampling points, without additional
+  dependency:
+  [`soil_variogram()`](https://qonfluens.github.io/spacemodR/reference/soil_variogram.md),
+  [`fit_soil_variogram()`](https://qonfluens.github.io/spacemodR/reference/fit_soil_variogram.md),
+  [`soil_vgm()`](https://qonfluens.github.io/spacemodR/reference/soil_vgm.md),
+  [`krige_soil()`](https://qonfluens.github.io/spacemodR/reference/krige_soil.md)
+  (ordinary kriging or kriging with external drift),
+  [`cv_soil()`](https://qonfluens.github.io/spacemodR/reference/cv_soil.md)
+  (random or spatial-block cross-validation),
+  [`kernel_smooth_soil()`](https://qonfluens.github.io/spacemodR/reference/kernel_smooth_soil.md)
+  (Gaussian smoothing reusing
+  [`compute_kernel()`](https://qonfluens.github.io/spacemodR/reference/compute_kernel.md)),
+  [`soil_grid()`](https://qonfluens.github.io/spacemodR/reference/soil_grid.md)
+  and
+  [`source_covariates()`](https://qonfluens.github.io/spacemodR/reference/source_covariates.md)
+  (distance / wind covariates around a point source). New dataset
+  `soil_metaleurop` (595 soil Cd, Pb, Zn samples) and new article “Soil
+  contamination maps by kriging”.
 - **Safe default values:** The
   [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md)
   function now features an explicit `default` parameter. It is highly

@@ -7,7 +7,7 @@ library(spacemodR)
 library(rstan)
 #> Loading required package: StanHeaders
 #> 
-#> rstan version 2.32.7 (Stan version 2.32.2)
+#> rstan version 2.32.7 (Stan version 2.39.0)
 #> For execution on a local, multicore CPU with excess RAM we recommend calling
 #> options(mc.cores = parallel::detectCores()).
 #> To avoid recompilation of unchanged Stan programs, we recommend calling

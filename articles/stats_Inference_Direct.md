@@ -2,7 +2,7 @@
 
     #> Loading required package: StanHeaders
     #> 
-    #> rstan version 2.32.7 (Stan version 2.32.2)
+    #> rstan version 2.32.7 (Stan version 2.39.0)
     #> For execution on a local, multicore CPU with excess RAM we recommend calling
     #> options(mc.cores = parallel::detectCores()).
     #> To avoid recompilation of unchanged Stan programs, we recommend calling
@@ -19,7 +19,7 @@
     #> 
     #>     intersect, setdiff, setequal, union
     #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
-    #> terra 1.9.34
+    #> terra 1.9.50
     #> 
     #> Attaching package: 'terra'
     #> The following object is masked from 'package:rstan':
