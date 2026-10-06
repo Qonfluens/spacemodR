@@ -11,3 +11,8 @@ raw_data/
 **/*.quarto_ipynb
 vignettes/articles/*_cache/
 vignettes/articles/*_files/
+
+# compiled objects (rebuilt at install time)
+src/*.o
+src/*.so
+src/*.dll

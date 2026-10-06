@@ -32,10 +32,3 @@ RUN R -e "remotes::install_deps('/build/spacemodR', dependencies = TRUE)"
 COPY . /build/spacemodR
 RUN R -e "remotes::install_local('/build/spacemodR', dependencies = FALSE)"
 RUN rm -rf /build/spacemodR
-
-# 8. Install spacemodR and its R dependencies
-# We use remotes::install_local (already included in rocker/geospatial)
-RUN R -e "remotes::install_local('/build/spacemodR', dependencies = TRUE)"
-
-# 9. Clean up the build directory to keep the image size small
-RUN rm -rf /build/spacemodR

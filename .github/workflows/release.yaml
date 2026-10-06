@@ -1,0 +1,103 @@
+# Build the source package and Windows/macOS binaries, and attach them to a
+# GitHub Release. Triggered by pushing a version tag, e.g.:
+#   git tag -a v0.3.0 -m "Release v0.3.0" && git push origin v0.3.0
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: write
+
+jobs:
+  # 1. Source package (.tar.gz), with vignettes built
+  source:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          needs: build
+
+      # The tag must match the Version field of DESCRIPTION (v0.3.0 <-> 0.3.0)
+      - name: Check tag against DESCRIPTION
+        id: version
+        run: |
+          version=$(grep '^Version:' DESCRIPTION | sed 's/Version: *//')
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match DESCRIPTION version $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Build source package
+        run: R CMD build .
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: source
+          path: spacemodR_*.tar.gz
+          if-no-files-found: error
+
+  # 2. Binary packages built from the source tarball (.zip on Windows, .tgz on macOS)
+  binary:
+    needs: source
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Build binary package
+        run: R CMD INSTALL --build spacemodR_${{ needs.source.outputs.version }}.tar.gz
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: |
+            spacemodR_*.zip
+            spacemodR_*.tgz
+          if-no-files-found: error
+
+  # 3. GitHub Release with all packages attached
+  release:
+    needs: [ source, binary ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: spacemodR ${{ needs.source.outputs.version }}
+          generate_release_notes: true
+          files: dist/*

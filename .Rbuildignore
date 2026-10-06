@@ -12,3 +12,5 @@
 ^pkgdown$
 ^vignettes/articles$
 ^julia_run$
+^\.positai$
+^\.claude$
