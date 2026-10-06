@@ -391,8 +391,8 @@ m_ok
 m_ok$comparison
 #>   model     nugget     psill    range          sse
 #> 1   Gau 0.05311783 0.1072776 1235.369 1.386473e-05
-#> 2   Sph 0.04211791 0.1231916 2887.670 2.587145e-05
-#> 3   Exp 0.03899008 0.1726382 2113.586 3.157755e-05
+#> 2   Sph 0.04211793 0.1231917 2887.673 2.587145e-05
+#> 3   Exp 0.03899008 0.1726382 2113.585 3.157755e-05
 
 m_ked <- fit_soil_variogram(v_ked, model = c("Exp", "Sph", "Gau"))
 m_ked
@@ -609,13 +609,13 @@ soil_maps <- lapply(c("cd", "pb", "zn"), function(metal) {
 #> Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).
 #> 8 duplicated location(s) averaged.
 #> Variogram model: Exp  
-#>   nugget = 0.04496 | partial sill = 0.03048 | range = 1076 m
+#>   nugget = 0.04496 | partial sill = 0.0305 | range = 1076 m
 #>   weighted SSE = 9.935e-06
 #>   fitted on residuals of the drift: log10_dist
 #> Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).
 #> 8 duplicated location(s) averaged.
 #> Variogram model: Exp  
-#>   nugget = 0.03963 | partial sill = 0.04392 | range = 1959 m
+#>   nugget = 0.03963 | partial sill = 0.04391 | range = 1959 m
 #>   weighted SSE = 4.871e-06
 #>   fitted on residuals of the drift: log10_dist
 #> Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).
@@ -794,9 +794,9 @@ inside  <- values(terra::mask(diff_cd, hull), mat = FALSE)
 outside <- values(terra::mask(diff_cd, hull, inverse = TRUE), mat = FALSE)
 rbind(inside  = quantile(inside,  c(0.05, 0.5, 0.95), na.rm = TRUE),
       outside = quantile(outside, c(0.05, 0.5, 0.95), na.rm = TRUE))
-#>                  5%           50%         95%
-#> inside  -0.07600459 -0.0002601533  0.10073051
-#> outside -0.30411804 -0.1496480190 -0.02294467
+#>                 5%           50%         95%
+#> inside  -0.0760046 -0.0002601581  0.10073052
+#> outside -0.3041180 -0.1496480143 -0.02294464
 ```
 
 Inside the sampled area the two maps are close (differences are local
@@ -882,7 +882,7 @@ cells <- sf::st_as_sf(as.data.frame(xyFromCell(small_grid, 1:ncell(small_grid)))
                       coords = c("x", "y"), crs = 2154)
 ref <- gstat::krige(cd_log10 ~ 1, pts, cells, model = g, debug.level = 0)
 max(abs(ref$var1.pred - values(ours[["cd_log10"]])))
-#> [1] 6.664935e-11
+#> [1] 6.664536e-11
 ```
 
 ## References

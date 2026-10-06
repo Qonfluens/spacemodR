@@ -12,13 +12,17 @@
 
 ## Citation
 
+Source:
+[`DESCRIPTION`](https://github.com/Qonfluens/spacemodR/blob/main/DESCRIPTION)
+
 Baudrot V (2026). *spacemodR: Workflow for Environmental Risk
 Assessment: Habitat, Food Web, Dispersal, Exposure and Risk*. R package
-version 0.2.0.
+version 0.3.0, <https://github.com/Qonfluens/spacemodR>.
 
     @Manual{,
       title = {spacemodR: Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk},
       author = {Virgile Baudrot},
       year = {2026},
-      note = {R package version 0.2.0},
+      note = {R package version 0.3.0},
+      url = {https://github.com/Qonfluens/spacemodR},
     }
