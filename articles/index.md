@@ -4,6 +4,8 @@
 
 - [Food Intake
   Rate](https://qonfluens.github.io/spacemodR/articles/core_Food_Intake.md):
+- [Habitat Layer from
+  EUNIS](https://qonfluens.github.io/spacemodR/articles/core_Habitat_EUNIS.md):
 - [Habitat and
   Connectivity](https://qonfluens.github.io/spacemodR/articles/core_Habitat.md):
 - [Using Julia Omniscape to run Landscape

@@ -38,6 +38,8 @@
   : Disperse a species or variable over the landscape
 - [`earthworm_cd`](https://qonfluens.github.io/spacemodR/reference/earthworm_cd.md)
   : Data concentration Cd Soil - Earthworm
+- [`eunis_species_dict`](https://qonfluens.github.io/spacemodR/reference/eunis_species_dict.md)
+  : Species habitat dictionary for EUNIS Level 2 land cover classes
 - [`fit_soil_variogram()`](https://qonfluens.github.io/spacemodR/reference/fit_soil_variogram.md)
   : Fit a variogram model to an empirical soil variogram
 - [`flux()`](https://qonfluens.github.io/spacemodR/reference/flux.md) :
