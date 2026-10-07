@@ -35,7 +35,16 @@ or process geospatial data.
 data("roi_metaleurop")
 ## Or load a ROI via geojson
 # roi_metaleurop <- sf::st_read("data/metaleurop_roi.geojson")
-dpts <- get_departements_for_roi(roi_metaleurop)
+dpts <- tryCatch(
+  get_departements_for_roi(roi_metaleurop),
+  # requires internet access: do not break the vignette if the server is down
+  error = function(e) {
+    message("Could not fetch departments: ", conditionMessage(e))
+    NULL
+  }
+)
+dpts
+#> [1] "59" "62"
 ```
 
 ### Load OCS-GE layers in the Region Of Interest (ROI)

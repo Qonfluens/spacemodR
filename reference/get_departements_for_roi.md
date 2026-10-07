@@ -24,6 +24,7 @@ region of interest.
 ## Examples
 
 ``` r
+# \donttest{
 library(sf)
 #> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
 roi <- sf::st_as_sfc(sf::st_bbox(
@@ -31,4 +32,5 @@ roi <- sf::st_as_sfc(sf::st_bbox(
   crs = 2154)
 )
 departments <- get_departements_for_roi(roi)
+# }
 ```

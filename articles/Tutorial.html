@@ -118,7 +118,16 @@ geometry (polygon) in the object.</li>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"roi_metaleurop"</span><span class="op">)</span></span>
 <span><span class="co">## Or load a ROI via geojson</span></span>
 <span><span class="co"># roi_metaleurop &lt;- sf::st_read("data/metaleurop_roi.geojson")</span></span>
-<span><span class="va">dpts</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_departements_for_roi.html">get_departements_for_roi</a></span><span class="op">(</span><span class="va">roi_metaleurop</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">dpts</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/get_departements_for_roi.html">get_departements_for_roi</a></span><span class="op">(</span><span class="va">roi_metaleurop</span><span class="op">)</span>,</span>
+<span>  <span class="co"># requires internet access: do not break the vignette if the server is down</span></span>
+<span>  error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Could not fetch departments: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="cn">NULL</span></span>
+<span>  <span class="op">}</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dpts</span></span>
+<span><span class="co">#&gt; [1] "59" "62"</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="load-ocs-ge-layers-in-the-region-of-interest-roi">Load OCS-GE layers in the Region Of Interest (ROI)<a class="anchor" aria-label="anchor" href="#load-ocs-ge-layers-in-the-region-of-interest-roi"></a>
