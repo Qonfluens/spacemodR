@@ -36,6 +36,15 @@ load_safe <- function(file_path) {
   warning("File not found at: ", paste(paths, collapse = " OR "))
   return(NULL)
 }
+
+# rasters kept in the source repository (inst/extdata) but not shipped in the
+# built package: read from the repository, or from GitHub when run elsewhere
+load_raster_repo <- function(name) {
+  paths <- file.path(c("inst/extdata", "../inst/extdata", "../../inst/extdata"), name)
+  local <- paths[file.exists(paths)][1]
+  if (!is.na(local)) return(terra::rast(local))
+  terra::rast(paste0("/vsicurl/https://raw.githubusercontent.com/Qonfluens/spacemodR/main/inst/extdata/", name))
+}
 ```
 
 # Presentation of the Metaleurop Site and Data
@@ -45,13 +54,15 @@ a former lead smelter. Soil levels around the plant are relatively high.
 
 Below are the extrapolated contamination maps for Cadmium (Cd), Lead (Pb), 
 and Zinc (Zn) in the soil, derived from 595 sampling points
-(the extrapolation methodology is not covered in this vignette).
+(the extrapolation methodology is not covered in this vignette). The cadmium
+map is shipped with the package; the lead and zinc maps are kept in the source
+repository (`inst/extdata`) and read with a small helper, `load_raster_repo()`.
 
 
 ```{r soil_contam}
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-ground_pb <- load_raster_extdata("ground_concentration_pb_compressed.tif")
-ground_zn <- load_raster_extdata("ground_concentration_zn_compressed.tif")
+ground_pb <- load_raster_repo("ground_concentration_pb_compressed.tif")
+ground_zn <- load_raster_repo("ground_concentration_zn_compressed.tif")
 ground <- terra::rast(list(cd=ground_cd, pb=ground_pb, zn=ground_zn))
 
 terra::plot(ground)

@@ -18,6 +18,15 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
 )
+
+# rasters kept in the source repository (inst/extdata) but not shipped in the
+# built package: read from the repository, or from GitHub when run elsewhere
+load_raster_repo <- function(name) {
+  paths <- file.path(c("inst/extdata", "../inst/extdata", "../../inst/extdata"), name)
+  local <- paths[file.exists(paths)][1]
+  if (!is.na(local)) return(terra::rast(local))
+  terra::rast(paste0("/vsicurl/https://raw.githubusercontent.com/Qonfluens/spacemodR/main/inst/extdata/", name))
+}
 ```
 
 # Introduction
@@ -312,8 +321,8 @@ and of `priority`, is detailed [below](#stacking-order-and-thin-structures-prior
 3. converting them in raster
 
 ```{r, echo=FALSE}
-rast_Apsy_habitat <- load_raster_extdata("rast_Apsy_habitat.tif")
-rast_Apsy_resistance <- load_raster_extdata("rast_Apsy_resistance.tif")
+rast_Apsy_habitat <- load_raster_repo("rast_Apsy_habitat.tif")
+rast_Apsy_resistance <- load_raster_repo("rast_Apsy_resistance.tif")
 ```
 
 ```{r}
@@ -537,8 +546,8 @@ docker run --rm \
 ```
 
 ```{r load_omniscape, echo=FALSE}
-omniscape_apsy_200m <- load_raster_extdata("omniscape_apsy_200m.tif")
-omniscape_apsy_500m <- load_raster_extdata("omniscape_apsy_500m.tif")
+omniscape_apsy_200m <- load_raster_repo("omniscape_apsy_200m.tif")
+omniscape_apsy_500m <- load_raster_repo("omniscape_apsy_500m.tif")
 ```
 
 

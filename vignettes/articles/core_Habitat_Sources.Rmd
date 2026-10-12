@@ -19,6 +19,15 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
 )
+
+# rasters kept in the source repository (inst/extdata) but not shipped in the
+# built package: read from the repository, or from GitHub when run elsewhere
+load_raster_repo <- function(name) {
+  paths <- file.path(c("inst/extdata", "../inst/extdata", "../../inst/extdata"), name)
+  local <- paths[file.exists(paths)][1]
+  if (!is.na(local)) return(terra::rast(local))
+  terra::rast(paste0("/vsicurl/https://raw.githubusercontent.com/Qonfluens/spacemodR/main/inst/extdata/", name))
+}
 ```
 
 # Introduction
@@ -298,7 +307,8 @@ class, so roads, hedges and gardens disappear into their surroundings.
 
 `get_eunis_data()` downloads the EUNIS raster for any region of interest from
 the EEA map service. To keep this guide reproducible offline, the Metaleurop
-layer is shipped with the package; it was produced with:
+layer is kept in the source repository (`inst/extdata/eunis_metaleurop_L2.tif`,
+read here with a small helper, `load_raster_repo()`); it was produced with:
 
 ```{r get_eunis, eval=FALSE}
 data("roi_metaleurop")
@@ -309,7 +319,7 @@ eunis_lc <- get_eunis_data(roi_metaleurop, level = "L2", resolution = 100)
 data("ref_eunis")
 ref_l2 <- ref_eunis %>% filter(level == "L2") %>% select(code, nomenclature, couleur)
 
-eunis_lc <- load_raster_extdata("eunis_metaleurop_L2.tif")
+eunis_lc <- load_raster_repo("eunis_metaleurop_L2.tif")
 lv <- terra::levels(eunis_lc)[[1]]
 names(lv) <- c("value", "code")
 lv %>% left_join(ref_l2, by = "code") %>% select(code, nomenclature)

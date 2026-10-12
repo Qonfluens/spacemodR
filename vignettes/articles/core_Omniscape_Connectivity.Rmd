@@ -18,6 +18,15 @@ knitr::opts_chunk$set(
   warning = FALSE,
   message = FALSE
 )
+
+# rasters kept in the source repository (inst/extdata) but not shipped in the
+# built package: read from the repository, or from GitHub when run elsewhere
+load_raster_repo <- function(name) {
+  paths <- file.path(c("inst/extdata", "../inst/extdata", "../../inst/extdata"), name)
+  local <- paths[file.exists(paths)][1]
+  if (!is.na(local)) return(terra::rast(local))
+  terra::rast(paste0("/vsicurl/https://raw.githubusercontent.com/Qonfluens/spacemodR/main/inst/extdata/", name))
+}
 ```
 
 
@@ -179,8 +188,8 @@ terra::writeRaster(rast_resistance, "julia_run/example_resistance.tif", overwrit
 ```
 
 ```{r, echo=FALSE}
-rast_habitat <- load_raster_extdata("example_habitat.tif")
-rast_resistance <- load_raster_extdata("example_resistance.tif")
+rast_habitat <- load_raster_repo("example_habitat.tif")
+rast_resistance <- load_raster_repo("example_resistance.tif")
 ```
 
 ```{r}
@@ -212,7 +221,7 @@ dispersed_map <- compute_dispersal(
 ```{r, echo=FALSE}
 # dispersed_map <- readRDS("julia_run/dispersed_map.rds")
 # terra::writeRaster(dispersed_map, "julia_run/dispersed_example.tif", overwrite = TRUE)
-dispersed_map <- load_raster_extdata("dispersed_example_150.tif")
+dispersed_map <- load_raster_repo("dispersed_example_150.tif")
 ```
 
 ```{r show_map}
