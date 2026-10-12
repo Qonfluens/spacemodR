@@ -29,6 +29,8 @@ navbar:
           href: articles/core_Habitat_Sources.html
         - text: "Landscape Connectivity (Omniscape)"
           href: articles/core_Omniscape_Connectivity.html
+        - text: "Species Occurrences (GBIF)"
+          href: articles/core_GBIF_Occurrences.html
         - text: "Food Intake"
           href: articles/core_Food_Intake.html
 

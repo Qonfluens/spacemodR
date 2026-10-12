@@ -1,3 +1,10 @@
+# spacemodR (development version)
+
+## New Features & Improvements
+
+* **Species occurrences from GBIF:** new function `get_gbif_data()`, which downloads the occurrence records of a species for a region of interest with the public GBIF search API (no account needed) and returns them as `sf` points.
+* New article "Species Occurrences (GBIF)", which compares the records of the wood mouse (*Apodemus sylvaticus*) with its habitat scores from EUNIS and OCS-GE.
+
 # spacemodR 0.3.5
 
 ## New Features & Improvements

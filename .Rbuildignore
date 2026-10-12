@@ -30,3 +30,4 @@
 ^inst/extdata/omniscape_apsy_500m\.tif$
 ^inst/extdata/rast_Apsy_habitat\.tif$
 ^inst/extdata/rast_Apsy_resistance\.tif$
+^inst/extdata/gbif_apsy_france\.csv$
