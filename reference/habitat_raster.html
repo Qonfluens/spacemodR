@@ -11,7 +11,7 @@ defined as non-habitat (habitat = FALSE) are assigned NA."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,7 @@ defined as non-habitat (habitat = FALSE) are assigned NA."></head><body>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
 <li class="nav-item dropdown">
@@ -124,8 +125,8 @@ both be kept. When this matters, the only real solution is a finer
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> terra 1.9.50</span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Create a dummy reference raster</span></span></span>
@@ -143,6 +144,7 @@ both be kept. When this matters, the only real solution is a finer
 <span class="r-in"><span><span class="co"># Rasterize</span></span></span>
 <span class="r-in"><span><span class="va">hab_rast</span> <span class="op">&lt;-</span> <span class="fu">habitat_raster</span><span class="op">(</span><span class="va">ref_grid</span>, <span class="va">my_habitat</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hab_rast</span><span class="op">)</span></span></span>
+<span class="r-plt img"><img src="habitat_raster-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># A hedgerow kept continuous across the exclusion zone, whatever the order</span></span></span>
 <span class="r-in"><span><span class="co"># in which the layers are added</span></span></span>
@@ -152,7 +154,7 @@ both be kept. When this matters, the only real solution is a finer
 <span class="r-in"><span>  <span class="fu"><a href="add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">good_hab</span>, weight <span class="op">=</span> <span class="fl">0.8</span>, priority <span class="op">=</span> <span class="fl">1</span>, touches <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">bad_hab</span>, priority <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">habitat_raster</span><span class="op">(</span><span class="va">ref_grid</span>, <span class="va">my_habitat</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-plt img"><img src="habitat_raster-2.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

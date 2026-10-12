@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -27,6 +27,7 @@
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
 <li class="nav-item dropdown">
@@ -60,12 +61,23 @@
 <div class="section level3">
 <h3 id="new-features--improvements-development-version">New Features &amp; Improvements<a class="anchor" aria-label="anchor" href="#new-features--improvements-development-version"></a></h3>
 <ul><li>
+<strong>Species occurrences from GBIF:</strong> new function <code><a href="../reference/get_gbif_data.html">get_gbif_data()</a></code>, which downloads the occurrence records of a species for a region of interest with the public GBIF search API (no account needed) and returns them as <code>sf</code> points.</li>
+<li>New article “Species Occurrences (GBIF)”, which compares the records of the wood mouse (<em>Apodemus sylvaticus</em>) with its habitat scores from EUNIS and OCS-GE.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.5" id="spacemodr-035">spacemodR 0.3.5<a class="anchor" aria-label="anchor" href="#spacemodr-035"></a></h2>
+<div class="section level3">
+<h3 id="new-features--improvements-0-3-5">New Features &amp; Improvements<a class="anchor" aria-label="anchor" href="#new-features--improvements-0-3-5"></a></h3>
+<ul><li>
 <strong>Stacking order of habitat layers:</strong> <code><a href="../reference/habitat.html">habitat()</a></code>, <code><a href="../reference/add_habitat.html">add_habitat()</a></code> and <code><a href="../reference/add_nohabitat.html">add_nohabitat()</a></code> gain a <code>priority</code> argument, stored in a new <code>priority</code> column of the <code>habitat</code> object. In <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code>, overlapping features are stacked by priority and the pixel takes the value of the top one, so the result no longer depends on the order of the <code>add_*()</code> calls. By default each new layer goes on top of the previous ones, as before.</li>
 <li>
 <strong>Continuity of thin structures:</strong> <code><a href="../reference/habitat.html">habitat()</a></code>, <code><a href="../reference/add_habitat.html">add_habitat()</a></code> and <code><a href="../reference/add_nohabitat.html">add_nohabitat()</a></code> gain a <code>touches</code> argument, stored in a new <code>touches</code> column. With <code>touches = TRUE</code>, lines and polygons fill every pixel they touch in <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code>, which keeps hedgerows, rivers or roads continuous; with <code>touches = FALSE</code>, polygons fill the pixels whose centre they cover.</li>
 <li>
 <strong>Mixed geometries:</strong> <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> now accepts points, lines and polygons in the same <code>habitat</code> object.</li>
 <li>The “Habitat Layer” article explains <code>priority</code> and <code>touches</code> on a watercourse of the Metaleurop landscape.</li>
+<li>
+<strong>OCS-GE from IGN:</strong> new function <code><a href="../reference/get_ocsge.html">get_ocsge()</a></code>, a single entry point to get the OCS-GE of a region of interest, with a <code>source</code> argument. <code>source = "ign"</code> calls the new <code><a href="../reference/get_ocsge_data_ign.html">get_ocsge_data_ign()</a></code>, which downloads the per-department GeoPackages of the IGN Géoplateforme (no API key), keeps them in a cache directory and lets you choose the vintage with <code>year</code>. <code>source = "fgb"</code> calls <code><a href="../reference/get_ocsge_data_fgb.html">get_ocsge_data_fgb()</a></code>, unchanged. Extracting the IGN archives needs the <code>archive</code> package or the <code>7z</code> command line tool.</li>
 <li>
 <strong>OCS-GE / EUNIS crosswalk:</strong> new dataset <code>ref_ocsge_eunis</code>, a ranked correspondence between the 14 OCS-GE cover classes (<code>CS</code>), optionally refined by land use (<code>US</code>), and the 45 EUNIS Level 2 classes, with the share of each match measured on the Metaleurop site.</li>
 <li>
@@ -74,7 +86,7 @@
 <strong>Habitat data sources guide:</strong> the article “Habitat Layer from EUNIS” becomes “Habitat Data Sources”. It compares OCS-GE cover, OCS-GE cover and use, and EUNIS, shows how to move between them, and lists the other sources that could refine them.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="behaviour-changes-development-version">Behaviour changes<a class="anchor" aria-label="anchor" href="#behaviour-changes-development-version"></a></h3>
+<h3 id="behaviour-changes-0-3-5">Behaviour changes<a class="anchor" aria-label="anchor" href="#behaviour-changes-0-3-5"></a></h3>
 <ul><li>
 <code>touches</code> defaults to <code>TRUE</code>, whereas <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> used to fill the pixels whose centre is covered by a polygon, and the pixels of a thin line. Existing rasters therefore change: features are drawn larger. Set <code>touches = FALSE</code> to get the previous result, in particular for layers of contiguous polygons such as a land cover map.</li>
 <li>
@@ -85,11 +97,19 @@
 <code><a href="../reference/plot_species_habitat.html">plot_species_habitat()</a></code> now expects <code>suitability</code> instead of <code>weight_global</code>, and draws resistance on a log scale.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-3-5">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-3-5"></a></h3>
 <ul><li>
 <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> no longer fails on an empty <code>habitat</code> object.</li>
 <li>
 <code><a href="../reference/get_eunis_data.html">get_eunis_data()</a></code> returned the raster upside down (north and south swapped), because the image exported by the EEA service carries no georeferencing. The image is now georeferenced before being read. The Metaleurop layer shipped in <code>inst/extdata/eunis_metaleurop_L2.tif</code> was rebuilt; rasters obtained with earlier versions must be downloaded again.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="packaging-0-3-5">Packaging<a class="anchor" aria-label="anchor" href="#packaging-0-3-5"></a></h3>
+<ul><li>Preparation of the CRAN submission: shorter package title, <code><a href="../reference/get_eunis_data.html">get_eunis_data()</a></code> now takes <code>service_url = NULL</code> by default (the EEA service, as before), the examples of <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> and <code><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot()</a></code> for habitat objects are run, and the vignette figures are lighter.</li>
+<li>
+<code><a href="../reference/calibrate_simple.html">calibrate_simple()</a></code> checked for the wrong compiled model before sampling.</li>
+<li>
+<code>dispersal(method = "omniscape")</code> reports its progress with <code><a href="https://rdrr.io/r/base/message.html" class="external-link">message()</a></code> instead of <code><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat()</a></code>.</li>
 </ul></div>
 </div>
     <div class="section level2">

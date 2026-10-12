@@ -8,13 +8,16 @@ relatively high.
 
 Below are the extrapolated contamination maps for Cadmium (Cd), Lead
 (Pb), and Zinc (Zn) in the soil, derived from 595 sampling points (the
-extrapolation methodology is not covered in this vignette).
+extrapolation methodology is not covered in this vignette). The cadmium
+map is shipped with the package; the lead and zinc maps are kept in the
+source repository (`inst/extdata`) and read with a small helper,
+`load_raster_repo()`.
 
 ``` r
 
 ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-ground_pb <- load_raster_extdata("ground_concentration_pb_compressed.tif")
-ground_zn <- load_raster_extdata("ground_concentration_zn_compressed.tif")
+ground_pb <- load_raster_repo("ground_concentration_pb_compressed.tif")
+ground_zn <- load_raster_repo("ground_concentration_zn_compressed.tif")
 ground <- terra::rast(list(cd=ground_cd, pb=ground_pb, zn=ground_zn))
 
 terra::plot(ground)

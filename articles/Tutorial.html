@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
 </li>
@@ -89,38 +90,43 @@
 
     
     
-<p>First step is load the package <code>spacemodR</code>.</p>
-<p>You can install from CRAN or from the <a href="https://github.com/Qonfluens/spacemodR" class="external-link">github repository</a></p>
+<p>This tutorial goes through the whole workflow of
+<code>spacemodR</code> on a small example, the surroundings of the
+former Metaleurop smelter in northern France:</p>
+<ol style="list-style-type: decimal">
+<li>get the land cover of the study area,</li>
+<li>build habitat layers,</li>
+<li>describe the food web,</li>
+<li>join both in a <code>spacemodel</code>,</li>
+<li>compute dispersal, then exposure, then risk.</li>
+</ol>
+<p>The species used here (<code>sp10</code>, <code>sp12</code>,
+<code>sp22</code>) and all the parameter values are invented. They only
+show how the functions work.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Qonfluens/spacemodR" class="external-link">spacemodR</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
-<h2 id="load-habitat-layers-in-the-region-of-interest-roi">Load habitat layers in the Region Of Interest (ROI)<a class="anchor" aria-label="anchor" href="#load-habitat-layers-in-the-region-of-interest-roi"></a>
+<h2 id="land-cover-of-the-study-area">1. Land cover of the study area<a class="anchor" aria-label="anchor" href="#land-cover-of-the-study-area"></a>
 </h2>
-<p>The following examples are given for a specific French situation. The
-methods are designed to be updated for other countries.</p>
-<p>For new regions, new layers or new features, feel free to open an
-issue at this link: <a href="https://github.com/Qonfluens/spacemodR/issues" class="external-link">issue link</a>.</p>
+<p>The examples use French data. The same steps apply to other countries
+with other land cover maps (see the article “Habitat Data Sources”). To
+ask for a new region or a new data source, please open an <a href="https://github.com/Qonfluens/spacemodR/issues" class="external-link">issue</a>.</p>
 <div class="section level3">
-<h3 id="set-french-departments">Set French Departments<a class="anchor" aria-label="anchor" href="#set-french-departments"></a>
+<h3 id="study-area">Study area<a class="anchor" aria-label="anchor" href="#study-area"></a>
 </h3>
-<p>The <code>get_departements_for_roi</code> function identifies the
-codes of French departments that intersect with a given Region of
-Interest (ROI). This is particularly useful for spatial analyses in
-France, where administrative boundaries (like departments) are often
-needed to fetch or process geospatial data.</p>
-<ul>
-<li>
-<code>roi</code>: An <code>sf</code> or <code>sfc</code> object
-representing your region of interest. The function uses only the first
-geometry (polygon) in the object.</li>
-</ul>
+<p>The study area, or region of interest (ROI), is an <code>sf</code>
+polygon. The one of the Metaleurop site is shipped with the package.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"roi_metaleurop"</span><span class="op">)</span></span>
-<span><span class="co">## Or load a ROI via geojson</span></span>
-<span><span class="co"># roi_metaleurop &lt;- sf::st_read("data/metaleurop_roi.geojson")</span></span>
-<span><span class="va">dpts</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
+<span><span class="co">## or read your own file</span></span>
+<span><span class="co"># roi_metaleurop &lt;- sf::st_read("data/metaleurop_roi.geojson")</span></span></code></pre></div>
+<p>Many French data sets are distributed by department.
+<code><a href="../reference/get_departements_for_roi.html">get_departements_for_roi()</a></code> returns the codes of the
+departments that intersect the ROI. It needs an internet connection.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dpts</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="../reference/get_departements_for_roi.html">get_departements_for_roi</a></span><span class="op">(</span><span class="va">roi_metaleurop</span><span class="op">)</span>,</span>
-<span>  <span class="co"># requires internet access: do not break the vignette if the server is down</span></span>
+<span>  <span class="co"># do not stop the tutorial if the server cannot be reached</span></span>
 <span>  error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/message.html" class="external-link">message</a></span><span class="op">(</span><span class="st">"Could not fetch departments: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="cn">NULL</span></span>
@@ -130,103 +136,91 @@ geometry (polygon) in the object.</li>
 <span><span class="co">#&gt; [1] "59" "62"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="load-ocs-ge-layers-in-the-region-of-interest-roi">Load OCS-GE layers in the Region Of Interest (ROI)<a class="anchor" aria-label="anchor" href="#load-ocs-ge-layers-in-the-region-of-interest-roi"></a>
+<h3 id="ocs-ge-land-cover">OCS-GE land cover<a class="anchor" aria-label="anchor" href="#ocs-ge-land-cover"></a>
 </h3>
-<p>The <code>get_ocsge_data</code> function is designed to download,
-extract, and prepare OCS GE (Occupation du Sol à Grande Échelle) version
-2 datasets for a specific Region of Interest (ROI).</p>
-<p>This function automates the process of fetching spatial data from the
-French National Geographic Institute (IGN), merging data from all
-relevant departments, and cropping the result to match the boundaries of
-your ROI.</p>
-<p>Input Parameters:</p>
+<p>OCS-GE (<em>Occupation du Sol à Grande Échelle</em>) is the French
+land cover database. <code><a href="../reference/get_ocsge.html">get_ocsge()</a></code> returns its polygons for a
+ROI, with a cover code (<code>code_cs</code>) and a use code
+(<code>code_us</code>), in the Lambert-93 projection (EPSG:2154).</p>
+<p>It has two sources:</p>
 <ul>
 <li>
-<code>roi</code>: An <code>sf</code> object (simple features)
-defining your region of interest. Only the first feature in the object
-is used.</li>
+<code>source = "ign"</code> (default) downloads the data of each
+department from the French National Geographic Institute (IGN), then
+crops them to the ROI. The argument <code>year</code> selects the year
+of the data, and <code>cache_dir</code> the directory where the
+downloaded files are kept, so that each department is downloaded only
+once.</li>
 <li>
-<code>local_cache</code> (optional): A directory path where
-downloaded archives are stored. If not provided, a temporary directory
-is used.</li>
+<code>source = "fgb"</code> reads the ROI from a remote FlatGeobuf
+file, given in <code>fgb_url</code>.</li>
 </ul>
-<p>The function ensures that the ROI is transformed into the Lambert-93
-projection (EPSG:2154), which is the standard coordinate system for
-French geographic data.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## This function is long to compute so we load the data set</span></span>
-<span><span class="co"># sf_site &lt;- get_ocsge_data(roi_metaleurop)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">)</span></span></code></pre></div>
-<p>You can then plot the object using for instance the
-<code>ggplot2</code> library which is not included in
-<code>spacemodR</code>.</p>
+<p>The download takes some time, so this tutorial uses the result stored
+in the package.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># sf_site &lt;- get_ocsge(roi_metaleurop, source = "ign")</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">)</span></span></code></pre></div>
+<p>The result is an <code>sf</code> object and can be plotted with
+<code>ggplot2</code>.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">ocsge_metaleurop</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill<span class="op">=</span><span class="va">code_cs</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">roi_metaleurop</span>, fill<span class="op">=</span><span class="cn">NA</span>, color<span class="op">=</span><span class="st">"red"</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/vizualize_metaleurop_roi-1.png" class="r-plt" alt="" width="960"></p>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">ocsge_metaleurop</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>fill <span class="op">=</span> <span class="va">code_cs</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">roi_metaleurop</span>, fill <span class="op">=</span> <span class="cn">NA</span>, color <span class="op">=</span> <span class="st">"red"</span>, size <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/vizualize_metaleurop_roi-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="build-a-spacemodel">Build a spacemodel<a class="anchor" aria-label="anchor" href="#build-a-spacemodel"></a>
+<h2 id="habitat-layers">2. Habitat layers<a class="anchor" aria-label="anchor" href="#habitat-layers"></a>
 </h2>
 <div class="section level3">
-<h3 id="prepare-raster_stack-a-stack-of-raster-for-ground-and-habitats-">Prepare <code>raster_stack</code>: a stack of raster for ground and
-habitats.<a class="anchor" aria-label="anchor" href="#prepare-raster_stack-a-stack-of-raster-for-ground-and-habitats-"></a>
+<h3 id="what-is-a-habitat">What is a habitat?<a class="anchor" aria-label="anchor" href="#what-is-a-habitat"></a>
 </h3>
-<div class="section level4">
-<h4 id="about-the-habitat-class">About the <code>habitat</code> class<a class="anchor" aria-label="anchor" href="#about-the-habitat-class"></a>
-</h4>
-<p>What we define as <code>habitat</code> depends on the purpose of the
-model.</p>
-<p>There are three possible scenarios:</p>
+<p>A habitat is defined for one species and one activity (feeding,
+breeding, moving, etc.). The question you study decides what the habitat
+is. For each species, the landscape is split in three kinds of
+areas:</p>
 <ol style="list-style-type: decimal">
 <li>
-<strong>Areas where the species cannot go</strong>, even just to
-pass through (physically impossible).</li>
+<strong>Habitat</strong>: areas where the species carries out the
+activity. Each area has a weight that gives its importance.</li>
 <li>
-<strong>Areas defined as habitat</strong>, where the species
-performs the specific “activity” you have defined for that habitat. This
-activity could be “foraging habitat,” “grooming habitat,” “movement
-habitat,” etc. The ecological question at hand determines what
-constitutes the “habitat.”</li>
+<strong>Non-habitat</strong>: areas where the species cannot be at
+all, not even to cross them.</li>
 <li>
-<strong>Other areas</strong>: neither habitat for the defined
-activity nor impossible for the species to be in. For example, a road is
-not a foraging habitat for a rabbit, but rabbits can still be found on
-roads ; these are areas where they may be present while moving from one
-place to another.</li>
+<strong>The rest</strong>: areas that are not habitat, but where the
+species can still be present. For example, a road is not a feeding
+habitat for a rabbit, but a rabbit can cross it.</li>
 </ol>
 </div>
-<div class="section level4">
-<h4 id="setting-habitat-from-shapefiles-vector-maps">Setting <code>habitat</code> from shapefiles (vector maps)<a class="anchor" aria-label="anchor" href="#setting-habitat-from-shapefiles-vector-maps"></a>
-</h4>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="the-habitat-object">The <code>habitat</code> object<a class="anchor" aria-label="anchor" href="#the-habitat-object"></a>
+</h3>
+<p>We first select some land cover classes: broadleaved forest
+(<code>CS2.1.1.1</code>), herbaceous cover (<code>CS2.2.1</code>) and
+mineral surfaces (<code>CS1.1.2.1</code>).</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">layer_CS2111</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op">==</span> <span class="st">"CS2.1.1.1"</span>, <span class="op">]</span></span>
 <span><span class="va">layer_CS221</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op">==</span> <span class="st">"CS2.2.1"</span>, <span class="op">]</span></span>
 <span><span class="va">layer_CS1121</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op">==</span> <span class="st">"CS1.1.2.1"</span>, <span class="op">]</span></span></code></pre></div>
-<p>The <code>habitat</code> function creates a spatial habitat object,
-which inherits from both <code>sf</code> and <code>data.frame</code>
-classes.</p>
-<p>This object is designed to represent habitat zones and includes
-specific attributes: a <code>habitat</code> column (logical, indicating
-the presence or absence of habitat), a <code>weight</code> column
-(numeric, representing relative importance or weight), and a
-<code>geometry</code> column (containing spatial geometries).</p>
-<p>If no geometry is provided, the function creates an empty object. It
-also performs checks to ensure that the lengths of the habitat and
-weight vectors match the number of geometries and that their types are
-correct (logical for habitat, numeric for weight).</p>
-<p>This function is useful for initializing spatial analyses where
-distinguishing between habitat and non-habitat zones is essential.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/habitat.html">habitat()</a></code> creates a <code>habitat</code> object from an
+<code>sf</code> object. It is an <code>sf</code> table with one row per
+polygon and two extra columns:</p>
+<ul>
+<li>
+<code>habitat</code>: <code>TRUE</code> for a habitat,
+<code>FALSE</code> for a non-habitat,</li>
+<li>
+<code>weight</code>: the weight of the polygon (1 by default).</li>
+</ul>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_10</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_10</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_plot_habitat_10-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">habitat_11</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span></span>
+<p><img src="Tutorial_files/figure-html/build_plot_habitat_10-1.png" class="r-plt" alt="" width="100%"></p>
+<p>The same weight can be given to all polygons:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">habitat_11</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_11</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Simple feature collection with 1 feature and 4 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTIPOLYGON</span></span>
@@ -235,37 +229,38 @@ distinguishing between habitat and non-habitat zones is essential.</p>
 <span><span class="co">#&gt; Projected CRS: RGF93 v1 / Lambert-93</span></span>
 <span><span class="co">#&gt;   habitat weight priority touches                       geometry</span></span>
 <span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<p>Or one value per polygon, for <code>habitat</code> and for
+<code>weight</code>. Random values are used here only to show the
+result:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_12</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span></span>
 <span>  <span class="va">layer_CS2111</span>,</span>
-<span>  habitat<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>,<span class="cn">FALSE</span><span class="op">)</span>, <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span>, replace<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>  weight<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span></span>
+<span>  habitat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>, <span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>  weight <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/dimensions.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span>, <span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_12</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_plot_habitat_12-1.png" class="r-plt" alt="" width="960"></p>
-<p>Another option more convenient use of the function for more complex
-situation, an idea is the use the function <code>add_habitat</code>.</p>
-<p>The <code>add_habitat</code> function is a generic method that adds
-habitat zones to an existing habitat object. It takes as input a hab
-object of class habitat, an <code>sf</code> object <code>sf_data</code>
-containing the geometries to add, and an optional weight parameter
-(defaulting to 1) to assign weights to the new geometries. The function
-checks that <code>sf_data</code> is indeed an <code>sf</code> object,
-then creates a temporary habitat object with the geometries to be added,
-marking them as habitat (<code>habitat = TRUE</code>).</p>
-<p>If the initial <code>hab</code> object is empty, the new object
-becomes the result. Otherwise, the two objects are merged using
-<code><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">dplyr::bind_rows</a></code>, while preserving the habitat class. This
-function is particularly useful for dynamically expanding habitat zones
-in a spatial analysis.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/build_plot_habitat_12-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level3">
+<h3 id="adding-layers-one-by-one">Adding layers one by one<a class="anchor" aria-label="anchor" href="#adding-layers-one-by-one"></a>
+</h3>
+<p>A habitat is often made of several layers. It is then easier to start
+from an empty object and to add the layers one after the other:</p>
+<ul>
+<li>
+<code><a href="../reference/add_habitat.html">add_habitat()</a></code> adds polygons as habitat, with a
+weight,</li>
+<li>
+<code><a href="../reference/add_nohabitat.html">add_nohabitat()</a></code> adds polygons as non-habitat.</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_20</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">habitat_20</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "habitat"    "sf"         "data.frame"</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_21</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_21</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Simple feature collection with 1 feature and 4 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTIPOLYGON</span></span>
@@ -274,10 +269,10 @@ in a spatial analysis.</p>
 <span><span class="co">#&gt; Projected CRS: RGF93 v1 / Lambert-93</span></span>
 <span><span class="co">#&gt;   habitat weight priority touches                       geometry</span></span>
 <span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_22</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS1121</span>, weight<span class="op">=</span><span class="fl">0.4</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS1121</span>, weight <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">layer_CS221</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_22</span><span class="op">)</span></span>
@@ -290,25 +285,24 @@ in a spatial analysis.</p>
 <span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span>
 <span><span class="co">#&gt; 2    TRUE    0.4        2    TRUE MULTIPOLYGON (((698440.6 70...</span></span>
 <span><span class="co">#&gt; 3   FALSE    0.0        3    TRUE MULTIPOLYGON (((698052.4 70...</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_22</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/plot_habitat_22-1.png" class="r-plt" alt="" width="960"></p>
-</div>
-<div class="section level4">
-<h4 id="defining-raster-of-habitat-based-on-a-raster-of-the-ground">Defining raster of habitat based on a raster of the ground<a class="anchor" aria-label="anchor" href="#defining-raster-of-habitat-based-on-a-raster-of-the-ground"></a>
-</h4>
-<p>Here, we download a raster layer with the interpolation of the ground
-concentration of cadmium.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># the raster tif file is internal to the spacemodR package</span></span>
-<span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ground_cd</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/load_ground_cd-1.png" class="r-plt" alt="" width="960"></p>
-<p>Then, it’s the same algorithm to specified habitat and then build
-rasters.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_22</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/plot_habitat_22-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level3">
+<h3 id="the-soil-layer">The soil layer<a class="anchor" aria-label="anchor" href="#the-soil-layer"></a>
+</h3>
+<p>The soil is the first layer of the model: it is where the contaminant
+comes from. The package contains a raster of the cadmium concentration
+in the soil of the site (log10 scale).</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># prepare a list of OSGE code to make life easier</span></span>
-<span><span class="va">OCSGE_codes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ground_cd</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/load_ground_cd-1.png" class="r-plt" alt="" width="100%"></p>
+<p>The habitat of the soil layer is built in the same way as for a
+species. A list of OCS-GE codes makes the selection easier to read.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">OCSGE_codes</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  forest <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS2.1.1.1"</span>, <span class="st">"CS2.1.1.2"</span>, <span class="st">"CS2.1.1.3"</span>, <span class="st">"CS2.1.3"</span><span class="op">)</span>,</span>
 <span>  grass <span class="op">=</span> <span class="st">"CS2.2.1"</span>,</span>
 <span>  water <span class="op">=</span> <span class="st">"CS1.2.2"</span>,</span>
@@ -316,7 +310,8 @@ rasters.</p>
 <span>           <span class="st">"CS2.1.2"</span>,<span class="st">"CS2.1.3"</span>,<span class="st">"CS2.2.1"</span>,<span class="st">"CS2.2.3"</span><span class="op">)</span>,</span>
 <span>  sealed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CS1.1.1.1"</span>, <span class="st">"CS1.1.1.2"</span>, <span class="st">"CS1.1.2.1"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<p>Natural soils are habitat, sealed surfaces are non-habitat.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">layer_soil_natural</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> <span class="va">OCSGE_codes</span><span class="op">$</span><span class="va">soil</span>, <span class="op">]</span></span>
 <span><span class="va">layer_soil_artificial</span> <span class="op">=</span> <span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">ocsge_metaleurop</span><span class="op">$</span><span class="va">code_cs</span> <span class="op"><a href="https://rspatial.github.io/terra/reference/match.html" class="external-link">%in%</a></span> <span class="va">OCSGE_codes</span><span class="op">$</span><span class="va">sealed</span>, <span class="op">]</span></span>
 <span></span>
@@ -324,64 +319,62 @@ rasters.</p>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_soil_natural</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">layer_soil_artificial</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_sol</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_habitat_sol-1.png" class="r-plt" alt="" width="960"></p>
-<div class="section level5">
-<h5 id="converting-vector-landscapes-to-grids-with-habitat_raster">Converting Vector Landscapes to Grids with
-<code>habitat_raster</code><a class="anchor" aria-label="anchor" href="#converting-vector-landscapes-to-grids-with-habitat_raster"></a>
-</h5>
-<p>Once you have assembled your landscape polygons into a habitat object
-( named <code>habitat_sol</code> in the example), the
-<code>habitat_raster</code> function bridges the gap between vector and
-raster formats.</p>
-<p>It uses a reference SpatRaster (named <code>ground_cd</code> in the
-example) to establish the target grid’s resolution, extent, and
-projection (it does not use values). When executed, the function
-seamlessly translates your spatial layers into a continuous surface:
-favorable zones inherit their assigned weight values, while strict
-barriers (defined as non-habitat) are explicitly burned in as
-<code>NA</code>. This approach ensures that standard background areas
-remain passable (defaulting to 0), while true obstacles are
-mathematically excluded, making the final raster perfectly primed for
-downstream connectivity and dispersal modeling.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/build_habitat_sol-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level3">
+<h3 id="from-polygons-to-rasters">From polygons to rasters<a class="anchor" aria-label="anchor" href="#from-polygons-to-rasters"></a>
+</h3>
+<p><code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> converts a <code>habitat</code> object
+into a raster. Its first argument is a reference raster (here
+<code>ground_cd</code>): only its grid is used (resolution, extent and
+projection), not its values. In the result:</p>
+<ul>
+<li>habitat pixels take the weight of their polygon,</li>
+<li>non-habitat pixels are <code>NA</code>,</li>
+<li>all other pixels are 0.</li>
+</ul>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rast_sol</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_sol</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rast_sol</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rast_10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_10</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rast_10</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_raster_habitat-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/build_raster_habitat-1.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">rast_12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_12</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rast_12</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_raster_habitat-2.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/build_raster_habitat-2.png" class="r-plt" alt="" width="100%"></p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">rast_22</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat_raster.html">habitat_raster</a></span><span class="op">(</span><span class="va">ground_cd</span>, <span class="va">habitat_22</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">rast_22</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_raster_habitat-3.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Tutorial_files/figure-html/build_raster_habitat-3.png" class="r-plt" alt="" width="100%"></p>
 </div>
-</div>
-<div class="section level4">
-<h4 id="join-all-rasters-with-a-single-stack">Join all rasters with a single stack<a class="anchor" aria-label="anchor" href="#join-all-rasters-with-a-single-stack"></a>
-</h4>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="section level3">
+<h3 id="one-stack-for-all-layers">One stack for all layers<a class="anchor" aria-label="anchor" href="#one-stack-for-all-layers"></a>
+</h3>
+<p><code><a href="../reference/raster_stack.html">raster_stack()</a></code> joins the rasters in one object, with one
+named layer for the soil and one for each species.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">stack_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/raster_stack.html">raster_stack</a></span><span class="op">(</span></span>
 <span>  raster_list <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">rast_sol</span>, <span class="va">rast_10</span>, <span class="va">rast_12</span>, <span class="va">rast_22</span><span class="op">)</span>,</span>
 <span>  names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sol"</span>, <span class="st">"sp10"</span>, <span class="st">"sp12"</span>, <span class="st">"sp22"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stack_habitat</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/build_stack_raster_habitat-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Tutorial_files/figure-html/build_stack_raster_habitat-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 </div>
-<div class="section level3">
-<h3 id="prepare-trophic_df-a-data-frame-of-trophic-web">Prepare <code>trophic_df</code>: a <code>data.frame</code> of
-trophic web<a class="anchor" aria-label="anchor" href="#prepare-trophic_df-a-data-frame-of-trophic-web"></a>
-</h3>
-<p>You can use a data.frame like this:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="food-web">3. Food web<a class="anchor" aria-label="anchor" href="#food-web"></a>
+</h2>
+<p>The food web says which layer feeds which other layer. Each link goes
+from a resource to a consumer and can have a weight. The names must be
+the names of the layers of the stack.</p>
+<p>A food web can be built from a <code>data.frame</code>:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">df_raw</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  src <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sol"</span>, <span class="st">"sol"</span>, <span class="st">"sp10"</span>, <span class="st">"sp12"</span><span class="op">)</span>,</span>
 <span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sp10"</span>, <span class="st">"sp12"</span>, <span class="st">"sp12"</span>, <span class="st">"sp22"</span><span class="op">)</span>,</span>
@@ -391,7 +384,8 @@ trophic web<a class="anchor" aria-label="anchor" href="#prepare-trophic_df-a-dat
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">trophic_from_df</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  sol sp10 sp12 sp22 </span></span>
 <span><span class="co">#&gt;    1    2    3    4</span></span></code></pre></div>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<p>Or link by link, with <code><a href="../reference/add_link.html">add_link()</a></code>:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trophic_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/trophic.html">trophic</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"sol"</span>, <span class="st">"sp10"</span>, <span class="fl">2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_link.html">add_link</a></span><span class="op">(</span><span class="st">"sol"</span>, <span class="st">"sp12"</span>, <span class="fl">3</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -401,116 +395,134 @@ trophic web<a class="anchor" aria-label="anchor" href="#prepare-trophic_df-a-dat
 <span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">trophic_df</span>, <span class="st">"level"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  sol sp10 sp12 sp22 </span></span>
 <span><span class="co">#&gt;    1    2    3    4</span></span></code></pre></div>
-<p>The trophic web can then be computed:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, shift<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/plot_trophic_web_df_noshift-1.png" class="r-plt" alt="" width="960"></p>
+<p>The attribute <code>level</code> gives the trophic level of each
+layer. The food web must have no cycle.</p>
+<p><code><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot()</a></code> draws the food web. With
+<code>shift = TRUE</code>, the trophic levels are shifted along the
+horizontal axis so that the arrows do not overlap.</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, shift<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/plot_trophic_web_df_shift-1.png" class="r-plt" alt="" width="960"></p>
-</div>
-<div class="section level3">
-<h3 id="spacemodel-merge-a-stack-of-rasters-with-a-trophic-web-linking-rasters">Spacemodel: merge a stack of rasters with a trophic web linking
-rasters<a class="anchor" aria-label="anchor" href="#spacemodel-merge-a-stack-of-rasters-with-a-trophic-web-linking-rasters"></a>
-</h3>
-<p>A <code>spacemodel</code> is a list of two object a raster_stack and
-a trophic_graph: - the <code>raster_stack</code> is a stack of rasters
-using the <code>terra</code> package and the object
-<code>raster_stack</code> - the <code>trophic_graph</code> is a directed
-acyclic graph (DAG) to which we can add <code>weight</code>.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, shift <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/plot_trophic_web_df_noshift-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">spcmdl_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span>, shift <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/plot_trophic_web_df_shift-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="the-spacemodel">4. The spacemodel<a class="anchor" aria-label="anchor" href="#the-spacemodel"></a>
+</h2>
+<p>A <code>spacemodel</code> joins the two objects built above:</p>
+<ul>
+<li>the stack of rasters, one layer for the soil and one for each
+species,</li>
+<li>the food web that links these layers.</li>
+</ul>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">color_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#169E19"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_habitat</span>, col<span class="op">=</span><span class="va">color_habitat</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="960"></p>
-</div>
-</div>
-<div class="section level2">
-<h2 id="spacemodel-for-dispersal">Spacemodel for Dispersal<a class="anchor" aria-label="anchor" href="#spacemodel-for-dispersal"></a>
-</h2>
-<p>Dispersal is independent of trophic link for now since we did not yet
-implemented a dispersal dependent of the potential trophic links.</p>
+<code class="sourceCode R"><span><span class="va">spcmdl_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">stack_habitat</span>, <span class="va">trophic_df</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">k_sp10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">10</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="va">k_sp12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">100</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">0.5</span><span class="op">)</span></span>
-<span><span class="va">k_sp22</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius<span class="op">=</span><span class="fl">200</span>, GSD<span class="op">=</span><span class="fl">25</span>, size_std<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">spcmdl_dispersal</span> <span class="op">&lt;-</span> <span class="va">spcmdl_habitat</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp10"</span>,  method<span class="op">=</span><span class="st">"convolution"</span>,  method_option<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel<span class="op">=</span><span class="va">k_sp10</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp12"</span>,  method<span class="op">=</span><span class="st">"convolution"</span>,  method_option<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel<span class="op">=</span><span class="va">k_sp12</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp22"</span>,  method<span class="op">=</span><span class="st">"convolution"</span>,  method_option<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel<span class="op">=</span><span class="va">k_sp22</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Plot the dispersal object:</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">color_dispersal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#166C9E"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, col<span class="op">=</span><span class="va">color_dispersal</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/plot_spacemodel_dispersal-1.png" class="r-plt" alt="" width="960"></p>
+<code class="sourceCode R"><span><span class="va">color_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#169E19"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_habitat</span>, col <span class="op">=</span> <span class="va">color_habitat</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="spacemodel-for-exposure">Spacemodel for Exposure<a class="anchor" aria-label="anchor" href="#spacemodel-for-exposure"></a>
+<h2 id="dispersal">5. Dispersal<a class="anchor" aria-label="anchor" href="#dispersal"></a>
 </h2>
+<p>Animals use the surroundings of their habitat.
+<code><a href="../reference/dispersal.html">dispersal()</a></code> spreads the habitat of a species around each
+pixel with a dispersal kernel. In this version, dispersal does not
+depend on the food web.</p>
+<p><code><a href="../reference/compute_kernel.html">compute_kernel()</a></code> builds a Gaussian kernel from its
+standard deviation in meters (<code>radius</code>), the pixel size of
+the raster in meters (<code>GSD</code>) and the number of standard
+deviations covered on each side (<code>size_std</code>).</p>
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">k_sp10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius <span class="op">=</span> <span class="fl">10</span>, GSD <span class="op">=</span> <span class="fl">25</span>, size_std <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="va">k_sp12</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius <span class="op">=</span> <span class="fl">100</span>, GSD <span class="op">=</span> <span class="fl">25</span>, size_std <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="va">k_sp22</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compute_kernel.html">compute_kernel</a></span><span class="op">(</span>radius <span class="op">=</span> <span class="fl">200</span>, GSD <span class="op">=</span> <span class="fl">25</span>, size_std <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">spcmdl_dispersal</span> <span class="op">&lt;-</span> <span class="va">spcmdl_habitat</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp10"</span>, method <span class="op">=</span> <span class="st">"convolution"</span>, method_option <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel <span class="op">=</span> <span class="va">k_sp10</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp12"</span>, method <span class="op">=</span> <span class="st">"convolution"</span>, method_option <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel <span class="op">=</span> <span class="va">k_sp12</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/dispersal.html">dispersal</a></span><span class="op">(</span><span class="st">"sp22"</span>, method <span class="op">=</span> <span class="st">"convolution"</span>, method_option <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>kernel <span class="op">=</span> <span class="va">k_sp22</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">color_dispersal</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#166C9E"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, col <span class="op">=</span> <span class="va">color_dispersal</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/plot_spacemodel_dispersal-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="exposure">6. Exposure<a class="anchor" aria-label="anchor" href="#exposure"></a>
+</h2>
+<p>The contaminant now moves from the soil to the species, along the
+links of the food web.</p>
+<p>First, the soil layer receives the cadmium concentration:</p>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">spcmdl_dispersal</span><span class="op">[[</span><span class="st">"sol"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ground_cd</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span><span class="op">[</span><span class="st">"sol"</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/exposure_set_ground_cd-1.png" class="r-plt" alt="" width="960"></p>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<p><img src="Tutorial_files/figure-html/exposure_set_ground_cd-1.png" class="r-plt" alt="" width="100%"></p>
+<p>Each consumer looks for its food around its position. This is
+described by one kernel per layer (<code>NA</code> for the soil, which
+does not move):</p>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">kernels</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  sol  <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  sp10 <span class="op">=</span> <span class="va">k_sp10</span>,</span>
 <span>  sp12 <span class="op">=</span> <span class="va">k_sp12</span>,</span>
 <span>  sp22 <span class="op">=</span> <span class="va">k_sp22</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<p>The links of the food web are stored in the spacemodel:</p>
+<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="st">"trophic_tbl"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;             link weight</span></span>
 <span><span class="co">#&gt; sp10   sol, sp10      2</span></span>
 <span><span class="co">#&gt; sp12   sol, sp12      3</span></span>
 <span><span class="co">#&gt; sp121 sp10, sp12      2</span></span>
 <span><span class="co">#&gt; sp22  sp12, sp22      1</span></span></code></pre></div>
-<div class="sourceCode" id="cb33"><pre class="downlit sourceCode r">
+<p>A flux gives, for each link, how the value of the resource becomes
+the value of the consumer. It is a number (a coefficient) or a formula
+of <code>x</code>, the value of the resource. <code><a href="../reference/flux.html">flux()</a></code> sets a
+default for all links, and <code><a href="../reference/add_flux.html">add_flux()</a></code> changes it for some
+of them. A rule given with <code>from</code> and <code>to</code>
+replaces a rule given with <code>to</code> only.</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">test_fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, default <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># sol to sp10 is a coef 0.4</span></span>
+<span>  <span class="co"># from the soil to sp10: coefficient 0.4</span></span>
 <span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"sol"</span>, to <span class="op">=</span> <span class="st">"sp10"</span>, value <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># General rule: sp12 uptake with factor 0.1 (applies to ALL links to sp12)</span></span>
+<span>  <span class="co"># all links to sp12: coefficient 0.1</span></span>
 <span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>to <span class="op">=</span> <span class="st">"sp12"</span>, value <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># Exception: when sp12 feeds on sp10, it's a square function (overwrites the general rule above)</span></span>
+<span>  <span class="co"># except when sp12 feeds on sp10: a formula</span></span>
 <span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>from <span class="op">=</span> <span class="st">"sp10"</span>, to <span class="op">=</span> <span class="st">"sp12"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">2</span><span class="op">/</span><span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="co"># General rule: sp22 has a complex function</span></span>
+<span>  <span class="co"># all links to sp22: a formula</span></span>
 <span>  <span class="fu"><a href="../reference/add_flux.html">add_flux</a></span><span class="op">(</span>to <span class="op">=</span> <span class="st">"sp22"</span>, value <span class="op">=</span> <span class="op">~</span> <span class="va">x</span><span class="op">^</span><span class="fl">0.1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">spcmdl_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/transfer.html">transfer</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, <span class="va">kernels</span>, <span class="va">test_fluxes</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">color_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
-<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, col<span class="op">=</span><span class="va">color_transfer</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/exposure_spacemodel_plot-1.png" class="r-plt" alt="" width="960"></p>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, col <span class="op">=</span> <span class="va">color_transfer</span><span class="op">)</span></span></code></pre></div>
+<p><img src="Tutorial_files/figure-html/exposure_spacemodel_plot-1.png" class="r-plt" alt="" width="100%"></p>
 </div>
 <div class="section level2">
-<h2 id="spacemodel-for-risk">Spacemodel for Risk<a class="anchor" aria-label="anchor" href="#spacemodel-for-risk"></a>
+<h2 id="risk">7. Risk<a class="anchor" aria-label="anchor" href="#risk"></a>
 </h2>
-<p>Let’s assume we also want to work with the actual values rather than
-the log10 scale.</p>
-<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 1. Compute for all the stack</span></span>
-<span><span class="va">spcmdl_10</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="va">spcmdl_transfer</span></span>
-<span><span class="co"># 2. and then add the  food web to get the real 'spacemodel'</span></span>
-<span><span class="va">spcmdl_10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">spcmdl_10</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, <span class="st">"trophic_tbl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Then, if you have toxicity thresholds (TRV / PNEC) used to calculate
-a Risk Index (Risk Characterization Ratio - RCR), it is highly
-recommended to use a named vector for your thresholds and divide them
-properly:</p>
-<p>Now, we applied the threshold:</p>
+<p>The values are on a log10 scale. To compare them with toxicity
+thresholds, we go back to concentrations. An operation on a spacemodel
+returns a simple stack of rasters, so the food web is attached again
+with <code><a href="../reference/spacemodel.html">spacemodel()</a></code>.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Reference thresholds for each component</span></span>
-<span><span class="va">thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>sol <span class="op">=</span> <span class="fl">1</span>, sp10 <span class="op">=</span> <span class="fl">1.5</span>, sp12 <span class="op">=</span> <span class="fl">1.5</span>, sp22 <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="co"># Align the vector's order with the raster layers' order (very important!)</span></span>
-<span><span class="va">ordered_thresholds</span> <span class="op">&lt;-</span> <span class="va">thresholds</span><span class="op">[</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">spcmdl_10</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="co"># Calculate the risk index: Concentration / Threshold</span></span>
-<span><span class="va">spcmdl_risk</span> <span class="op">&lt;-</span> <span class="va">spcmdl_10</span> <span class="op">/</span> <span class="va">ordered_thresholds</span></span>
-<span><span class="co"># Re-attach the trophic metadata since the division created a new object</span></span>
-<span><span class="va">spcmdl_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">spcmdl_risk</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, <span class="st">"trophic_tbl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">spcmdl_10</span> <span class="op">&lt;-</span> <span class="fl">10</span><span class="op">^</span><span class="va">spcmdl_transfer</span></span>
+<span><span class="va">spcmdl_10</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">spcmdl_10</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, <span class="st">"trophic_tbl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>The risk index of a layer is its concentration divided by its
+toxicity threshold (for example a TRV or a PNEC). An index above 1 means
+that the threshold is exceeded. Give the thresholds as a named vector
+and put them in the order of the layers before the division.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Risk colors</span></span>
-<span><span class="va">breaks_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># thresholds of each layer (invented values)</span></span>
+<span><span class="va">thresholds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>sol <span class="op">=</span> <span class="fl">1</span>, sp10 <span class="op">=</span> <span class="fl">1.5</span>, sp12 <span class="op">=</span> <span class="fl">1.5</span>, sp22 <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
+<span><span class="co"># same order as the layers of the spacemodel</span></span>
+<span><span class="va">ordered_thresholds</span> <span class="op">&lt;-</span> <span class="va">thresholds</span><span class="op">[</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">spcmdl_10</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co"># risk index = concentration / threshold</span></span>
+<span><span class="va">spcmdl_risk</span> <span class="op">&lt;-</span> <span class="va">spcmdl_10</span> <span class="op">/</span> <span class="va">ordered_thresholds</span></span>
+<span><span class="va">spcmdl_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spacemodel.html">spacemodel</a></span><span class="op">(</span><span class="va">spcmdl_risk</span>, <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, <span class="st">"trophic_tbl"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">breaks_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0.1</span>, <span class="fl">0.5</span>, <span class="fl">1</span>, <span class="fl">5</span>, <span class="fl">10</span>, <span class="cn">Inf</span><span class="op">)</span></span>
 <span><span class="va">cols_risk</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"darkgreen"</span>,   <span class="co"># 0 - 0.1</span></span>
 <span>  <span class="st">"green"</span>,       <span class="co"># 0.1 - 0.5</span></span>
@@ -519,11 +531,18 @@ properly:</p>
 <span>  <span class="st">"saddlebrown"</span>, <span class="co"># 5 - 10</span></span>
 <span>  <span class="st">"#4A2C2A"</span>      <span class="co"># &gt; 10</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co"># And plot</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_risk</span>,</span>
 <span>            breaks <span class="op">=</span> <span class="va">breaks_risk</span>,</span>
 <span>            col <span class="op">=</span> <span class="va">cols_risk</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tutorial_files/figure-html/risk-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Tutorial_files/figure-html/risk-1.png" class="r-plt" alt="" width="100%"></p>
+</div>
+<div class="section level2">
+<h2 id="going-further">Going further<a class="anchor" aria-label="anchor" href="#going-further"></a>
+</h2>
+<p>The articles of the <a href="https://qonfluens.github.io/spacemodR/">package website</a> give
+more details on each step: soil maps by kriging, habitat layers and
+their data sources, connectivity with Omniscape, food intake, and the
+estimation of transfer parameters from field data.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

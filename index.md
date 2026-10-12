@@ -4,99 +4,58 @@
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Spatially Explicit Modeling of Habitats, Trophic Webs, Dispersal,
-Exposure, and Ecological Risk**
+**Spatial environmental risk assessment through food webs**
 
-`spacemodR` is an R package designed for spatial ecological risk
-assessment (ERA). It integrates habitat mapping, trophic networks (food
-webs), animal dispersal, and contaminant exposure to build complex
-“spacemodels.” By linking geographic data (rasters, vectors) with
-biological and ecological interactions, it allows researchers and risk
-assessors to map the flow of elements (such as food, energy, or
-contaminants) across ecosystems.
+`spacemodR` is an R package for the ecological risk assessment of
+contaminated sites. It starts from a map of soil contamination and
+follows the contaminant through the food web, taking into account where
+each species lives and how it moves. The result is a set of maps:
+habitat, exposure and risk for each species.
 
-------------------------------------------------------------------------
+Full documentation: <https://qonfluens.github.io/spacemodR/>
 
-## 🌱 The SPACEMOD Project
+## What the package does
 
-This package is the core computational engine of the **SPACEMOD**
-project, funded by the French ecological transition agency (**ADEME**)
-under the *IMPACTS 2023* call for projects.
+The package covers the steps of a spatial risk assessment:
 
-With the discontinuation of historical ERA software (like TerraSys or
-BERISP), there was a critical need for a modern, generic tool dedicated
-to Ecological Risk Assessment for contaminated sites and soils (SSP).
-The SPACEMOD project aims to fill this gap by developing a spatially
-explicit tool to model multi-exposures and chemical mixture impacts in
-trophic webs.
+1.  **Soil contamination.** Build a soil concentration raster from
+    sampling points, by kriging or by kernel smoothing.
+2.  **Habitat.** Turn land cover maps (OCS-GE for France, EUNIS for
+    Europe) into habitat rasters, with a weight for each species.
+3.  **Food web.** Describe who eats whom as a directed acyclic graph,
+    with a weight on each link.
+4.  **Dispersal.** Spread each species around its habitat with a
+    dispersal kernel, or with circuit theory (Omniscape, which requires
+    Julia).
+5.  **Exposure and transfer.** Move the contaminant from the soil to
+    each species along the links of the food web.
+6.  **Risk.** Compare the exposure maps with toxicity thresholds to map
+    the risk.
 
-**Project Partners:** \* **UMR Chrono-environnement (CNRS / Université
-de Franche-Comté)** - *Project Coordinator (Pr. Renaud Scheifler)* \*
-**Qonfluens SAS** \* **UK Centre for Ecology & Hydrology (UKCEH)**
+The package also provides Bayesian models (written in Stan) to estimate
+transfer parameters from field data.
 
-You can find more information about the project on the [ADEME research
-portal](https://recherche.ademe.fr/spacemod) or the
-[Chrono-environnement
-website](https://chrono-environnement.univ-fcomte.fr/project/spacemod/).
+## Installation
 
-------------------------------------------------------------------------
-
-## 🚀 What can you do with `spacemodR`?
-
-The package provides a complete workflow to move from raw landscape data
-to risk indices: 1. **Habitat Construction:** Convert vector shapefiles
-(e.g., OCS-GE) into high-resolution habitat raster grids based on
-species-specific preferences and weights. 2. **Trophic Web Modeling:**
-Define Directed Acyclic Graphs (DAGs) representing predation and
-herbivory flows across the ecosystem. 3. **Dispersal & Connectivity:**
-Simulate animal movement and flow using advanced dispersal kernels or
-circuit theory (via integration with Julia’s **Omniscape** algorithm).
-4. **Exposure & Transfer:** Calculate Daily Food Intake (DFI) and model
-the bioaccumulation and transfer of contaminants (e.g., Cadmium, Lead,
-Zinc) through the food web. 5. **Risk Mapping:** Generate spatially
-explicit risk maps (e.g., Eco-SSL indices) to identify critical
-hot-spots of ecotoxicological concern.
-
-------------------------------------------------------------------------
-
-## 📚 Integrated Databases
-
-To facilitate parameterization, `spacemodR` workflows rely on
-standardized ecological and physiological databases: \* **FmrBT:**
-Database of Field Metabolic Rates (FMR), body mass, and ambient
-temperature for over 700 species (De Castro et al., 2025). \*
-**EltonTraits 1.0 / MammalBase:** Functional traits and precise dietary
-partitioning (percentages of invertebrates, seeds, vertebrates, etc.)
-for birds and mammals. \* **GARD Initiative:** Global Assessment of
-Reptile Distributions and traits. \* **TRY Plant Trait Database:** Lower
-Calorific Value (LCV) data for plant energy density. \* **Add-my-pet:**
-Dynamic energy budget models and parameters (e.g., $`\xi_{WE}`$).
-
-------------------------------------------------------------------------
-
-## 📦 Installation
-
-`spacemodR` is not on CRAN yet. Install it from GitHub using one of the
-methods below.
-
-**System requirements:** `sf` and `terra` need GDAL, PROJ and GEOS
-(already bundled in the CRAN binaries for Windows and macOS). The
-package includes compiled Stan models, so building from source needs a
-C++ toolchain ([Rtools](https://cran.r-project.org/bin/windows/Rtools/)
-on Windows, Xcode command line tools on macOS) and takes a few minutes.
-
-### 1. From GitHub with `remotes` (recommended)
+Install the development version from GitHub:
 
 ``` r
 
 # install.packages("remotes")
 remotes::install_github("Qonfluens/spacemodR")
 
-# or a specific release
+# or a given release
 remotes::install_github("Qonfluens/spacemodR@v0.3.0")
 ```
 
-### 2. From a GitHub release (pre-built packages)
+**System requirements.** `sf` and `terra` need GDAL, PROJ and GEOS. They
+are already included in the CRAN binaries of these packages for Windows
+and macOS. `spacemodR` contains compiled Stan models, so installing it
+from source needs a C++ compiler
+([Rtools](https://cran.r-project.org/bin/windows/Rtools/) on Windows,
+Xcode command line tools on macOS) and takes a few minutes.
+
+### Pre-built packages
 
 Each [release](https://github.com/Qonfluens/spacemodR/releases)
 provides:
@@ -106,42 +65,152 @@ provides:
 - `spacemodR_<version>.zip`: Windows binary (no compiler needed),
 - `spacemodR_<version>.tgz`: macOS binary (no compiler needed).
 
-Binaries are built with the current R release; use the source package
-with older R versions. Download the file for your platform, then:
+Binaries are built with the current R release. With an older R version,
+use the source package. Download the file for your platform, then:
 
 ``` r
 
-# dependencies first (binaries do not install them)
+# install the dependencies first (binaries do not install them)
 install.packages(c("dplyr", "ggplot2", "httr", "patchwork", "Rcpp", "rlang",
                    "rstan", "rstantools", "sf", "terra"))
 
 # source package
-install.packages("path/to/spacemodR_0.3.0.tar.gz", repos = NULL, type = "source")
+install.packages("path/to/spacemodR_<version>.tar.gz", repos = NULL, type = "source")
 # Windows binary
-install.packages("path/to/spacemodR_0.3.0.zip", repos = NULL, type = "win.binary")
+install.packages("path/to/spacemodR_<version>.zip", repos = NULL, type = "win.binary")
 # macOS binary
-install.packages("path/to/spacemodR_0.3.0.tgz", repos = NULL, type = "binary")
+install.packages("path/to/spacemodR_<version>.tgz", repos = NULL, type = "binary")
 ```
 
-### 3. Via Docker
+### Docker
 
-A Dockerfile is provided to ensure a fully reproducible environment with
-all system dependencies (including Julia for Omniscape) pre-configured.
+The repository contains a Dockerfile with all system dependencies,
+including Julia for Omniscape.
 
 ``` bash
-# Build the image locally
+# build the image
 docker build -t spacemodr .
 
-# Run the container (with RStudio Server accessible on port 8787)
+# run the container (RStudio Server on port 8787)
 docker run --rm -ti \
   -p 8787:8787 \
   -e PASSWORD=yourpassword \
   spacemodr
 ```
 
-### Releasing a new version (For Maintainers)
+## A short example
 
-1.  Bump `Version:` in `DESCRIPTION` and add a section to `NEWS.md`.
+The example below builds two habitat layers, links them in a food web
+and transfers cadmium from the soil to a consumer.
+
+``` r
+
+library(spacemodR)
+
+# data shipped with the package: land cover and soil cadmium (log10 scale)
+data(ocsge_metaleurop)
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+
+# 1. habitats: all the area for the soil, herbaceous cover for the consumer
+hab_soil <- habitat() |> add_habitat(ocsge_metaleurop)
+hab_vole <- habitat() |>
+  add_habitat(ocsge_metaleurop[ocsge_metaleurop$code_cs == "CS2.2.1", ])
+
+stack <- raster_stack(
+  list(habitat_raster(ground_cd, hab_soil), habitat_raster(ground_cd, hab_vole)),
+  names = c("soil", "vole")
+)
+
+# 2. food web: the consumer takes up the contaminant from the soil
+web <- trophic() |> add_link("soil", "vole")
+
+# 3. spacemodel: the rasters and the food web together
+model <- spacemodel(stack, web)
+model[["soil"]][] <- ground_cd
+
+# 4. transfer along the food web, with a Gaussian foraging kernel (sd = 200 m)
+kernels <- list(soil = NA, vole = compute_kernel(radius = 200, GSD = 25))
+fluxes <- flux(model) |> add_flux(from = "soil", to = "vole", value = 0.5)
+exposure <- transfer(model, kernels, fluxes)
+
+terra::plot(exposure)
+```
+
+## Documentation
+
+- [Quick
+  start](https://qonfluens.github.io/spacemodR/articles/Getting_Started_EN.html)
+  (also [in
+  French](https://qonfluens.github.io/spacemodR/articles/Getting_Started_FR.html))
+- [Tutorial](https://qonfluens.github.io/spacemodR/articles/Tutorial.html):
+  the whole workflow, step by step
+- Guides: [soil maps by
+  kriging](https://qonfluens.github.io/spacemodR/articles/core_Soil_Kriging.html),
+  [habitat
+  layers](https://qonfluens.github.io/spacemodR/articles/core_Habitat.html),
+  [habitat data
+  sources](https://qonfluens.github.io/spacemodR/articles/core_Habitat_Sources.html),
+  [connectivity with
+  Omniscape](https://qonfluens.github.io/spacemodR/articles/core_Omniscape_Connectivity.html),
+  [food
+  intake](https://qonfluens.github.io/spacemodR/articles/core_Food_Intake.html)
+- Parameter estimation: [soil to target
+  transfers](https://qonfluens.github.io/spacemodR/articles/stats_Inference_Direct.html),
+  [trophic
+  transfers](https://qonfluens.github.io/spacemodR/articles/stats_Inference_Trophic.html)
+- [Function
+  reference](https://qonfluens.github.io/spacemodR/reference/index.html)
+  and [change
+  log](https://qonfluens.github.io/spacemodR/news/index.html)
+
+## Data included
+
+| Dataset | Content |
+|----|----|
+| `soil_metaleurop` | Cd, Pb and Zn in 595 soil samples around the former Metaleurop smelter (France) |
+| `roi_metaleurop`, `ocsge_metaleurop`, `ocsge_us_metaleurop` | Study area and OCS-GE land cover of the Metaleurop site |
+| `ref_ocsge`, `ref_eunis`, `ref_ocsge_eunis` | OCS-GE and EUNIS nomenclatures, and the correspondence between them |
+| `ocsge_species_dict`, `eunis_species_dict` | Habitat scores of species for each land cover class |
+| `FmrBT` | Field metabolic rates, body mass and temperature |
+| `DBFunc_BirdFuncDat`, `DBFunc_MamFuncDat` | Diet and functional traits of birds and mammals (EltonTraits 1.0) |
+| `SSD_ecoSSL_all` | Eco-SSL toxicity data for several taxonomic groups |
+| `bappet_cd`, `earthworm_cd`, `sf_micromammals` | Cadmium in soil, plants, earthworms and small mammals |
+
+See the help page of each dataset for its source and its license.
+
+## The SPACEMOD project
+
+`spacemodR` is developed within the **SPACEMOD** project, funded by the
+French agency for ecological transition (ADEME), call for projects
+*IMPACTS 2023*.
+
+Older software for ecological risk assessment, such as TerraSys or
+BERISP, is no longer maintained. SPACEMOD develops a new, generic and
+spatially explicit tool for contaminated sites and soils, able to handle
+several exposure routes and mixtures of chemicals in food webs.
+
+Partners:
+
+- UMR Chrono-environnement (CNRS / Université de Franche-Comté), project
+  coordinator (Pr. Renaud Scheifler)
+- Qonfluens SAS
+- UK Centre for Ecology & Hydrology (UKCEH)
+
+More information on the [ADEME research
+portal](https://recherche.ademe.fr/spacemod) and on the
+[Chrono-environnement
+website](https://chrono-environnement.univ-fcomte.fr/project/spacemod/).
+
+## Getting help
+
+Please report bugs and ask questions on the [issue
+tracker](https://github.com/Qonfluens/spacemodR/issues).
+
+## For maintainers
+
+### Release a new version
+
+1.  Update `Version:` in `DESCRIPTION` and add a section to `NEWS.md`.
 
 2.  Commit and push to `main`, then tag the commit and push the tag:
 
@@ -150,30 +219,22 @@ docker run --rm -ti \
     git push origin v0.3.0
     ```
 
-3.  The `.github/workflows/release.yaml` workflow builds the source
-    package and the Windows/macOS binaries and attaches them to a new
-    GitHub release. The tag must match the `DESCRIPTION` version,
+3.  The workflow `.github/workflows/release.yaml` builds the source
+    package and the Windows and macOS binaries, and attaches them to a
+    new GitHub release. The tag must match the version in `DESCRIPTION`,
     otherwise the workflow stops.
 
-### Note on Git LFS (For Contributors)
+### Large files
 
-To track large data files (like rasters or fitted models) in the
-repository, we use `git lfs`. Before using `git add` on a large file,
-ensure it is tracked:
+Large files such as fitted models are tracked with `git lfs`. Before
+adding a new large file, track it:
 
 ``` bash
 git lfs track "raw_data/new_fit.rda"
 ```
 
-------------------------------------------------------------------------
+## License
 
-## 📄 License
-
-`spacemodR` is released under the **MIT License**. This is a permissive
-free software license that allows you to use, copy, modify, merge,
-publish, distribute, sublicense, and/or sell copies of the software,
-provided that the original copyright notice and permission notice are
-included in all copies or substantial portions of the software.
-
-See the [LICENSE](https://qonfluens.github.io/spacemodR/LICENSE.md) file
-for full details.
+`spacemodR` is released under the MIT license. See the
+[LICENSE](https://github.com/Qonfluens/spacemodR/blob/main/LICENSE.md)
+file.

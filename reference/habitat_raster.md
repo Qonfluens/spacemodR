@@ -84,8 +84,8 @@ solution is a finer `ground_raster`.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 library(terra)
+#> terra 1.9.50
 library(sf)
 
 # Create a dummy reference raster
@@ -104,6 +104,7 @@ my_habitat <- habitat() |>
 hab_rast <- habitat_raster(ref_grid, my_habitat)
 plot(hab_rast)
 
+
 # A hedgerow kept continuous across the exclusion zone, whatever the order
 # in which the layers are added
 hedge <- st_sf(geometry = st_sfc(st_linestring(cbind(c(0, 10), c(0.2, 9.7)))))
@@ -112,5 +113,4 @@ my_habitat <- habitat() |>
   add_habitat(good_hab, weight = 0.8, priority = 1, touches = FALSE) |>
   add_nohabitat(bad_hab, priority = 2)
 plot(habitat_raster(ref_grid, my_habitat))
-} # }
 ```

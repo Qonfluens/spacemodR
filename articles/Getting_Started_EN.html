@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
 </li>
@@ -144,7 +145,7 @@ for visualization.</p>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsf.html" class="external-link">geom_sf</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">roi_metaleurop</span>, fill<span class="op">=</span><span class="cn">NA</span>, color<span class="op">=</span><span class="st">"red"</span>, size<span class="op">=</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>title<span class="op">=</span><span class="st">"Land Cover in the Region of Interest (ROI)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/load_roi-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/load_roi-1.png" class="r-plt" alt="" width="100%"></p>
 <p>From these vector polygons, we define <strong>habitats</strong> for
 our species. A habitat is a combination of favorable, unfavorable, or
 neutral zones. These geometries are then rasterized (converted into
@@ -165,7 +166,7 @@ regular grids) to prepare them for modeling.</p>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_natural</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_soil_artificial</span>,<span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_sol</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/map_sol-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/map_sol-1.png" class="r-plt" alt="" width="100%"></p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_plante</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span><span class="op">[</span><span class="va">layer_plant</span>,<span class="op">]</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -177,13 +178,13 @@ reptiles, and 85 amphibians.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">microtus_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Microtus_arvalis"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/map_hab_microtus-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/map_hab_microtus-1.png" class="r-plt" alt="" width="100%"></p>
 <p>… and the greater white-toothed shrew (<em>Crocidura
 russula</em>):</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">crocidura_hab</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/join_ocsge_species.html">join_ocsge_species</a></span><span class="op">(</span><span class="va">ocsge_metaleurop</span>, <span class="st">"Crocidura"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_species_habitat.html">plot_species_habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/map_hab_crocidura-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/map_hab_crocidura-1.png" class="r-plt" alt="" width="100%"></p>
 <p>To understand the 3 maps in detail, please refer to the
 <strong>Habitat</strong> page. Briefly:</p>
 <ul>
@@ -225,7 +226,7 @@ all the layers.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">stack_habitat</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="100%"></p>
 <hr>
 </div>
 <div class="section level2">
@@ -244,7 +245,7 @@ energy (or contaminants).</p>
 <span></span>
 <span><span class="co"># Visualize the trophic links</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">trophic_df</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/trophic_web-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/trophic_web-1.png" class="r-plt" alt="" width="100%"></p>
 <hr>
 </div>
 <div class="section level2">
@@ -319,7 +320,7 @@ bioaccumulation up to the top of the food chain using the
 <span><span class="co"># Visualize the contamination absorbed by the carnivore</span></span>
 <span><span class="va">color_transfer</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"white"</span>, <span class="st">"#A33D0A"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">255</span><span class="op">)</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">spcmdl_transfer</span>, col<span class="op">=</span><span class="va">color_transfer</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/transfer-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/transfer-1.png" class="r-plt" alt="" width="100%"></p>
 <hr>
 </div>
 <div class="section level2">
@@ -350,7 +351,7 @@ exceeded.</p>
 <span>            breaks <span class="op">=</span> <span class="va">breaks_risk</span>,</span>
 <span>            col <span class="op">=</span> <span class="va">cols_risk</span>,</span>
 <span>            main <span class="op">=</span> <span class="st">"Risk Index Map (Herbivore)"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Getting_Started_EN_files/figure-html/eco_ssl_risk-1.png" class="r-plt" alt="" width="960"></p>
+<p><img src="Getting_Started_EN_files/figure-html/eco_ssl_risk-1.png" class="r-plt" alt="" width="100%"></p>
 <hr>
 </div>
 <div class="section level2">

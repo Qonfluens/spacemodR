@@ -1,7 +1,7 @@
 # The 'spacemodR' package.
 
-Workflow for Environmental Risk Assessment: Habitat, Food Web,
-Dispersal, Exposure and Risk. A set of function for
+Workflow for spatially explicit environmental risk assessment: habitat,
+food web, dispersal, exposure and risk.
 
 ## References
 

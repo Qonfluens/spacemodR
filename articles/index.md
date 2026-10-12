@@ -4,6 +4,8 @@
 
 - [Food Intake
   Rate](https://qonfluens.github.io/spacemodR/articles/core_Food_Intake.md):
+- [Species Occurrences
+  (GBIF)](https://qonfluens.github.io/spacemodR/articles/core_GBIF_Occurrences.md):
 - [Habitat Data
   Sources](https://qonfluens.github.io/spacemodR/articles/core_Habitat_Sources.md):
 - [Habitat and

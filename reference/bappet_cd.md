@@ -1,6 +1,6 @@
-# Data concentration Cd Soil - Veetation extracted from BAPPET
+# Data concentration Cd Soil - Vegetation extracted from BAPPET
 
-Data concentration Cd Soil - Veetation extracted from BAPPET
+Data concentration Cd Soil - Vegetation extracted from BAPPET
 
 ## Usage
 

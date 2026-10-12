@@ -21,7 +21,7 @@ simply copy neighbours are penalised."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,6 +41,7 @@ simply copy neighbours are penalised."></head><body>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
 <li class="nav-item dropdown">
@@ -178,8 +179,8 @@ Gaussian kernel exactly at the left-out points instead of on a raster.</p></dd>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">soil_metaleurop</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu">cv_soil</span><span class="op">(</span><span class="va">soil_metaleurop</span>, <span class="st">"cd"</span>, model <span class="op">=</span> <span class="st">"Exp"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cv</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        RMSE       MAE         bias        R2   n</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.2506923 0.1622391 0.0001610769 0.6025171 587</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        RMSE       MAE         bias       R2   n</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 0.2506923 0.1622391 0.0001610785 0.602517 587</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

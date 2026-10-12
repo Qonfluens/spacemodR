@@ -3,6 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   articles/core_Food_Intake: core_Food_Intake.html
+  articles/core_GBIF_Occurrences: core_GBIF_Occurrences.html
   articles/core_Habitat_Sources: core_Habitat_Sources.html
   articles/core_Habitat: core_Habitat.html
   articles/core_Omniscape_Connectivity: core_Omniscape_Connectivity.html
@@ -15,7 +16,7 @@ articles:
   articles/zoo_Berisp_full: zoo_Berisp_full.html
   articles/zoo_ecossl: zoo_ecossl.html
   articles/zoo_Soil_Target: zoo_Soil_Target.html
-last_built: 2026-10-12T12:54Z
+last_built: 2026-10-12T15:40Z
 urls:
   reference: https://qonfluens.github.io/spacemodR/reference
   article: https://qonfluens.github.io/spacemodR/articles

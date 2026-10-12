@@ -2,11 +2,11 @@
 
 ## Authors
 
-- **Virgile Baudrot**. Author, maintainer.
+- **Virgile Baudrot**. Author, maintainer, copyright holder.
 
 - **Léa Bariod**. Contributor.
 
-- **Clémentine Fritsch**. Contributor.
+- **Clémentine Fritsch**. Contributor, copyright holder.
 
 - **Renaud Scheifler**. Contributor.
 
@@ -15,14 +15,14 @@
 Source:
 [`DESCRIPTION`](https://github.com/Qonfluens/spacemodR/blob/main/DESCRIPTION)
 
-Baudrot V (2026). *spacemodR: Workflow for Environmental Risk
-Assessment: Habitat, Food Web, Dispersal, Exposure and Risk*. R package
-version 0.3.0, <https://github.com/Qonfluens/spacemodR>.
+Baudrot V (2026). *spacemodR: Spatial Environmental Risk Assessment
+Through Food Webs*. R package version 0.3.5,
+<https://github.com/Qonfluens/spacemodR>.
 
     @Manual{,
-      title = {spacemodR: Workflow for Environmental Risk Assessment: Habitat, Food Web, Dispersal, Exposure and Risk},
+      title = {spacemodR: Spatial Environmental Risk Assessment Through Food Webs},
       author = {Virgile Baudrot},
       year = {2026},
-      note = {R package version 0.3.0},
+      note = {R package version 0.3.5},
       url = {https://github.com/Qonfluens/spacemodR},
     }

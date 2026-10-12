@@ -21,8 +21,8 @@ to another.
 
 | Source | Extent | Resolution | Classes | Dictionary | Get the data |
 |----|----|----|----|----|----|
-| OCS-GE, cover (`CS`) | France | vector, about 1:5,000 | 14 | `ocsge_species_dict`, rows with `code_us = NA` | [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md) |
-| OCS-GE, cover and use (`CS` x `US`) | France | vector, about 1:5,000 | 14 covers, refined for 47 (cover, use) pairs | `ocsge_species_dict`, rows with a `code_us` | [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md) |
+| OCS-GE, cover (`CS`) | France | vector, about 1:5,000 | 14 | `ocsge_species_dict`, rows with `code_us = NA` | [`get_ocsge()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md) |
+| OCS-GE, cover and use (`CS` x `US`) | France | vector, about 1:5,000 | 14 covers, refined for 47 (cover, use) pairs | `ocsge_species_dict`, rows with a `code_us` | [`get_ocsge()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md) |
 | EUNIS Level 2 | 39 EEA countries | raster, 100 m | 45 | `eunis_species_dict` | [`get_eunis_data()`](https://qonfluens.github.io/spacemodR/reference/get_eunis_data.md) |
 
 The table `ref_ocsge_eunis` links the OCS-GE and EUNIS nomenclatures.
@@ -181,6 +181,24 @@ ref_ocsge[, c("code_cs", "nomenclature")]
 #> 12   CS2.1.3             Autres formations ligneuses
 #> 13   CS2.2.1                    Formations herbacées
 #> 14   CS2.2.2         Autres formations non ligneuses
+```
+
+The examples below use the layers shipped with the package. For another
+site,
+[`get_ocsge()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md)
+returns the polygons of a region of interest, with their `CS` and `US`
+codes. It reads them either from the download service of IGN, which
+publishes one GeoPackage per department and vintage, or from a
+FlatGeobuf file that you host.
+
+``` r
+
+# IGN: the departments of the ROI are downloaded once, then read from a cache
+ocsge_site <- get_ocsge(roi_metaleurop, source = "ign", year = 2021)
+
+# FlatGeobuf: only the features of the ROI are downloaded
+ocsge_site <- get_ocsge(roi_metaleurop, source = "fgb",
+                        fgb_url = "https://example.com/data/ocsge_france.fgb")
 ```
 
 [`join_ocsge_species()`](https://qonfluens.github.io/spacemodR/reference/join_ocsge_species.md)
@@ -359,7 +377,9 @@ surroundings.
 [`get_eunis_data()`](https://qonfluens.github.io/spacemodR/reference/get_eunis_data.md)
 downloads the EUNIS raster for any region of interest from the EEA map
 service. To keep this guide reproducible offline, the Metaleurop layer
-is shipped with the package; it was produced with:
+is kept in the source repository
+(`inst/extdata/eunis_metaleurop_L2.tif`, read here with a small helper,
+`load_raster_repo()`); it was produced with:
 
 ``` r
 
@@ -372,7 +392,7 @@ eunis_lc <- get_eunis_data(roi_metaleurop, level = "L2", resolution = 100)
 data("ref_eunis")
 ref_l2 <- ref_eunis %>% filter(level == "L2") %>% select(code, nomenclature, couleur)
 
-eunis_lc <- load_raster_extdata("eunis_metaleurop_L2.tif")
+eunis_lc <- load_raster_repo("eunis_metaleurop_L2.tif")
 lv <- terra::levels(eunis_lc)[[1]]
 names(lv) <- c("value", "code")
 lv %>% left_join(ref_l2, by = "code") %>% select(code, nomenclature)

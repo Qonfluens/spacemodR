@@ -6,6 +6,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Getting_Started_FR.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Tutorial.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Food_Intake.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/articles/core_GBIF_Occurrences.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Habitat_Sources.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Omniscape_Connectivity.html</loc></url>
@@ -43,7 +44,10 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/flux.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/get_departements_for_roi.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/get_eunis_data.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/get_gbif_data.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/get_ocsge.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_ign.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/habitat_raster.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/index.html</loc></url>

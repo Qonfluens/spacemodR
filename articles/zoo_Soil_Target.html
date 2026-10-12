@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">spacemodR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
+    <li><a class="dropdown-item" href="../articles/core_GBIF_Occurrences.html">Species Occurrences (GBIF)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
 </li>
@@ -97,11 +98,14 @@ centered around a former lead smelter. Soil levels around the plant are
 relatively high.</p>
 <p>Below are the extrapolated contamination maps for Cadmium (Cd), Lead
 (Pb), and Zinc (Zn) in the soil, derived from 595 sampling points (the
-extrapolation methodology is not covered in this vignette).</p>
+extrapolation methodology is not covered in this vignette). The cadmium
+map is shipped with the package; the lead and zinc maps are kept in the
+source repository (<code>inst/extdata</code>) and read with a small
+helper, <code>load_raster_repo()</code>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ground_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_cd_compressed.tif"</span><span class="op">)</span></span>
-<span><span class="va">ground_pb</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_pb_compressed.tif"</span><span class="op">)</span></span>
-<span><span class="va">ground_zn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_raster_extdata.html">load_raster_extdata</a></span><span class="op">(</span><span class="st">"ground_concentration_zn_compressed.tif"</span><span class="op">)</span></span>
+<span><span class="va">ground_pb</span> <span class="op">&lt;-</span> <span class="fu">load_raster_repo</span><span class="op">(</span><span class="st">"ground_concentration_pb_compressed.tif"</span><span class="op">)</span></span>
+<span><span class="va">ground_zn</span> <span class="op">&lt;-</span> <span class="fu">load_raster_repo</span><span class="op">(</span><span class="st">"ground_concentration_zn_compressed.tif"</span><span class="op">)</span></span>
 <span><span class="va">ground</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>cd<span class="op">=</span><span class="va">ground_cd</span>, pb<span class="op">=</span><span class="va">ground_pb</span>, zn<span class="op">=</span><span class="va">ground_zn</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">ground</span><span class="op">)</span></span></code></pre></div>

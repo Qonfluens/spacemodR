@@ -4,6 +4,19 @@
 
 ### New Features & Improvements
 
+- **Species occurrences from GBIF:** new function
+  [`get_gbif_data()`](https://qonfluens.github.io/spacemodR/reference/get_gbif_data.md),
+  which downloads the occurrence records of a species for a region of
+  interest with the public GBIF search API (no account needed) and
+  returns them as `sf` points.
+- New article “Species Occurrences (GBIF)”, which compares the records
+  of the wood mouse (*Apodemus sylvaticus*) with its habitat scores from
+  EUNIS and OCS-GE.
+
+## spacemodR 0.3.5
+
+### New Features & Improvements
+
 - **Stacking order of habitat layers:**
   [`habitat()`](https://qonfluens.github.io/spacemodR/reference/habitat.md),
   [`add_habitat()`](https://qonfluens.github.io/spacemodR/reference/add_habitat.md)
@@ -31,6 +44,17 @@
   now accepts points, lines and polygons in the same `habitat` object.
 - The “Habitat Layer” article explains `priority` and `touches` on a
   watercourse of the Metaleurop landscape.
+- **OCS-GE from IGN:** new function
+  [`get_ocsge()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md),
+  a single entry point to get the OCS-GE of a region of interest, with a
+  `source` argument. `source = "ign"` calls the new
+  [`get_ocsge_data_ign()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_ign.md),
+  which downloads the per-department GeoPackages of the IGN
+  Géoplateforme (no API key), keeps them in a cache directory and lets
+  you choose the vintage with `year`. `source = "fgb"` calls
+  [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md),
+  unchanged. Extracting the IGN archives needs the `archive` package or
+  the `7z` command line tool.
 - **OCS-GE / EUNIS crosswalk:** new dataset `ref_ocsge_eunis`, a ranked
   correspondence between the 14 OCS-GE cover classes (`CS`), optionally
   refined by land use (`US`), and the 45 EUNIS Level 2 classes, with the
@@ -83,6 +107,21 @@
   is now georeferenced before being read. The Metaleurop layer shipped
   in `inst/extdata/eunis_metaleurop_L2.tif` was rebuilt; rasters
   obtained with earlier versions must be downloaded again.
+
+### Packaging
+
+- Preparation of the CRAN submission: shorter package title,
+  [`get_eunis_data()`](https://qonfluens.github.io/spacemodR/reference/get_eunis_data.md)
+  now takes `service_url = NULL` by default (the EEA service, as
+  before), the examples of
+  [`habitat_raster()`](https://qonfluens.github.io/spacemodR/reference/habitat_raster.md)
+  and [`plot()`](https://rspatial.github.io/terra/reference/plot.html)
+  for habitat objects are run, and the vignette figures are lighter.
+- [`calibrate_simple()`](https://qonfluens.github.io/spacemodR/reference/calibrate_simple.md)
+  checked for the wrong compiled model before sampling.
+- `dispersal(method = "omniscape")` reports its progress with
+  [`message()`](https://rdrr.io/r/base/message.html) instead of
+  [`cat()`](https://rdrr.io/r/base/cat.html).
 
 ## spacemodR 0.3.0
 

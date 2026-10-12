@@ -21,7 +21,7 @@
 - [`apply_flux()`](https://qonfluens.github.io/spacemodR/reference/apply_flux.md)
   : Apply trophic flux from a resource layer
 - [`bappet_cd`](https://qonfluens.github.io/spacemodR/reference/bappet_cd.md)
-  : Data concentration Cd Soil - Veetation extracted from BAPPET
+  : Data concentration Cd Soil - Vegetation extracted from BAPPET
 - [`calibrate_direct()`](https://qonfluens.github.io/spacemodR/reference/calibrate_direct.md)
   : Calibrate direct transfer model
 - [`calibrate_simple()`](https://qonfluens.github.io/spacemodR/reference/calibrate_simple.md)
@@ -49,8 +49,14 @@
 - [`get_eunis_data()`](https://qonfluens.github.io/spacemodR/reference/get_eunis_data.md)
   : Efficiently retrieve EUNIS land cover data from the EEA Ecosystem
   Type Map
+- [`get_gbif_data()`](https://qonfluens.github.io/spacemodR/reference/get_gbif_data.md)
+  : Retrieve species occurrences from GBIF
+- [`get_ocsge()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md)
+  : Retrieve OCS GE data for a region of interest
 - [`get_ocsge_data_fgb()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_fgb.md)
   : Efficiently retrieve OCS GE data from a remote FlatGeobuf
+- [`get_ocsge_data_ign()`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_ign.md)
+  : Retrieve OCS GE data from the IGN Géoplateforme
 - [`habitat()`](https://qonfluens.github.io/spacemodR/reference/habitat.md)
   : Create a Habitat object
 - [`habitat_raster()`](https://qonfluens.github.io/spacemodR/reference/habitat_raster.md)

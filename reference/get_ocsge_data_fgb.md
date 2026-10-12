@@ -54,6 +54,11 @@ The function performs the following steps:
 This function requires a working internet connection and GDAL support
 for the FlatGeobuf driver and network capabilities (vsicurl).
 
+## See also
+
+[`get_ocsge`](https://qonfluens.github.io/spacemodR/reference/get_ocsge.md),
+[`get_ocsge_data_ign`](https://qonfluens.github.io/spacemodR/reference/get_ocsge_data_ign.md)
+
 ## Examples
 
 ``` r
