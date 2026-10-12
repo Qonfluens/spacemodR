@@ -25,7 +25,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -55,6 +55,43 @@
       <small>Source: <a href="https://github.com/Qonfluens/spacemodR/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="spacemodr-development-version">spacemodR (development version)<a class="anchor" aria-label="anchor" href="#spacemodr-development-version"></a></h2>
+<div class="section level3">
+<h3 id="new-features--improvements-development-version">New Features &amp; Improvements<a class="anchor" aria-label="anchor" href="#new-features--improvements-development-version"></a></h3>
+<ul><li>
+<strong>Stacking order of habitat layers:</strong> <code><a href="../reference/habitat.html">habitat()</a></code>, <code><a href="../reference/add_habitat.html">add_habitat()</a></code> and <code><a href="../reference/add_nohabitat.html">add_nohabitat()</a></code> gain a <code>priority</code> argument, stored in a new <code>priority</code> column of the <code>habitat</code> object. In <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code>, overlapping features are stacked by priority and the pixel takes the value of the top one, so the result no longer depends on the order of the <code>add_*()</code> calls. By default each new layer goes on top of the previous ones, as before.</li>
+<li>
+<strong>Continuity of thin structures:</strong> <code><a href="../reference/habitat.html">habitat()</a></code>, <code><a href="../reference/add_habitat.html">add_habitat()</a></code> and <code><a href="../reference/add_nohabitat.html">add_nohabitat()</a></code> gain a <code>touches</code> argument, stored in a new <code>touches</code> column. With <code>touches = TRUE</code>, lines and polygons fill every pixel they touch in <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code>, which keeps hedgerows, rivers or roads continuous; with <code>touches = FALSE</code>, polygons fill the pixels whose centre they cover.</li>
+<li>
+<strong>Mixed geometries:</strong> <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> now accepts points, lines and polygons in the same <code>habitat</code> object.</li>
+<li>The “Habitat Layer” article explains <code>priority</code> and <code>touches</code> on a watercourse of the Metaleurop landscape.</li>
+<li>
+<strong>OCS-GE / EUNIS crosswalk:</strong> new dataset <code>ref_ocsge_eunis</code>, a ranked correspondence between the 14 OCS-GE cover classes (<code>CS</code>), optionally refined by land use (<code>US</code>), and the 45 EUNIS Level 2 classes, with the share of each match measured on the Metaleurop site.</li>
+<li>
+<strong>Land use in OCS-GE habitats:</strong> <code>ocsge_species_dict</code> now has rows for 47 (cover, use) pairs (<code>code_us</code>) in addition to the 14 covers, derived from <code>eunis_species_dict</code> through <code>ref_ocsge_eunis</code>. <code><a href="../reference/join_ocsge_species.html">join_ocsge_species()</a></code> gains a <code>us_col</code> argument: when the polygons carry the land use, they take the scores of their (cover, use) pair, and of their cover otherwise. New dataset <code>ocsge_us_metaleurop</code>, the OCS-GE of the Metaleurop site with cover and use.</li>
+<li>
+<strong>Habitat data sources guide:</strong> the article “Habitat Layer from EUNIS” becomes “Habitat Data Sources”. It compares OCS-GE cover, OCS-GE cover and use, and EUNIS, shows how to move between them, and lists the other sources that could refine them.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="behaviour-changes-development-version">Behaviour changes<a class="anchor" aria-label="anchor" href="#behaviour-changes-development-version"></a></h3>
+<ul><li>
+<code>touches</code> defaults to <code>TRUE</code>, whereas <code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> used to fill the pixels whose centre is covered by a polygon, and the pixels of a thin line. Existing rasters therefore change: features are drawn larger. Set <code>touches = FALSE</code> to get the previous result, in particular for layers of contiguous polygons such as a land cover map.</li>
+<li>
+<strong><code>ocsge_species_dict</code> rebuilt with the columns of <code>eunis_species_dict</code>:</strong> <code>weight_global</code> becomes <code>suitability</code>, <code>weight_movement</code> becomes <code>permeability</code>, <code>weight_breeding</code> and the species-level columns (<code>sppID</code>, <code>taxon_group</code>, <code>habitat_breadth</code>, <code>specialization</code>, <code>confidence</code>, <code>in_france</code>) are added, and cover codes are written without space (<code>"CS2.2.1"</code>). The scores themselves changed: they follow an anchored scale, are lower on classes that are not habitat, and movement accounts for flight. <code>resistance</code> is now on a 1-100 logarithmic scale derived from <code>permeability</code> (it was a 1-10 score): code that rescaled it, or tested <code>resistance == 10</code>, must be updated (use <code>permeability == 0</code> for impassable classes).</li>
+<li>
+<strong><code>nom_espece</code> renamed <code>species_name</code></strong> in <code>ocsge_species_dict</code> and <code>eunis_species_dict</code>.</li>
+<li>
+<code><a href="../reference/plot_species_habitat.html">plot_species_habitat()</a></code> now expects <code>suitability</code> instead of <code>weight_global</code>, and draws resistance on a log scale.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li>
+<code><a href="../reference/habitat_raster.html">habitat_raster()</a></code> no longer fails on an empty <code>habitat</code> object.</li>
+<li>
+<code><a href="../reference/get_eunis_data.html">get_eunis_data()</a></code> returned the raster upside down (north and south swapped), because the image exported by the EEA service carries no georeferencing. The image is now georeferenced before being read. The Metaleurop layer shipped in <code>inst/extdata/eunis_metaleurop_L2.tif</code> was rebuilt; rasters obtained with earlier versions must be downloaded again.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="spacemodr-030">spacemodR 0.3.0<a class="anchor" aria-label="anchor" href="#spacemodr-030"></a></h2>
 <div class="section level3">

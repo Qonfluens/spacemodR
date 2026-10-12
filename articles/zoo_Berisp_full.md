@@ -678,15 +678,16 @@ habitat_beetle = habitat_soil
 In this section, for birds and mammals we use the data base we build
 using LLM based on the original database created by @oconnor2024habitat
 where we linked species habitat to enriched OCS-GE descriptions. Then,
-instead of a single presence/absence score, the model simultaneously
-generates four continuous variables (on a scale of 0 to 10) that capture
-finer landscape ecology concepts: \* `weight_global`: Overall habitat
+instead of a single presence/absence score, the model generates
+continuous variables (on a scale of 0 to 10) that capture finer
+landscape ecology concepts: \* `suitability`: Overall habitat
 suitability (closest to the traditional AOH score). \*
-`weight_movement`: Landscape permeability for species dispersion. \*
-`weight_foraging`: Habitat attractiveness specifically for feeding and
-resource acquisition. \* `resistance`: The impedance or barrier effect
-of the environment, heavily informed by the “avoided-habitat”
-descriptions.
+`weight_breeding`: Value of the class as a breeding, nesting or denning
+site. \* `weight_foraging`: Habitat attractiveness specifically for
+feeding and resource acquisition. \* `permeability`: Landscape
+permeability for species dispersion. \* `resistance`: The impedance or
+barrier effect of the environment, derived from `permeability` on a
+logarithmic scale from 1 (free movement) to 100 (impassable).
 
 ``` r
 
@@ -708,8 +709,8 @@ plot_species_habitat(microtus_hab)
 
 ``` r
 
-microtus_habitat <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global) |>
-  add_nohabitat(microtus_hab[microtus_hab$resistance==10,])
+microtus_habitat <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$suitability) |>
+  add_nohabitat(microtus_hab[microtus_hab$permeability==0,])
 plot(microtus_habitat, main="Microtus arvalis, (green=habitat, red=non-habitat)")
 ```
 
@@ -725,8 +726,8 @@ plot_species_habitat(myodes_hab)
 
 ``` r
 
-myodes_habitat <- habitat(myodes_hab, habitat=TRUE, weight=myodes_hab$weight_global) |>
-  add_nohabitat(myodes_hab[myodes_hab$resistance==10,])
+myodes_habitat <- habitat(myodes_hab, habitat=TRUE, weight=myodes_hab$suitability) |>
+  add_nohabitat(myodes_hab[myodes_hab$permeability==0,])
 ```
 
 ``` r
@@ -739,8 +740,8 @@ plot_species_habitat(apodemus_hab)
 
 ``` r
 
-apodemus_habitat <- habitat(apodemus_hab, habitat=TRUE, weight=apodemus_hab$weight_global) |>
-  add_nohabitat(apodemus_hab[apodemus_hab$resistance==10,])
+apodemus_habitat <- habitat(apodemus_hab, habitat=TRUE, weight=apodemus_hab$suitability) |>
+  add_nohabitat(apodemus_hab[apodemus_hab$permeability==0,])
 ```
 
 ``` r
@@ -753,8 +754,8 @@ plot_species_habitat(sorex_hab)
 
 ``` r
 
-sorex_habitat <- habitat(sorex_hab, habitat=TRUE, weight=sorex_hab$weight_global) |>
-  add_nohabitat(sorex_hab[sorex_hab$resistance==10,])
+sorex_habitat <- habitat(sorex_hab, habitat=TRUE, weight=sorex_hab$suitability) |>
+  add_nohabitat(sorex_hab[sorex_hab$permeability==0,])
 ```
 
 ``` r
@@ -767,8 +768,8 @@ plot_species_habitat(crocidura_hab)
 
 ``` r
 
-crocidura_habitat <- habitat(sorex_hab, habitat=TRUE, weight=sorex_hab$weight_global) |>
-  add_nohabitat(sorex_hab[sorex_hab$resistance==10,])
+crocidura_habitat <- habitat(sorex_hab, habitat=TRUE, weight=sorex_hab$suitability) |>
+  add_nohabitat(sorex_hab[sorex_hab$permeability==0,])
 ```
 
 ``` r
@@ -781,8 +782,8 @@ plot_species_habitat(columba_hab)
 
 ``` r
 
-columba_habitat <- habitat(columba_hab, habitat=TRUE, weight=columba_hab$weight_global) |>
-  add_nohabitat(columba_hab[columba_hab$resistance==10,])
+columba_habitat <- habitat(columba_hab, habitat=TRUE, weight=columba_hab$suitability) |>
+  add_nohabitat(columba_hab[columba_hab$permeability==0,])
 ```
 
 ``` r
@@ -795,8 +796,8 @@ plot_species_habitat(turdus_hab)
 
 ``` r
 
-turdus_habitat <- habitat(turdus_hab, habitat=TRUE, weight=turdus_hab$weight_global) |>
-  add_nohabitat(turdus_hab[turdus_hab$resistance==10,])
+turdus_habitat <- habitat(turdus_hab, habitat=TRUE, weight=turdus_hab$suitability) |>
+  add_nohabitat(turdus_hab[turdus_hab$permeability==0,])
 ```
 
 ``` r
@@ -809,8 +810,8 @@ plot_species_habitat(athene_hab)
 
 ``` r
 
-athene_habitat <- habitat(athene_hab, habitat=TRUE, weight=athene_hab$weight_global) |>
-  add_nohabitat(athene_hab[athene_hab$resistance==10,])
+athene_habitat <- habitat(athene_hab, habitat=TRUE, weight=athene_hab$suitability) |>
+  add_nohabitat(athene_hab[athene_hab$permeability==0,])
 ```
 
 ### Rasterize on a same grid frame
@@ -1415,6 +1416,13 @@ plot(spcmdl_impregnation)
 
 ``` r
 
+# 1. Définition de l'ordre exact souhaité pour la légende
+species_order <- c(
+  "soil", "plant", "earthworm",
+  "beetle", "microtus", "myodes", "apodemus", 
+  "sorex", "crocidura", "columba", "turdus", "athene"
+)
+
 # Extraire TOUTES les couches du SpatRaster dans un seul data.frame
 df_all <- as.data.frame(spcmdl_impregnation, na.rm = TRUE)
 
@@ -1425,7 +1433,11 @@ df_long <- pivot_longer(
   cols = everything(),
   names_to = "species",
   values_to = "concentration"
-)
+) %>%
+  # 2. Transformation en facteur pour dicter l'ordre à ggplot2
+  mutate(species = factor(species, levels = species_order))
+
+
 
 # Créer le graphique de densité globale
 ggplot(df_long, aes(x = concentration, fill = species, color = species)) +
@@ -1436,7 +1448,7 @@ ggplot(df_long, aes(x = concentration, fill = species, color = species)) +
   scale_x_log10() +
   labs(
     title = "Distribution of Body-burden",
-    x = "Body-burden",
+    x = "Body-burden [Cd] (ppm)",
     y = "Density",
     fill = "Species",
     color = "Species"

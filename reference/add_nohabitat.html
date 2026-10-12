@@ -25,7 +25,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -62,7 +62,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_nohabitat</span><span class="op">(</span><span class="va">hab</span>, <span class="va">sf_data</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_nohabitat</span><span class="op">(</span><span class="va">hab</span>, <span class="va">sf_data</span>, priority <span class="op">=</span> <span class="cn">NULL</span>, touches <span class="op">=</span> <span class="cn">TRUE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -75,6 +75,23 @@
 
 <dt id="arg-sf-data">sf_data<a class="anchor" aria-label="anchor" href="#arg-sf-data"></a></dt>
 <dd><p>An sf object containing geometries to add</p></dd>
+
+
+<dt id="arg-priority">priority<a class="anchor" aria-label="anchor" href="#arg-priority"></a></dt>
+<dd><p>Stacking order of the added layer when the habitat is
+rasterized with <code><a href="habitat_raster.html">habitat_raster</a></code>: the non-habitat zone only
+excludes the pixels where no layer of higher priority lies on top of it.
+Same default as in <code><a href="add_habitat.html">add_habitat</a></code>: on top of everything already
+in <code>hab</code>.</p></dd>
+
+
+<dt id="arg-touches">touches<a class="anchor" aria-label="anchor" href="#arg-touches"></a></dt>
+<dd><p>Logical, a single value for the whole layer or one value per
+feature. If <code>TRUE</code> (default), every pixel touched by the features is
+excluded, so that the barrier is watertight: it cannot vanish between pixel
+centres nor be crossed diagonally between two pixels. If <code>FALSE</code>, a
+polygon only excludes the pixels whose centre it covers and a line only the
+pixels of a thin line. See <code><a href="add_habitat.html">add_habitat</a></code> for details.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

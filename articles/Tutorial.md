@@ -151,13 +151,13 @@ plot(habitat_10)
 
 habitat_11 = habitat(layer_CS2111, weight=0.2)
 head(habitat_11)
-#> Simple feature collection with 1 feature and 2 fields
+#> Simple feature collection with 1 feature and 4 fields
 #> Geometry type: MULTIPOLYGON
 #> Dimension:     XY
 #> Bounding box:  xmin: 697049.4 ymin: 7032094 xmax: 709595.3 ymax: 7043419
 #> Projected CRS: RGF93 v1 / Lambert-93
-#>   habitat weight                       geometry
-#> 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...
+#>   habitat weight priority touches                       geometry
+#> 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...
 ```
 
 ``` r
@@ -202,13 +202,13 @@ class(habitat_20)
 habitat_21 = habitat() |>
   add_habitat(layer_CS2111, weight=0.2)
 head(habitat_21)
-#> Simple feature collection with 1 feature and 2 fields
+#> Simple feature collection with 1 feature and 4 fields
 #> Geometry type: MULTIPOLYGON
 #> Dimension:     XY
 #> Bounding box:  xmin: 697049.4 ymin: 7032094 xmax: 709595.3 ymax: 7043419
 #> Projected CRS: RGF93 v1 / Lambert-93
-#>   habitat weight                       geometry
-#> 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...
+#>   habitat weight priority touches                       geometry
+#> 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...
 ```
 
 ``` r
@@ -219,15 +219,15 @@ habitat_22 = habitat() |>
   add_nohabitat(layer_CS221)
 
 head(habitat_22)
-#> Simple feature collection with 3 features and 2 fields
+#> Simple feature collection with 3 features and 4 fields
 #> Geometry type: MULTIPOLYGON
 #> Dimension:     XY
 #> Bounding box:  xmin: 695704.7 ymin: 7031268 xmax: 709595.3 ymax: 7043983
 #> Projected CRS: RGF93 v1 / Lambert-93
-#>   habitat weight                       geometry
-#> 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...
-#> 2    TRUE    0.4 MULTIPOLYGON (((698440.6 70...
-#> 3   FALSE    0.0 MULTIPOLYGON (((698052.4 70...
+#>   habitat weight priority touches                       geometry
+#> 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...
+#> 2    TRUE    0.4        2    TRUE MULTIPOLYGON (((698440.6 70...
+#> 3   FALSE    0.0        3    TRUE MULTIPOLYGON (((698052.4 70...
 ```
 
 ``` r

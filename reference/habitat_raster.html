@@ -29,7 +29,7 @@ defined as non-habitat (habitat = FALSE) are assigned NA."></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -96,8 +96,30 @@ It provides the extent, resolution, and coordinate reference system (CRS).</p></
 a weight of <code>0</code> and are considered passable (habitat = <code>TRUE</code>).</p>
 <p><strong>Exclusion zones:</strong> Geometries added via <code><a href="add_nohabitat.html">add_nohabitat()</a></code> act as absolute
 barriers. Any pixel intersecting these geometries will be assigned <code>NA</code>, overriding
-any underlying weight. If overlapping polygons exist, the order of features in the
-<code>habitat</code> object determines the final value (last on top).</p>
+any underlying weight.</p>
+<p><strong>Stacking order:</strong> Where several features overlap, the pixel takes the value of
+the feature with the highest <code>priority</code> (see <code><a href="add_habitat.html">add_habitat</a></code>); features
+are stacked from the lowest to the highest priority and the top one is read. With equal
+priorities, the order of the features in the <code>habitat</code> object decides (last on
+top). As <code><a href="add_habitat.html">add_habitat()</a></code> and <code><a href="add_nohabitat.html">add_nohabitat()</a></code> give by default an increasing
+priority to each new layer, layers stack in the order they were added unless
+<code>priority</code> is set explicitly. The same rule applies to exclusion zones: a
+non-habitat feature excludes a pixel only if no feature of higher priority covers it.</p>
+<p><strong>Pixels filled by a feature:</strong> The <code>touches</code> value of each feature (see
+<code><a href="add_habitat.html">add_habitat</a></code>) sets which pixels it occupies. With <code>touches = TRUE</code>
+(the default of <code><a href="add_habitat.html">add_habitat()</a></code> and <code><a href="add_nohabitat.html">add_nohabitat()</a></code>) a line or a polygon
+fills every pixel it touches. A thin structure such as a hedgerow, a river or a road
+is then a chain of pixels sharing an edge: a corridor stays connected for 4-neighbour
+movements and a barrier cannot be crossed diagonally. With <code>touches = FALSE</code>, a
+polygon fills only the pixels whose centre it covers and a line only the pixels of a
+thin line, which keeps areas unbiased but can break thin structures. Combine a high
+<code>priority</code> with <code>touches = TRUE</code> to keep a thin structure continuous above
+the layers it runs through. Points, lines and polygons can be mixed in the same
+<code>habitat</code> object.</p>
+<p>Note that a raster holds one value per pixel: a structure narrower than a pixel is
+either widened to a full pixel or dropped, and two structures sharing a pixel cannot
+both be kept. When this matters, the only real solution is a finer
+<code>ground_raster</code>.</p>
     </div>
 
     <div class="section level2">
@@ -121,6 +143,15 @@ any underlying weight. If overlapping polygons exist, the order of features in t
 <span class="r-in"><span><span class="co"># Rasterize</span></span></span>
 <span class="r-in"><span><span class="va">hab_rast</span> <span class="op">&lt;-</span> <span class="fu">habitat_raster</span><span class="op">(</span><span class="va">ref_grid</span>, <span class="va">my_habitat</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hab_rast</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A hedgerow kept continuous across the exclusion zone, whatever the order</span></span></span>
+<span class="r-in"><span><span class="co"># in which the layers are added</span></span></span>
+<span class="r-in"><span><span class="va">hedge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sf.html" class="external-link">st_sf</a></span><span class="op">(</span>geometry <span class="op">=</span> <span class="fu"><a href="https://r-spatial.github.io/sf/reference/sfc.html" class="external-link">st_sfc</a></span><span class="op">(</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st.html" class="external-link">st_linestring</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">10</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>, <span class="fl">9.7</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">my_habitat</span> <span class="op">&lt;-</span> <span class="fu"><a href="habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">hedge</span>, weight <span class="op">=</span> <span class="fl">1</span>, priority <span class="op">=</span> <span class="fl">10</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">good_hab</span>, weight <span class="op">=</span> <span class="fl">0.8</span>, priority <span class="op">=</span> <span class="fl">1</span>, touches <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">bad_hab</span>, priority <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">habitat_raster</span><span class="op">(</span><span class="va">ref_grid</span>, <span class="va">my_habitat</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>

@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
 <li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
@@ -511,8 +511,8 @@ with the comparison table.</p>
 <span><span class="va">m_ok</span><span class="op">$</span><span class="va">comparison</span></span>
 <span><span class="co">#&gt;   model     nugget     psill    range          sse</span></span>
 <span><span class="co">#&gt; 1   Gau 0.05311783 0.1072776 1235.369 1.386473e-05</span></span>
-<span><span class="co">#&gt; 2   Sph 0.04211793 0.1231917 2887.673 2.587145e-05</span></span>
-<span><span class="co">#&gt; 3   Exp 0.03899008 0.1726382 2113.585 3.157755e-05</span></span>
+<span><span class="co">#&gt; 2   Sph 0.04211791 0.1231916 2887.670 2.587145e-05</span></span>
+<span><span class="co">#&gt; 3   Exp 0.03899008 0.1726382 2113.586 3.157755e-05</span></span>
 <span></span>
 <span><span class="va">m_ked</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_soil_variogram.html">fit_soil_variogram</a></span><span class="op">(</span><span class="va">v_ked</span>, model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Exp"</span>, <span class="st">"Sph"</span>, <span class="st">"Gau"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">m_ked</span></span>
@@ -1075,13 +1075,13 @@ extent and resolution).</p>
 <span><span class="co">#&gt; Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).</span></span>
 <span><span class="co">#&gt; 8 duplicated location(s) averaged.</span></span>
 <span><span class="co">#&gt; Variogram model: Exp  </span></span>
-<span><span class="co">#&gt;   nugget = 0.04496 | partial sill = 0.0305 | range = 1076 m</span></span>
+<span><span class="co">#&gt;   nugget = 0.04496 | partial sill = 0.03048 | range = 1076 m</span></span>
 <span><span class="co">#&gt;   weighted SSE = 9.935e-06</span></span>
 <span><span class="co">#&gt;   fitted on residuals of the drift: log10_dist</span></span>
 <span><span class="co">#&gt; Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).</span></span>
 <span><span class="co">#&gt; 8 duplicated location(s) averaged.</span></span>
 <span><span class="co">#&gt; Variogram model: Exp  </span></span>
-<span><span class="co">#&gt;   nugget = 0.03963 | partial sill = 0.04391 | range = 1959 m</span></span>
+<span><span class="co">#&gt;   nugget = 0.03963 | partial sill = 0.04392 | range = 1959 m</span></span>
 <span><span class="co">#&gt;   weighted SSE = 4.871e-06</span></span>
 <span><span class="co">#&gt;   fitted on residuals of the drift: log10_dist</span></span>
 <span><span class="co">#&gt; Covariate 'log10_dist' clamped to [2.672, 3.762] in 30319 cell(s).</span></span>
@@ -1238,9 +1238,9 @@ maps:</p>
 <span><span class="va">outside</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/mask.html" class="external-link">mask</a></span><span class="op">(</span><span class="va">diff_cd</span>, <span class="va">hull</span>, inverse <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, mat <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span>inside  <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">inside</span>,  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.5</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
 <span>      outside <span class="op">=</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/quantile.html" class="external-link">quantile</a></span><span class="op">(</span><span class="va">outside</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.05</span>, <span class="fl">0.5</span>, <span class="fl">0.95</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                 5%           50%         95%</span></span>
-<span><span class="co">#&gt; inside  -0.0760046 -0.0002601581  0.10073052</span></span>
-<span><span class="co">#&gt; outside -0.3041180 -0.1496480143 -0.02294464</span></span></code></pre></div>
+<span><span class="co">#&gt;                  5%           50%         95%</span></span>
+<span><span class="co">#&gt; inside  -0.07600459 -0.0002601533  0.10073051</span></span>
+<span><span class="co">#&gt; outside -0.30411804 -0.1496480190 -0.02294467</span></span></code></pre></div>
 <p>Inside the sampled area the two maps are close (differences are local
 and mostly small, they come from the different variogram and from the
 drift). Outside the sampled area, the new map is systematically
@@ -1322,7 +1322,7 @@ kernel used for dispersal in spacemodR.</li>
 <span>                      coords <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x"</span>, <span class="st">"y"</span><span class="op">)</span>, crs <span class="op">=</span> <span class="fl">2154</span><span class="op">)</span></span>
 <span><span class="va">ref</span> <span class="op">&lt;-</span> <span class="fu">gstat</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/gstat/reference/krige.html" class="external-link">krige</a></span><span class="op">(</span><span class="va">cd_log10</span> <span class="op">~</span> <span class="fl">1</span>, <span class="va">pts</span>, <span class="va">cells</span>, model <span class="op">=</span> <span class="va">g</span>, debug.level <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">ref</span><span class="op">$</span><span class="va">var1.pred</span> <span class="op">-</span> <span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">ours</span><span class="op">[[</span><span class="st">"cd_log10"</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 6.664536e-11</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 6.664935e-11</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>

@@ -7,7 +7,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/articles/Tutorial.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Food_Intake.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Habitat.html</loc></url>
-<url><loc>https://qonfluens.github.io/spacemodR/articles/core_Habitat_EUNIS.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/articles/core_Habitat_Sources.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Omniscape_Connectivity.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/core_Soil_Kriging.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/articles/index.html</loc></url>
@@ -56,6 +56,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/normalize_weights.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ocsge_metaleurop.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ocsge_species_dict.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/ocsge_us_metaleurop.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/plot.habitat.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/plot.soil_vgm.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/plot.trophic_tbl.html</loc></url>
@@ -63,6 +64,7 @@
 <url><loc>https://qonfluens.github.io/spacemodR/reference/raster_stack.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ref_eunis.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/ref_ocsge.html</loc></url>
+<url><loc>https://qonfluens.github.io/spacemodR/reference/ref_ocsge_eunis.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/roi_metaleurop.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/sf_micromammals.html</loc></url>
 <url><loc>https://qonfluens.github.io/spacemodR/reference/soil_grid.html</loc></url>

@@ -4,6 +4,8 @@ If no geometry is provided, creates an empty Habitat object.
 The object has columns:
 habitat: logical, TRUE/FALSE
 weight: numeric
+priority: numeric, stacking order used by habitat_raster
+touches: logical, pixels filled by the feature in habitat_raster
 geometry: sfc geometry
 
 "><meta property="og:description" content="Create a spatial Habitat object based on an optional sf data.frame.
@@ -11,6 +13,8 @@ If no geometry is provided, creates an empty Habitat object.
 The object has columns:
 habitat: logical, TRUE/FALSE
 weight: numeric
+priority: numeric, stacking order used by habitat_raster
+touches: logical, pixels filled by the feature in habitat_raster
 geometry: sfc geometry
 
 "></head><body>
@@ -39,7 +43,7 @@ geometry: sfc geometry
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -75,12 +79,20 @@ geometry: sfc geometry
 If no geometry is provided, creates an empty Habitat object.
 The object has columns:</p><ul><li><p><code>habitat</code>: logical, TRUE/FALSE</p></li>
 <li><p><code>weight</code>: numeric</p></li>
+<li><p><code>priority</code>: numeric, stacking order used by <code><a href="habitat_raster.html">habitat_raster</a></code></p></li>
+<li><p><code>touches</code>: logical, pixels filled by the feature in <code><a href="habitat_raster.html">habitat_raster</a></code></p></li>
 <li><p><code>geometry</code>: sfc geometry</p></li>
 </ul></div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">habitat</span><span class="op">(</span>geometry <span class="op">=</span> <span class="cn">NULL</span>, habitat <span class="op">=</span> <span class="cn">NULL</span>, weight <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">habitat</span><span class="op">(</span></span>
+<span>  geometry <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  habitat <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  weight <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  priority <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  touches <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -98,6 +110,21 @@ The object has columns:</p><ul><li><p><code>habitat</code>: logical, TRUE/FALSE<
 <dt id="arg-weight">weight<a class="anchor" aria-label="anchor" href="#arg-weight"></a></dt>
 <dd><p>Numeric vector of weights. Default is numeric(0).</p></dd>
 
+
+<dt id="arg-priority">priority<a class="anchor" aria-label="anchor" href="#arg-priority"></a></dt>
+<dd><p>Numeric vector giving the stacking order of the features when
+they are rasterized with <code><a href="habitat_raster.html">habitat_raster</a></code>: where features overlap,
+the one with the highest priority gives its value to the pixel. Default is
+<code>1</code> for every feature, in which case the order of the features decides
+(last on top).</p></dd>
+
+
+<dt id="arg-touches">touches<a class="anchor" aria-label="anchor" href="#arg-touches"></a></dt>
+<dd><p>Logical vector. If <code>TRUE</code> (default), a feature fills every
+pixel it touches when rasterized with <code><a href="habitat_raster.html">habitat_raster</a></code>. If
+<code>FALSE</code>, a polygon only fills the pixels whose centre it covers and a line
+only the pixels of a thin line. See <code><a href="add_habitat.html">add_habitat</a></code> for guidance.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -114,10 +141,10 @@ The object has columns:</p><ul><li><p><code>habitat</code>: logical, TRUE/FALSE<
 <span class="r-out co"><span class="r-pr">#&gt;</span> Habitat object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of features: 0 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CRS: NA </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 0 features and 2 fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 0 features and 4 fields</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: NA ymin: NA xmax: NA ymax: NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CRS:           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] habitat  weight   geometry</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] habitat  weight   priority touches  geometry</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;0 rows&gt; (or 0-length row.names)</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Habitat with geometries</span></span></span>
@@ -136,14 +163,14 @@ The object has columns:</p><ul><li><p><code>habitat</code>: logical, TRUE/FALSE<
 <span class="r-out co"><span class="r-pr">#&gt;</span> Habitat object</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Number of features: 2 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> CRS: EPSG:4326 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 2 features and 2 fields</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Simple feature collection with 2 features and 4 fields</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geometry type: POINT</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Dimension:     XY</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Bounding box:  xmin: 0 ymin: 0 xmax: 1 ymax: 1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Geodetic CRS:  WGS 84</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   habitat weight    geometry</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1    TRUE    0.8 POINT (0 0)</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE    0.0 POINT (1 1)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   habitat weight priority touches    geometry</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1    TRUE    0.8        1    TRUE POINT (0 0)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2   FALSE    0.0        1    TRUE POINT (1 1)</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

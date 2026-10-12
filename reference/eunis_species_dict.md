@@ -27,7 +27,7 @@ columns:
   Character. EUNIS Level 2 code (e.g. `"G1"`); matches `ref_eunis$code`
   for `level == "L2"`.
 
-- nom_espece:
+- species_name:
 
   Character. Scientific name, genus and species separated by `"_"`.
 
@@ -108,8 +108,8 @@ empty description and were scored from general knowledge
 
 ``` r
 data(eunis_species_dict)
-subset(eunis_species_dict, nom_espece == "Apodemus_sylvaticus")
-#>       code_eunis          nom_espece sppID taxon_group suitability
+subset(eunis_species_dict, species_name == "Apodemus_sylvaticus")
+#>       code_eunis        species_name sppID taxon_group suitability
 #> 41221         B1 Apodemus_sylvaticus   M19      mammal           8
 #> 41222         B2 Apodemus_sylvaticus   M19      mammal           2
 #> 41223         B3 Apodemus_sylvaticus   M19      mammal           1

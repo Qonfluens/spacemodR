@@ -39,7 +39,7 @@ scale expected by connectivity models such as Omniscape.'></head><body>
   <button class="nav-link dropdown-toggle" type="button" id="dropdown--core-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">🧩️ Core Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides"><li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul></li>
@@ -91,7 +91,7 @@ scale expected by connectivity models such as Omniscape.</p>
     <p>A data frame with 42,075 rows (935 species x 45 EUNIS classes) and 13 columns:</p><dl><dt>code_eunis</dt>
 <dd><p>Character. EUNIS Level 2 code (e.g. <code>"G1"</code>); matches <code>ref_eunis$code</code> for <code>level == "L2"</code>.</p></dd>
 
-  <dt>nom_espece</dt>
+  <dt>species_name</dt>
 <dd><p>Character. Scientific name, genus and species separated by <code>"_"</code>.</p></dd>
 
   <dt>sppID</dt>
@@ -148,8 +148,8 @@ build scripts are in <code>raw_data/opus_scoring/</code> of the source repositor
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">eunis_species_dict</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">eunis_species_dict</span>, <span class="va">nom_espece</span> <span class="op">==</span> <span class="st">"Apodemus_sylvaticus"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       code_eunis          nom_espece sppID taxon_group suitability</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">eunis_species_dict</span>, <span class="va">species_name</span> <span class="op">==</span> <span class="st">"Apodemus_sylvaticus"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       code_eunis        species_name sppID taxon_group suitability</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 41221         B1 Apodemus_sylvaticus   M19      mammal           8</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 41222         B2 Apodemus_sylvaticus   M19      mammal           2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 41223         B3 Apodemus_sylvaticus   M19      mammal           1</span>

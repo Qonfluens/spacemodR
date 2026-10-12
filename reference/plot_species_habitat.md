@@ -1,8 +1,8 @@
 # Plot Habitat Suitability Maps from OCSGE Data
 
-Generates a composite plot of three spatial maps (Global Weight,
-Foraging Weight, and Resistance) from an \`sf\` object previously
-enriched with species traits.
+Generates a composite plot of three spatial maps (suitability, foraging
+weight and resistance) from an \`sf\` object previously enriched with
+species traits.
 
 ## Usage
 
@@ -25,3 +25,9 @@ plot_species_habitat(sf_merged, title_species = NULL)
 ## Value
 
 A `patchwork` object containing the combined `ggplot2` maps.
+
+## Details
+
+Suitability and foraging weight are drawn on their full 0-10 scale, and
+resistance on its 1-100 logarithmic scale, so that maps of different
+species can be compared.

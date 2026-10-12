@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
 <li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
@@ -228,13 +228,13 @@ distinguishing between habitat and non-habitat zones is essential.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_11</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_11</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 1 feature and 2 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 1 feature and 4 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTIPOLYGON</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
 <span><span class="co">#&gt; Bounding box:  xmin: 697049.4 ymin: 7032094 xmax: 709595.3 ymax: 7043419</span></span>
 <span><span class="co">#&gt; Projected CRS: RGF93 v1 / Lambert-93</span></span>
-<span><span class="co">#&gt;   habitat weight                       geometry</span></span>
-<span><span class="co">#&gt; 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
+<span><span class="co">#&gt;   habitat weight priority touches                       geometry</span></span>
+<span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_12</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span></span>
 <span>  <span class="va">layer_CS2111</span>,</span>
@@ -267,13 +267,13 @@ in a spatial analysis.</p>
 <code class="sourceCode R"><span><span class="va">habitat_21</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_21</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 1 feature and 2 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 1 feature and 4 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTIPOLYGON</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
 <span><span class="co">#&gt; Bounding box:  xmin: 697049.4 ymin: 7032094 xmax: 709595.3 ymax: 7043419</span></span>
 <span><span class="co">#&gt; Projected CRS: RGF93 v1 / Lambert-93</span></span>
-<span><span class="co">#&gt;   habitat weight                       geometry</span></span>
-<span><span class="co">#&gt; 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
+<span><span class="co">#&gt;   habitat weight priority touches                       geometry</span></span>
+<span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">habitat_22</span> <span class="op">=</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/add_habitat.html">add_habitat</a></span><span class="op">(</span><span class="va">layer_CS2111</span>, weight<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -281,15 +281,15 @@ in a spatial analysis.</p>
 <span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">layer_CS221</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/headtail.html" class="external-link">head</a></span><span class="op">(</span><span class="va">habitat_22</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Simple feature collection with 3 features and 2 fields</span></span>
+<span><span class="co">#&gt; Simple feature collection with 3 features and 4 fields</span></span>
 <span><span class="co">#&gt; Geometry type: MULTIPOLYGON</span></span>
 <span><span class="co">#&gt; Dimension:     XY</span></span>
 <span><span class="co">#&gt; Bounding box:  xmin: 695704.7 ymin: 7031268 xmax: 709595.3 ymax: 7043983</span></span>
 <span><span class="co">#&gt; Projected CRS: RGF93 v1 / Lambert-93</span></span>
-<span><span class="co">#&gt;   habitat weight                       geometry</span></span>
-<span><span class="co">#&gt; 1    TRUE    0.2 MULTIPOLYGON (((697891.4 70...</span></span>
-<span><span class="co">#&gt; 2    TRUE    0.4 MULTIPOLYGON (((698440.6 70...</span></span>
-<span><span class="co">#&gt; 3   FALSE    0.0 MULTIPOLYGON (((698052.4 70...</span></span></code></pre></div>
+<span><span class="co">#&gt;   habitat weight priority touches                       geometry</span></span>
+<span><span class="co">#&gt; 1    TRUE    0.2        1    TRUE MULTIPOLYGON (((697891.4 70...</span></span>
+<span><span class="co">#&gt; 2    TRUE    0.4        2    TRUE MULTIPOLYGON (((698440.6 70...</span></span>
+<span><span class="co">#&gt; 3   FALSE    0.0        3    TRUE MULTIPOLYGON (((698052.4 70...</span></span></code></pre></div>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">habitat_22</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Tutorial_files/figure-html/plot_habitat_22-1.png" class="r-plt" alt="" width="960"></p>

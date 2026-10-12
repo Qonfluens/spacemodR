@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
 <li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
@@ -148,8 +148,8 @@ moving window.</p></li>
 <ol style="list-style-type: decimal">
 <li>
 <em>Source</em>: relative capacity or suitability (usually
-<code>weight_global</code> or <code>weight_foraging</code> is the
-internal <code>ocsge_species_dict</code> dataset). For instance:</li>
+<code>suitability</code> or <code>weight_foraging</code> in the internal
+<code>ocsge_species_dict</code> dataset). For instance:</li>
 </ol>
 <ul>
 <li>Value 10 (Core habitat): A dense, undisturbed forest for a fox. It
@@ -184,25 +184,28 @@ resistance rather than crossing a single pixel of 1000).</li>
 <div class="section level3">
 <h3 id="exponential-law-for-resistance">Exponential law for resistance<a class="anchor" aria-label="anchor" href="#exponential-law-for-resistance"></a>
 </h3>
-<p>When we build resistance map, for instance from the internal
-<code>ocsge_species_dict</code> dataset which provides resistance values
-that scale sharply, we have to transform the <code>weight</code> factor
-set in <code>0-10</code> to a log-scale function. Indeedn, if an optimal
+<p>A resistance map needs values that scale sharply. If an optimal
 habitat is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>
 and the worst barrier is only
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>5</mn><annotation encoding="application/x-tex">5</annotation></semantics></math>,
 <code>Omniscape</code> will barely notice the barrier and will simulate
 animals walking almost in straight lines!</p>
-<p>A good practice would is to convert the linear scale
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math>
-to
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>10</mn><annotation encoding="application/x-tex">10</annotation></semantics></math>
-in an exponential scale
+<p>A good practice is to convert a linear score into an exponential
+scale. This is what the internal <code>ocsge_species_dict</code> and
+<code>eunis_species_dict</code> datasets do: their
+<code>resistance</code> column is derived from the
+<code>permeability</code> score, set in <code>0-10</code>, as
+<code>10^(2 * (1 - permeability / 10))</code>, which runs from
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>
+(free movement) to
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>100</mn><annotation encoding="application/x-tex">100</annotation></semantics></math>
+(impassable). It can be used as it is. For a sharper contrast, the same
+rule gives a scale from
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1</mn><annotation encoding="application/x-tex">1</annotation></semantics></math>
 to
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>1000</mn><annotation encoding="application/x-tex">1000</annotation></semantics></math>
-(e.g. <code>10^( (log10(1000) / 10) * x )</code>.</p>
+with <code>10^(3 * (1 - permeability / 10))</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="the-algorithm">The Algorithm<a class="anchor" aria-label="anchor" href="#the-algorithm"></a>

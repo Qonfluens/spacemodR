@@ -72,7 +72,9 @@
 - [`ocsge_metaleurop`](https://qonfluens.github.io/spacemodR/reference/ocsge_metaleurop.md)
   : SF object defining very simplified OCS-GE soil cover metaleurop
 - [`ocsge_species_dict`](https://qonfluens.github.io/spacemodR/reference/ocsge_species_dict.md)
-  : Valued weights and resistance between OCS-GE layers and species
+  : Species habitat dictionary for OCS-GE land cover and land use
+- [`ocsge_us_metaleurop`](https://qonfluens.github.io/spacemodR/reference/ocsge_us_metaleurop.md)
+  : OCS-GE land cover and land use of the Metaleurop site
 - [`plot(`*`<habitat>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.habitat.md)
   : Plot a Habitat object
 - [`plot(`*`<soil_vgm>`*`)`](https://qonfluens.github.io/spacemodR/reference/plot.soil_vgm.md)
@@ -87,6 +89,8 @@
   : Nomenclature and render colors of EUNIS land cover classes
 - [`ref_ocsge`](https://qonfluens.github.io/spacemodR/reference/ref_ocsge.md)
   : Nomenclature of OCS-GE soil cover
+- [`ref_ocsge_eunis`](https://qonfluens.github.io/spacemodR/reference/ref_ocsge_eunis.md)
+  : Crosswalk between OCS-GE (cover and use) and EUNIS Level 2
 - [`roi_metaleurop`](https://qonfluens.github.io/spacemodR/reference/roi_metaleurop.md)
   : SF object defining ROI metaleurop
 - [`sf_micromammals`](https://qonfluens.github.io/spacemodR/reference/sf_micromammals.md)

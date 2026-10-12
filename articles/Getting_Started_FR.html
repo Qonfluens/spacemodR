@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown--core-guides">
 <li><a class="dropdown-item" href="../articles/core_Soil_Kriging.html">Soil Contamination Maps (Kriging)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Habitat.html">Habitat Layer</a></li>
-    <li><a class="dropdown-item" href="../articles/core_Habitat_EUNIS.html">Habitat Layer from EUNIS</a></li>
+    <li><a class="dropdown-item" href="../articles/core_Habitat_Sources.html">Habitat Data Sources (OCS-GE, EUNIS)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Omniscape_Connectivity.html">Landscape Connectivity (Omniscape)</a></li>
     <li><a class="dropdown-item" href="../articles/core_Food_Intake.html">Food Intake</a></li>
   </ul>
@@ -191,9 +191,8 @@ arvalis</em>):</p>
 <strong>Habitat</strong>. Brièvement:</p>
 <ul>
 <li>
-<strong>Global weight</strong> (pondération globale), c’est la
-capacité d’accueil (ou l’attractivité générale) d’un milieu pour
-l’espèce.</li>
+<strong>Suitability</strong> (qualité d’habitat), c’est la capacité
+d’accueil (ou l’attractivité générale) d’un milieu pour l’espèce.</li>
 <li>
 <strong>Foraging weight</strong> (pondération de recherche de
 nourriture) : c’est l’attractivité trophique du milieu. Un animal ne se
@@ -201,15 +200,16 @@ nourrit pas forcément partout où il vit.</li>
 <li>
 <strong>Resistance</strong> (résistance au déplacement / Friction
 spatiale) : c’est le coût énergétique ou le danger lié à la traversée de
-ce milieu. Ce paramètre est utilisé par les modèles de connectivité et
-de dispersion (comme l’algorithme Omniscape abordé plus tard).</li>
+ce milieu, de 1 (déplacement libre) à 100 (infranchissable). Ce
+paramètre est utilisé par les modèles de connectivité et de dispersion
+(comme l’algorithme Omniscape abordé plus tard).</li>
 </ul>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># nous utilise le poids `weight_global` comme habitat</span></span>
-<span><span class="va">habitat_herbivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">[</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">habitat_carnivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">crocidura_hab</span><span class="op">$</span><span class="va">weight_global</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span><span class="op">[</span><span class="va">crocidura_hab</span><span class="op">$</span><span class="va">resistance</span><span class="op">==</span><span class="fl">10</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="co"># nous utilisons `suitability` comme poids d'habitat, et retirons les couvertures infranchissables pour l'espèce</span></span>
+<span><span class="va">habitat_herbivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">microtus_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">suitability</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">microtus_hab</span><span class="op">[</span><span class="va">microtus_hab</span><span class="op">$</span><span class="va">permeability</span><span class="op">==</span><span class="fl">0</span>,<span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">habitat_carnivore</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/habitat.html">habitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span>, habitat<span class="op">=</span><span class="cn">TRUE</span>, weight<span class="op">=</span><span class="va">crocidura_hab</span><span class="op">$</span><span class="va">suitability</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_nohabitat.html">add_nohabitat</a></span><span class="op">(</span><span class="va">crocidura_hab</span><span class="op">[</span><span class="va">crocidura_hab</span><span class="op">$</span><span class="va">permeability</span><span class="op">==</span><span class="fl">0</span>,<span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p>A cette étape, maintenant que les habitats sont défini, on rasterize
 les habitats selon une couche par défaut, ici <code>cd_ground</code>,
 qui va permettre d’avoir la même grille paysagère afin de pouvoir
@@ -273,7 +273,7 @@ objet pour garantir la cohérence des calculs.</p>
 <span><span class="co">#&gt;               ground_concentration_cd_compressed</span></span>
 <span><span class="co">#&gt; names       : sol, plante, herbivore, carnivore</span></span>
 <span><span class="co">#&gt; min values  :   0,      0,         0,         0</span></span>
-<span><span class="co">#&gt; max values  :   1,      1,        10,         9</span></span></code></pre></div>
+<span><span class="co">#&gt; max values  :   1,      1,        10,         8</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">

@@ -121,22 +121,23 @@ plot_species_habitat(crocidura_hab)
 To understand the 3 maps in detail, please refer to the **Habitat**
 page. Briefly:
 
-- **Global weight**: This is the carrying capacity (or general
+- **Suitability**: This is the carrying capacity (or general
   attractiveness) of an environment for the species.
 - **Foraging weight**: This is the trophic attractiveness of the
   environment. An animal does not necessarily feed everywhere it lives.
 - **Resistance** (Movement resistance / Spatial friction): This is the
-  energetic cost or danger associated with crossing this environment.
-  This parameter is used by connectivity and dispersal models (like the
-  Omniscape algorithm discussed later).
+  energetic cost or danger associated with crossing this environment,
+  from 1 (free movement) to 100 (impassable). This parameter is used by
+  connectivity and dispersal models (like the Omniscape algorithm
+  discussed later).
 
 ``` r
 
-# We use the `weight_global` as habitat
-habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global) |>
-  add_nohabitat(microtus_hab[microtus_hab$resistance==10,])
-habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global) |>
-  add_nohabitat(crocidura_hab[crocidura_hab$resistance==10,])
+# We use `suitability` as habitat weight, and take out the covers the species cannot cross
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$suitability) |>
+  add_nohabitat(microtus_hab[microtus_hab$permeability==0,])
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$suitability) |>
+  add_nohabitat(crocidura_hab[crocidura_hab$permeability==0,])
 ```
 
 At this stage, now that the habitats are defined, we rasterize the
@@ -213,7 +214,7 @@ print(spcmdl)
 #>               ground_concentration_cd_compressed
 #> names       : soil, plant, herbivore, carnivore
 #> min values  :    0,     0,         0,         0
-#> max values  :    1,     1,        10,         9
+#> max values  :    1,     1,        10,         8
 ```
 
 ------------------------------------------------------------------------

@@ -26,7 +26,6 @@ region of interest.
 ``` r
 # \donttest{
 library(sf)
-#> Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE
 roi <- sf::st_as_sfc(sf::st_bbox(
   c(xmin = 600000, ymin = 6600000, xmax = 650000, ymax = 6650000),
   crs = 2154)
