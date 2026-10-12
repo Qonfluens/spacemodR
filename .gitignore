@@ -17,3 +17,10 @@ src/*.o
 src/*.so
 src/*.dll
 tests/testthat/Rplots.pdf
+
+# generated at install time by rstantools (configure)
+src/stanExports_*
+# inputs and outputs of the Omniscape runs
+julia_run/*.tif
+# built package archives
+spacemodR_*.tar.gz
