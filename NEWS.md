@@ -1,3 +1,20 @@
+# spacemodR (development version)
+
+## New Features & Improvements
+
+* **Stacking order of habitat layers:** `habitat()`, `add_habitat()` and `add_nohabitat()` gain a `priority` argument, stored in a new `priority` column of the `habitat` object. In `habitat_raster()`, overlapping features are stacked by priority and the pixel takes the value of the top one, so the result no longer depends on the order of the `add_*()` calls. By default each new layer goes on top of the previous ones, as before.
+* **Continuity of thin structures:** `habitat()`, `add_habitat()` and `add_nohabitat()` gain a `touches` argument, stored in a new `touches` column. With `touches = TRUE`, lines and polygons fill every pixel they touch in `habitat_raster()`, which keeps hedgerows, rivers or roads continuous; with `touches = FALSE`, polygons fill the pixels whose centre they cover.
+* **Mixed geometries:** `habitat_raster()` now accepts points, lines and polygons in the same `habitat` object.
+* The "Habitat Layer" article explains `priority` and `touches` on a watercourse of the Metaleurop landscape.
+
+## Behaviour changes
+
+* `touches` defaults to `TRUE`, whereas `habitat_raster()` used to fill the pixels whose centre is covered by a polygon, and the pixels of a thin line. Existing rasters therefore change: features are drawn larger. Set `touches = FALSE` to get the previous result, in particular for layers of contiguous polygons such as a land cover map.
+
+## Bug fixes
+
+* `habitat_raster()` no longer fails on an empty `habitat` object.
+
 # spacemodR 0.3.0
 
 ## New Features & Improvements

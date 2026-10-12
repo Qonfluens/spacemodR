@@ -52,13 +52,22 @@ The foundational method described by O'Connor et al. (2024) relies on an "expert
 
 ## The LLM-Assisted Approach for spacemod
 
-Our approach steps away from rigid keyword matching and discrete scoring, moving toward a semantic analysis of a species' ecological requirements.Instead of using the broad European land systems, this database utilizes the fine-scale French OCS-GE (Occupation du Sol à Grande Échelle) nomenclature. Each OCS-GE code was enriched with precise ecological context. For example, paved roads are described as creating a "barrier effect," while mineral soils are noted as "thermophilic."Using a Large Language Model (Gemini), we fed the AI free-text descriptions of both preferred and avoided habitats (sourced from EEA databases). The model conceptually analyzed these texts against our enriched OCS-GE descriptions.
+Our approach steps away from rigid keyword matching and discrete scoring, moving toward a semantic analysis of a species' ecological requirements.Instead of using the broad European land systems, this database utilizes the fine-scale French OCS-GE (Occupation du Sol à Grande Échelle) nomenclature. Each OCS-GE code was enriched with precise ecological context. For example, paved roads are described as creating a "barrier effect," while mineral soils are noted as "thermophilic."Using a Large Language Model (Claude Opus), we fed the AI free-text descriptions of both preferred and avoided habitats (sourced from EEA databases). The model conceptually analyzed these texts against our enriched OCS-GE descriptions, with an anchored scale: 0 unused or avoided, 2 marginal, 5 secondary, 8 main, 10 core habitat.
 
-Instead of a single presence/absence score, the model simultaneously generates four continuous variables (on a scale of 0 to 10) that capture finer landscape ecology concepts:
-* `weight_global`: Overall habitat suitability (closest to the traditional AOH score).
-* `weight_movement`: Landscape permeability for species dispersion.
+Instead of a single presence/absence score, the model generates continuous variables (on a scale of 0 to 10) that capture finer landscape ecology concepts:
+
+* `suitability`: Overall habitat suitability (closest to the traditional AOH score).
+* `weight_breeding`: Value of the class as a breeding, nesting, denning or larval site.
 * `weight_foraging`: Habitat attractiveness specifically for feeding and resource acquisition.
-* `resistance`: The impedance or barrier effect of the environment, heavily informed by the "avoided-habitat" descriptions.
+* `permeability`: Landscape permeability for species dispersion, which accounts for flight, swimming or fossorial habits.
+* `resistance`: The impedance or barrier effect of the environment. It is derived from `permeability` on a logarithmic scale, `10^(2 * (1 - permeability / 10))`: 1 for free movement, 10 for a permeability of 5, 100 for an impassable class.
+
+The dictionary has one row per species and OCS-GE cover (`code_us` is `NA`), and
+further rows for the (cover, use) pairs where the land use changes what the cover
+stands for. This vignette uses the cover alone; the article
+[Habitat data sources](core_Habitat_Sources.html) shows what the land use and
+other land cover maps add. The dictionary covers 935 European species, of which
+482 occur in metropolitan France (column `in_france`).
 
 ## The Fundamental Difference
 
@@ -90,15 +99,13 @@ reference nomenclature to link the OCS-GE codes to their descriptive labels and 
 
 
 ```{r clean_data}
-# Filter for Apodemus sylvaticus
-dfhab_Apsy <- ocsge_species_dict[
-  grepl("Apodemus_sylvaticus",ocsge_species_dict$nom_espece, ignore.case = TRUE), 
-  ]
+# Filter for Apodemus sylvaticus, keeping the rows of the cover alone
+dfhab_Apsy <- ocsge_species_dict %>%
+  filter(species_name == "Apodemus_sylvaticus", is.na(code_us))
 
-# Join ref_ocsge with the species dictionary. 
-# ref_ocsge$code_cs_ (with spaces) matches ocsge_species_dict$code_cs
+# Join ref_ocsge with the species dictionary on the cover code
 df_merged_Apsy <- ref_ocsge %>%
-  dplyr::left_join(dfhab_Apsy, by = c("code_cs_" = "code_cs"))
+  dplyr::left_join(dfhab_Apsy, by = "code_cs")
 
 # Join with the spatial sf object. Assuming sf_ocsge uses 'code_cs' (without spaces)
 sf_Apsy <- sf_ocsge %>%
@@ -107,40 +114,40 @@ sf_Apsy <- sf_ocsge %>%
 
 ### Understanding Habitat Values
 
-By examining the weight_global (wg), we can classify the landscape into 
+By examining the `suitability` (s), we can classify the landscape into 
 different habitat qualities for the species:
 
-- Non-habitat area (wg = 0):
+- Non-habitat area (s = 0):
 
 ```{r ex_nonhabitat}
 df_merged_Apsy %>% 
-  filter(weight_global == 0) %>%
+  filter(suitability == 0) %>%
   pull(nomenclature) %>%
   unique()
 ```
 
-- Very Poor habitat (0 < wg <= 3):
+- Very Poor habitat (0 < s <= 3):
 ```{r ex_verypoorhabitat}
 df_merged_Apsy %>% 
-  filter(weight_global > 0, weight_global <= 3) %>% 
+  filter(suitability > 0, suitability <= 3) %>% 
   pull(nomenclature) %>% 
   unique()
 ```
 
-- Poor habitat (3 < wg <= 7):
+- Poor habitat (3 < s <= 7):
 
 ```{r ex_poorhabitat}
 df_merged_Apsy %>% 
-  filter(weight_global > 7) %>% 
+  filter(suitability > 3, suitability <= 7) %>% 
   pull(nomenclature) %>% 
   unique()
 ```
 
-- Good habitat (wg > 7):
+- Good habitat (s > 7):
 
 ```{r ex_goodhabitat}
 df_merged_Apsy %>% 
-  filter(weight_global > 7) %>% 
+  filter(suitability > 7) %>% 
   pull(nomenclature) %>% 
   unique()
 ```
@@ -148,7 +155,7 @@ df_merged_Apsy %>%
 ### Static Mapping
 
 We will now visualize the spatial distribution of these metrics. 
-We produce four maps focusing on Global Weight, Foraging Weight, 
+We produce four maps focusing on Suitability, Foraging Weight, 
 Landscape Resistance, and finally the standard OCS-GE Land Cover.
 
 ```{r mouse_staticmap, echo=FALSE}
@@ -162,12 +169,12 @@ p0 <- ggplot(sf_Apsy) +
   labs(title = "Land Cover (OCS-GE Nomenclature)")
 
 
-# 1. Map: Global Weight
+# 1. Map: Suitability
 p1 <- ggplot(sf_Apsy) +
-  geom_sf(aes(fill = weight_global), color = NA) +
-  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Global\nWeight") +
+  geom_sf(aes(fill = suitability), color = NA) +
+  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Suitability") +
   theme_minimal() +
-  labs(title = "Apodemus sylvaticus - Global Habitat Weight")
+  labs(title = "Apodemus sylvaticus - Habitat Suitability")
 
 # 2. Map: Foraging Weight
 p2 <- ggplot(sf_Apsy) +
@@ -179,7 +186,7 @@ p2 <- ggplot(sf_Apsy) +
 # 3. Map: Resistance
 p3 <- ggplot(sf_Apsy) +
   geom_sf(aes(fill = resistance), color = NA) +
-  scale_fill_gradient(low = "#fff5f0", high = "#67000d", na.value = "transparent", name = "Resistance") +
+  scale_fill_gradient(low = "#fff5f0", high = "#67000d", transform = "log10", na.value = "transparent", name = "Resistance") +
   theme_minimal() +
   labs(title = "Apodemus sylvaticus - Movement Resistance")
 
@@ -201,9 +208,9 @@ interactive leaflet map. You can toggle the layers in the top right corner.
 sf_Apsy_wgs84 <- st_transform(sf_Apsy, 4326)
 
 # Define color palettes
-pal_wg <- colorNumeric("YlGn", domain = sf_Apsy_wgs84$weight_global, na.color = "transparent")
+pal_wg <- colorNumeric("YlGn", domain = sf_Apsy_wgs84$suitability, na.color = "transparent")
 pal_wf <- colorNumeric("Blues", domain = sf_Apsy_wgs84$weight_foraging, na.color = "transparent")
-pal_res <- colorNumeric("Reds", domain = sf_Apsy_wgs84$resistance, na.color = "transparent")
+pal_res <- colorNumeric("Reds", domain = log10(sf_Apsy_wgs84$resistance), na.color = "transparent")
 
 # Mapping strict pour Leaflet basé sur ref_ocsge
 pal_ocsge <- colorFactor(palette = ref_ocsge$couleur, levels = ref_ocsge$nomenclature)
@@ -217,10 +224,10 @@ leaflet(sf_Apsy_wgs84) %>%
     group = "OCS-GE", label = ~paste(nomenclature)
   ) %>%
 
-  # Layer: Global Weight
+  # Layer: Suitability
   addPolygons(
-    fillColor = ~pal_wg(weight_global), color = NA, fillOpacity = 0.7,
-    group = "Global Weight", label = ~paste("Global Weight:", weight_global)
+    fillColor = ~pal_wg(suitability), color = NA, fillOpacity = 0.7,
+    group = "Suitability", label = ~paste("Suitability:", suitability)
   ) %>%
 
   # Layer: Foraging
@@ -231,13 +238,13 @@ leaflet(sf_Apsy_wgs84) %>%
 
   # Layer: Resistance
   addPolygons(
-    fillColor = ~pal_res(resistance), color = NA, fillOpacity = 0.7,
+    fillColor = ~pal_res(log10(resistance)), color = NA, fillOpacity = 0.7,
     group = "Resistance", label = ~paste("Resistance:", resistance)
   ) %>%
 
   # Controls
   addLayersControl(
-    baseGroups = c("OCS-GE", "Global Weight", "Foraging Weight", "Resistance"),
+    baseGroups = c("OCS-GE", "Suitability", "Foraging Weight", "Resistance"),
     options = layersControlOptions(collapsed = FALSE)
   ) %>%
   addLegend(pal = pal_ocsge, values = ref_ocsge$nomenclature, title = "OCS-GE", group = "OCS-GE", position = "bottomright")
@@ -293,16 +300,19 @@ plot_species_habitat(apsy_hab)
 2. then, we have to create an `habitat` object to benefit from `spacemodR` functionalities
 
 ```{r habitat_apsy}
-apsy_habitat <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$weight_global)
-apsy_resistance <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$resistance)
+apsy_habitat <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$suitability, touches=FALSE)
+apsy_resistance <- habitat(apsy_hab, habitat=TRUE, weight=apsy_hab$resistance, touches=FALSE)
 ```
+
+Here `touches = FALSE` gives each pixel to the land cover class lying under its centre,
+which is the right rule for a map of contiguous polygons. The role of this argument,
+and of `priority`, is detailed [below](#stacking-order-and-thin-structures-priority-and-touches).
 
 
 3. converting them in raster
 
 ```{r, echo=FALSE}
 rast_Apsy_habitat <- load_raster_extdata("rast_Apsy_habitat.tif")
-rast_Apsy_resistance_init <- load_raster_extdata("rast_Apsy_resistance_init.tif")
 rast_Apsy_resistance <- load_raster_extdata("rast_Apsy_resistance.tif")
 ```
 
@@ -315,25 +325,27 @@ ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
 rast_Apsy_habitat <- habitat_raster(ground_cd, apsy_habitat)
 ```
 
-Note that for resistance, we have to use and exponential scale compare to the score in $[0-10]$
-that with have in the data-set `ocsge_species_dict` to an exponential $[1-1000]$.
+The `resistance` of `ocsge_species_dict` is already on the exponential scale
+that connectivity models expect, from 1 (free movement) to 100 (impassable): it
+is derived from the `permeability` score in $[0-10]$ as
+`10^(2 * (1 - permeability / 10))`. A resistance must be at least 1, so the
+pixels lying outside the land cover map, which `habitat_raster()` leaves at 0,
+are set to 1.
 
 ```{r plt_apsy_resistance}
-rast_Apsy_resistance_init <- habitat_raster(ground_cd, apsy_resistance)
-exp_scl <- function(x) { 10^( (log10(1000) / 10) * x )}
-rast_Apsy_resistance <- exp_scl(rast_Apsy_resistance_init)
+rast_Apsy_resistance <- habitat_raster(ground_cd, apsy_resistance)
+rast_Apsy_resistance <- ifel(rast_Apsy_resistance < 1, 1, rast_Apsy_resistance)
 ```
 
 ```{r, echo=FALSE}
 # terra::writeRaster(rast_Apsy_habitat, "inst/extdata/rast_Apsy_habitat.tif", overwrite = TRUE)
-# terra::writeRaster(rast_Apsy_resistance_init, "inst/extdata/rast_Apsy_resistance_init.tif", overwrite = TRUE)
 # terra::writeRaster(rast_Apsy_resistance, "inst/extdata/rast_Apsy_resistance.tif", overwrite = TRUE)
 ```
 
 ```{r}
 par(mfrow = c(1, 2))
-plot(rast_Apsy_resistance_init)
-plot(rast_Apsy_resistance)
+plot(rast_Apsy_habitat, main = "Suitability")
+plot(log10(rast_Apsy_resistance), main = "Resistance (log10)")
 par(mfrow = c(1, 1))
 ```
 
@@ -343,6 +355,143 @@ terra::writeRaster(rast_Apsy_habitat, "julia_run/rast_Apsy_habitat.tif", overwri
 terra::writeRaster(rast_Apsy_resistance, "julia_run/rast_Apsy_resistance.tif", overwrite = TRUE)
 ```
 
+
+## Stacking order and thin structures: `priority` and `touches`
+
+A raster holds a single value per pixel, while several features of the `habitat`
+object often share the same pixel. Two settings, given layer by layer in
+`add_habitat()` and `add_nohabitat()`, decide what the pixel gets:
+
+* `priority` answers *"which layer wins where layers overlap?"*. The layers are
+  stacked from the lowest to the highest priority and the pixel takes the value
+  of the layer on top. By default each new layer goes on top of the previous
+  ones, so the layers stack in the order they are added.
+* `touches` answers *"which pixels does a feature occupy?"*. With `touches = TRUE`
+  (the default) a line or a polygon fills every pixel it touches. With
+  `touches = FALSE` a polygon only fills the pixels whose centre it covers, and
+  a line only the pixels of a thin line.
+
+Neither of them describes how hard a structure is to cross: this is the role of
+the `weight` (a resistance), or of `add_nohabitat()` for an absolute barrier.
+A river is a barrier for the wood mouse and hardly an obstacle for a flying
+insect: this is written in the weights of two different `habitat` objects, not
+in `touches`.
+
+### Example: a watercourse in the landscape of *Apodemus sylvaticus*
+
+Let us zoom on a window of 1 km x 1 km where a channel, narrower than a pixel
+(about 25 m), joins a larger canal. Water surfaces are not a habitat for the wood
+mouse: we take them out of the land cover and declare them with `add_nohabitat()`.
+
+```{r win_data}
+win <- st_as_sfc(st_bbox(
+  c(xmin = 700100, xmax = 701100, ymin = 7036400, ymax = 7037400),
+  crs = st_crs(apsy_hab)
+))
+apsy_win <- st_intersection(apsy_hab, win)
+grid_win <- crop(ground_cd, vect(win))
+
+water_win <- apsy_win[apsy_win$code_cs == "CS1.2.2", ]
+land_win <- apsy_win[apsy_win$code_cs != "CS1.2.2", ]
+```
+
+We build the same landscape with three different rules:
+
+```{r win_habitat}
+# 1. everything by pixel centre
+hab_centre <- habitat() |>
+  add_habitat(land_win, weight = land_win$resistance, touches = FALSE) |>
+  add_nohabitat(water_win, touches = FALSE)
+
+# 2. water on every touched pixel, but below the land cover
+hab_below <- habitat() |>
+  add_habitat(land_win, weight = land_win$resistance, touches = FALSE, priority = 2) |>
+  add_nohabitat(water_win, touches = TRUE, priority = 1)
+
+# 3. water on every touched pixel, on top of the land cover
+hab_top <- habitat() |>
+  add_habitat(land_win, weight = land_win$resistance, touches = FALSE, priority = 1) |>
+  add_nohabitat(water_win, touches = TRUE, priority = 2)
+
+rast_win <- list(
+  "1. pixel centre" = habitat_raster(grid_win, hab_centre),
+  "2. touches, water below" = habitat_raster(grid_win, hab_below),
+  "3. touches, water on top" = habitat_raster(grid_win, hab_top)
+)
+```
+
+In the maps below, the excluded pixels (`NA`) are in dark grey and the outline of
+the water polygons is drawn in blue.
+
+```{r plt_win, echo=FALSE, fig.height=4}
+plot_win <- function(r, title) {
+  ggplot() +
+    theme_minimal() +
+    geom_spatraster(data = r) +
+    geom_sf(data = water_win, fill = NA, color = "#2b8cbe", linewidth = 0.3) +
+    scale_fill_gradient(low = "#fff5f0", high = "#67000d", limits = c(0, 10),
+                        na.value = "grey20", name = "Resistance") +
+    labs(title = title) +
+    theme(axis.text = element_blank())
+}
+wrap_plots(Map(plot_win, rast_win, names(rast_win)), guides = "collect")
+```
+
+To compare them, we count the excluded pixels, the number of separate pieces
+the watercourse is made of, and the number of patches of land a mouse can reach
+without crossing water (pixels being neighbours by their edges and their
+corners):
+
+```{r win_table}
+data.frame(
+  rule = names(rast_win),
+  water_pixels = sapply(rast_win, function(r) sum(is.na(values(r)))),
+  water_pieces = sapply(rast_win, function(r) {
+    nrow(unique(patches(ifel(is.na(r), 1, NA), directions = 8)))
+  }),
+  land_patches = sapply(rast_win, function(r) {
+    nrow(unique(patches(r, directions = 8)))
+  }),
+  row.names = NULL
+)
+```
+
+1. **Pixel centre.** The channel only keeps the few pixels whose centre falls
+   in it: it is cut into separate pieces, and even the larger canal can be
+   crossed diagonally between two of its pixels. The land is a single patch:
+   for the model, the water is not a barrier.
+2. **Touches, water below.** The water is drawn on every pixel it touches, but
+   the land cover is stacked on top of it and takes back all the pixels whose
+   centre it covers. `touches` alone is not enough.
+3. **Touches, water on top.** The watercourse is in one piece and the canal
+   splits the land in two patches. This is the combination to use for a
+   structure that must stay continuous: `touches = TRUE` **and** a `priority`
+   above the layers it runs through.
+
+### Choosing `touches`
+
+`touches = TRUE` has a price: the feature is drawn larger than it is. In the
+example the water covers about 4.2 ha, that is 67 pixels: the pixel-centre rule
+gives 66 pixels, the third rule 144.
+
+* Use `touches = FALSE` for layers of contiguous polygons covering the landscape
+  (a land cover map such as OCS-GE). Their surfaces stay unbiased, and with
+  `touches = TRUE` each class would spread over the border pixels of its
+  neighbours.
+* Keep `touches = TRUE` for the thin structures whose continuity matters:
+  barriers (rivers, roads, fences) and corridors (hedgerows, banks), whether
+  they are drawn as lines or as narrow polygons, and give them a higher
+  `priority`.
+* It also applies to structures that are only partly permeable. A river added
+  with `add_habitat()` and a high resistance must be continuous as well,
+  otherwise it is crossed for free wherever it runs obliquely to the grid.
+
+Some situations have no good answer at a given resolution: a structure narrower
+than a pixel is either widened to a full pixel or lost, a gap smaller than a
+pixel (a bridge) disappears unless it is added as its own layer with a higher
+priority, and two structures sharing a pixel (a hedgerow along a road) cannot
+both be kept, `priority` only choosing the winner. When these cases matter, the
+solution is a finer `ground_raster`.
 
 ## Kernel
 
@@ -397,7 +546,7 @@ omniscape_apsy_500m <- load_raster_extdata("omniscape_apsy_500m.tif")
 p_src = ggplot() +
   theme_minimal() +
   geom_spatraster(data = rast_Apsy_habitat) +
-  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Global\nWeight") +
+  scale_fill_gradient(low = "#ffffe5", high = "#004529", na.value = "transparent", name = "Suitability") +
   labs(title = "Source")
 
 p_res = ggplot() +

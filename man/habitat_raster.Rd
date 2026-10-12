@@ -29,8 +29,33 @@ a weight of \code{0} and are considered passable (habitat = \code{TRUE}).
 
 \strong{Exclusion zones:} Geometries added via \code{add_nohabitat()} act as absolute
 barriers. Any pixel intersecting these geometries will be assigned \code{NA}, overriding
-any underlying weight. If overlapping polygons exist, the order of features in the
-\code{habitat} object determines the final value (last on top).
+any underlying weight.
+
+\strong{Stacking order:} Where several features overlap, the pixel takes the value of
+the feature with the highest \code{priority} (see \code{\link{add_habitat}}); features
+are stacked from the lowest to the highest priority and the top one is read. With equal
+priorities, the order of the features in the \code{habitat} object decides (last on
+top). As \code{add_habitat()} and \code{add_nohabitat()} give by default an increasing
+priority to each new layer, layers stack in the order they were added unless
+\code{priority} is set explicitly. The same rule applies to exclusion zones: a
+non-habitat feature excludes a pixel only if no feature of higher priority covers it.
+
+\strong{Pixels filled by a feature:} The \code{touches} value of each feature (see
+\code{\link{add_habitat}}) sets which pixels it occupies. With \code{touches = TRUE}
+(the default of \code{add_habitat()} and \code{add_nohabitat()}) a line or a polygon
+fills every pixel it touches. A thin structure such as a hedgerow, a river or a road
+is then a chain of pixels sharing an edge: a corridor stays connected for 4-neighbour
+movements and a barrier cannot be crossed diagonally. With \code{touches = FALSE}, a
+polygon fills only the pixels whose centre it covers and a line only the pixels of a
+thin line, which keeps areas unbiased but can break thin structures. Combine a high
+\code{priority} with \code{touches = TRUE} to keep a thin structure continuous above
+the layers it runs through. Points, lines and polygons can be mixed in the same
+\code{habitat} object.
+
+Note that a raster holds one value per pixel: a structure narrower than a pixel is
+either widened to a full pixel or dropped, and two structures sharing a pixel cannot
+both be kept. When this matters, the only real solution is a finer
+\code{ground_raster}.
 }
 \examples{
 \dontrun{
@@ -52,5 +77,14 @@ my_habitat <- habitat() |>
 # Rasterize
 hab_rast <- habitat_raster(ref_grid, my_habitat)
 plot(hab_rast)
+
+# A hedgerow kept continuous across the exclusion zone, whatever the order
+# in which the layers are added
+hedge <- st_sf(geometry = st_sfc(st_linestring(cbind(c(0, 10), c(0.2, 9.7)))))
+my_habitat <- habitat() |>
+  add_habitat(hedge, weight = 1, priority = 10) |>
+  add_habitat(good_hab, weight = 0.8, priority = 1, touches = FALSE) |>
+  add_nohabitat(bad_hab, priority = 2)
+plot(habitat_raster(ref_grid, my_habitat))
 }
 }
