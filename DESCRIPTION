@@ -44,6 +44,7 @@ Suggests:
     tidyterra,
     scales,
     purrr,
+    quarto,
     tidyr,
     leaflet,
     gstat
