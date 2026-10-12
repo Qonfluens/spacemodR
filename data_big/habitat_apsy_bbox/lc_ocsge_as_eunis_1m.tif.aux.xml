@@ -1,0 +1,263 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <Description>class</Description>
+    <CategoryNames>
+      <Category></Category>
+      <Category>B1 Coastal dunes and sandy shores</Category>
+      <Category>B2 Coastal shingle</Category>
+      <Category>B3 Rock cliffs, ledges and shores, inc</Category>
+      <Category>C1 Surface standing waters</Category>
+      <Category>C2 Surface running waters</Category>
+      <Category>C3 Littoral zone of inland surface wat</Category>
+      <Category>D1 Raised and blanket bogs</Category>
+      <Category>D2 Valley mires, poor fens and transit</Category>
+      <Category>D3 Aapa, palsa and polygon mires</Category>
+      <Category>D4 Base-rich fens and calcareous sprin</Category>
+      <Category>D5 Sedge and reedbeds, normally withou</Category>
+      <Category>D6 Inland saline and brackish marshes </Category>
+      <Category>E1 Dry grasslands</Category>
+      <Category>E2 Mesic grasslands</Category>
+      <Category>E3 Seasonally wet and wet grasslands</Category>
+      <Category>E4 Alpine and subalpine grasslands</Category>
+      <Category>E6 Inland salt steppes</Category>
+      <Category>E7 Sparsely wooded grasslands</Category>
+      <Category>F1 Tundra</Category>
+      <Category>F2 Arctic, alpine and subalpine scrub</Category>
+      <Category>F3 Temperate and mediterranean-montane</Category>
+      <Category>F4 Temperate shrub heathland</Category>
+      <Category>F5 Maquis, arborescent matorral and th</Category>
+      <Category>F6 Garrigue</Category>
+      <Category>F7 Spiny Mediterranean heaths (phrygan</Category>
+      <Category>F8 Thermo-Atlantic xerophytic scrub</Category>
+      <Category>F9 Riverine and fen scrubs</Category>
+      <Category>FB Shrub plantations</Category>
+      <Category>G1 Broadleaved deciduous woodland</Category>
+      <Category>G2 Broadleaved evergreen woodland</Category>
+      <Category>G3 Coniferous woodland</Category>
+      <Category>G4 Mixed deciduous and coniferous wood</Category>
+      <Category>G5 Lines of trees, small anthropogenic</Category>
+      <Category>H2 Screes</Category>
+      <Category>H3 Inland cliffs, rock pavements and o</Category>
+      <Category>H4 Snow or ice-dominated habitats</Category>
+      <Category>H5 Miscellaneous inland habitats with </Category>
+      <Category>I1 Arable land and market gardens</Category>
+      <Category>I2 Cultivated areas of gardens and par</Category>
+      <Category>J1 Buildings of cities, towns and vill</Category>
+      <Category>J2 Low density buildings</Category>
+      <Category>J3 Extractive industrial sites</Category>
+      <Category>J4 Transport networks and other constr</Category>
+      <Category>J5 Highly artificial man-made waters a</Category>
+      <Category>J6 Waste deposits</Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+      <Category></Category>
+    </CategoryNames>
+  </PAMRasterBand>
+</PAMDataset>
