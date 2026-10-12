@@ -107,7 +107,7 @@ bias and R2.
 data(soil_metaleurop)
 cv <- cv_soil(soil_metaleurop, "cd", model = "Exp")
 summary(cv)
-#>        RMSE       MAE         bias       R2   n
-#> 1 0.2506923 0.1622391 0.0001610785 0.602517 587
+#>        RMSE       MAE         bias        R2   n
+#> 1 0.2506923 0.1622391 0.0001610769 0.6025171 587
 # }
 ```
