@@ -457,7 +457,7 @@ First, the soil layer receives the cadmium concentration:
 
 ``` r
 
-spcmdl_dispersal[["sol"]][] <- ground_cd
+spcmdl_dispersal[["sol"]][] <- terra::values(ground_cd)
 terra::plot(spcmdl_dispersal["sol"])
 ```
 

@@ -1026,7 +1026,7 @@ In Eco-SSL, the following equation is given (see Neperian logarithm):
 # 1. Assign the actual concentration grid into the "soil" layer
 # The Cd in ground layer is in log10(Cd)
 spcmdl_berisp_flux <- spcmdl_berisp_init
-spcmdl_berisp_flux[["soil"]][] <- ground_cd
+spcmdl_berisp_flux[["soil"]][] <- terra::values(ground_cd)
 
 # 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
 fluxes <- flux(

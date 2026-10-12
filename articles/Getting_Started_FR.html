@@ -307,7 +307,7 @@ bioconcentration et sa bioaccumulation jusqu’au sommet de la chaîne
 alimentaire grâce à la fonction <code><a href="../reference/transfer.html">transfer()</a></code>.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># 1. On assigne la grille de concentration réelle dans la couche "soil"</span></span>
-<span><span class="va">spcmdl_dispersal</span><span class="op">[[</span><span class="st">"sol"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ground_cd</span></span>
+<span><span class="va">spcmdl_dispersal</span><span class="op">[[</span><span class="st">"sol"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">ground_cd</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. On définit les équations de transfert (Facteurs de Bioaccumulation / Bioconcentration)</span></span>
 <span><span class="va">fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span><span class="va">spcmdl_dispersal</span>, default <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">|&gt;</span></span>

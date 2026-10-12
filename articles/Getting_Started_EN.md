@@ -253,7 +253,7 @@ function.
 ``` r
 
 # 1. Assign the actual concentration grid into the "soil" layer
-spcmdl_dispersal[["soil"]][] <- ground_cd
+spcmdl_dispersal[["soil"]][] <- terra::values(ground_cd)
 
 # 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)
 fluxes <- flux(spcmdl_dispersal, default = 1) |>

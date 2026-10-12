@@ -256,7 +256,7 @@ alimentaire grâce à la fonction
 ``` r
 
 # 1. On assigne la grille de concentration réelle dans la couche "soil"
-spcmdl_dispersal[["sol"]][] <- ground_cd
+spcmdl_dispersal[["sol"]][] <- terra::values(ground_cd)
 
 # 2. On définit les équations de transfert (Facteurs de Bioaccumulation / Bioconcentration)
 fluxes <- flux(spcmdl_dispersal, default = 1) |>

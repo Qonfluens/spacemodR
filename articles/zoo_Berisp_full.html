@@ -1034,7 +1034,7 @@ soil-earthworm fluxes<a class="anchor" aria-label="anchor" href="#spacemodel-edi
 <code class="sourceCode R"><span><span class="co"># 1. Assign the actual concentration grid into the "soil" layer</span></span>
 <span><span class="co"># The Cd in ground layer is in log10(Cd)</span></span>
 <span><span class="va">spcmdl_berisp_flux</span> <span class="op">&lt;-</span> <span class="va">spcmdl_berisp_init</span></span>
-<span><span class="va">spcmdl_berisp_flux</span><span class="op">[[</span><span class="st">"soil"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">ground_cd</span></span>
+<span><span class="va">spcmdl_berisp_flux</span><span class="op">[[</span><span class="st">"soil"</span><span class="op">]</span><span class="op">]</span><span class="op">[</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/values.html" class="external-link">values</a></span><span class="op">(</span><span class="va">ground_cd</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 2. Define the transfer equations (Bioaccumulation / Bioconcentration Factors)</span></span>
 <span><span class="va">fluxes</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/flux.html">flux</a></span><span class="op">(</span></span>
