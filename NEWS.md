@@ -1,4 +1,4 @@
-# spacemodR (development version)
+# spacemodR 0.3.5
 
 ## New Features & Improvements
 
@@ -6,6 +6,7 @@
 * **Continuity of thin structures:** `habitat()`, `add_habitat()` and `add_nohabitat()` gain a `touches` argument, stored in a new `touches` column. With `touches = TRUE`, lines and polygons fill every pixel they touch in `habitat_raster()`, which keeps hedgerows, rivers or roads continuous; with `touches = FALSE`, polygons fill the pixels whose centre they cover.
 * **Mixed geometries:** `habitat_raster()` now accepts points, lines and polygons in the same `habitat` object.
 * The "Habitat Layer" article explains `priority` and `touches` on a watercourse of the Metaleurop landscape.
+* **OCS-GE from IGN:** new function `get_ocsge()`, a single entry point to get the OCS-GE of a region of interest, with a `source` argument. `source = "ign"` calls the new `get_ocsge_data_ign()`, which downloads the per-department GeoPackages of the IGN Géoplateforme (no API key), keeps them in a cache directory and lets you choose the vintage with `year`. `source = "fgb"` calls `get_ocsge_data_fgb()`, unchanged. Extracting the IGN archives needs the `archive` package or the `7z` command line tool.
 * **OCS-GE / EUNIS crosswalk:** new dataset `ref_ocsge_eunis`, a ranked correspondence between the 14 OCS-GE cover classes (`CS`), optionally refined by land use (`US`), and the 45 EUNIS Level 2 classes, with the share of each match measured on the Metaleurop site.
 * **Land use in OCS-GE habitats:** `ocsge_species_dict` now has rows for 47 (cover, use) pairs (`code_us`) in addition to the 14 covers, derived from `eunis_species_dict` through `ref_ocsge_eunis`. `join_ocsge_species()` gains a `us_col` argument: when the polygons carry the land use, they take the scores of their (cover, use) pair, and of their cover otherwise. New dataset `ocsge_us_metaleurop`, the OCS-GE of the Metaleurop site with cover and use.
 * **Habitat data sources guide:** the article "Habitat Layer from EUNIS" becomes "Habitat Data Sources". It compares OCS-GE cover, OCS-GE cover and use, and EUNIS, shows how to move between them, and lists the other sources that could refine them.
@@ -21,6 +22,12 @@
 
 * `habitat_raster()` no longer fails on an empty `habitat` object.
 * `get_eunis_data()` returned the raster upside down (north and south swapped), because the image exported by the EEA service carries no georeferencing. The image is now georeferenced before being read. The Metaleurop layer shipped in `inst/extdata/eunis_metaleurop_L2.tif` was rebuilt; rasters obtained with earlier versions must be downloaded again.
+
+## Packaging
+
+* Preparation of the CRAN submission: shorter package title, `get_eunis_data()` now takes `service_url = NULL` by default (the EEA service, as before), the examples of `habitat_raster()` and `plot()` for habitat objects are run, and the vignette figures are lighter.
+* `calibrate_simple()` checked for the wrong compiled model before sampling.
+* `dispersal(method = "omniscape")` reports its progress with `message()` instead of `cat()`.
 
 # spacemodR 0.3.0
 

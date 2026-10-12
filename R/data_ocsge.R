@@ -51,6 +51,8 @@
 #'   plot(st_geometry(ocsge_data))
 #' }
 #'
+#' @seealso \code{\link{get_ocsge}}, \code{\link{get_ocsge_data_ign}}
+#'
 #' @importFrom sf st_transform st_bbox st_as_text st_as_sfc st_read st_intersection
 #' @export
 get_ocsge_data_fgb <- function(roi, fgb_url) {
@@ -76,6 +78,287 @@ get_ocsge_data_fgb <- function(roi, fgb_url) {
   })
 }
 
+
+#' Retrieve OCS GE data for a region of interest
+#'
+#' @description
+#' Generic entry point to get OCS GE (Occupation du Sol à Grande Echelle)
+#' polygons, with their cover (\code{code_cs}) and use (\code{code_us}) codes,
+#' for a Region of Interest (ROI). The \code{source} argument selects where the
+#' data come from:
+#' \describe{
+#'   \item{\code{"ign"}}{the official per-department deliveries of the IGN
+#'   Géoplateforme, see \code{\link{get_ocsge_data_ign}}. Nothing to host, but
+#'   each department is downloaded in full the first time.}
+#'   \item{\code{"fgb"}}{a remote FlatGeobuf file that you host, see
+#'   \code{\link{get_ocsge_data_fgb}}. Only the features of the ROI are
+#'   downloaded.}
+#' }
+#'
+#' @param roi An \code{\link[sf]{sf}} (or \code{sfc}) object defining the Region Of Interest.
+#' @param source Character. \code{"ign"} (default) or \code{"fgb"}.
+#' @param ... Arguments passed to the function of the selected source:
+#' \code{year}, \code{cache_dir} and \code{quiet} for \code{"ign"},
+#' \code{fgb_url} for \code{"fgb"}.
+#'
+#' @return An \code{\link[sf]{sf}} object containing the OCS GE polygons clipped to the ROI.
+#'
+#' @examples
+#' \dontrun{
+#'   data(roi_metaleurop)
+#'
+#'   # from the IGN Géoplateforme (latest vintage of each department)
+#'   ocsge_data <- get_ocsge(roi_metaleurop)
+#'   ocsge_data <- get_ocsge(roi_metaleurop, source = "ign", year = 2021)
+#'
+#'   # from a FlatGeobuf file
+#'   ocsge_data <- get_ocsge(roi_metaleurop, source = "fgb",
+#'                           fgb_url = "https://example.com/data/ocsge_france.fgb")
+#' }
+#'
+#' @seealso \code{\link{join_ocsge_species}} to score the polygons for a
+#' species, and \code{\link{get_eunis_data}} for the EUNIS land cover.
+#'
+#' @export
+get_ocsge <- function(roi, source = c("ign", "fgb"), ...) {
+  source <- match.arg(source)
+  switch(source,
+         ign = get_ocsge_data_ign(roi, ...),
+         fgb = get_ocsge_data_fgb(roi, ...))
+}
+
+
+#' @noRd
+.ocsge_ign_url <- "https://data.geopf.fr/telechargement/resource/OCSGE"
+
+#' Retrieve OCS GE data from the IGN Géoplateforme
+#'
+#' @description
+#' This function retrieves OCS GE (Land Cover) data for a specific Region of Interest (ROI)
+#' from the download service of the IGN Géoplateforme
+#' (\url{https://data.geopf.fr/telechargement/resource/OCSGE}), which needs no API key.
+#'
+#' IGN delivers the OCS GE as one compressed GeoPackage per department and
+#' vintage (15 to 270 MB each). The departments intersecting the ROI are
+#' downloaded in full, extracted and kept in \code{cache_dir}, so that later
+#' calls on the same departments read the local file only.
+#'
+#' @param roi An \code{\link[sf]{sf}} (or \code{sfc}) object defining the Region Of Interest.
+#' It can be in any projection.
+#' @param year Integer. Vintage (\emph{millésime}) to retrieve. Default \code{NULL}
+#' takes the latest vintage of each department. Vintages differ between
+#' departments; the error raised for a missing one lists those available.
+#' @param cache_dir Character. Directory where the extracted GeoPackages are kept.
+#' Defaults to the user cache directory of the package. Each department takes
+#' several hundred MB once extracted; delete the files to free the space.
+#' @param quiet Logical. If \code{FALSE} (default), reports the datasets used
+#' and the download progress.
+#'
+#' @return An \code{\link[sf]{sf}} object containing the OCS GE polygons intersected by the ROI,
+#' with the columns of the IGN delivery (notably \code{code_cs}, \code{code_us}
+#' and \code{millesime}), in the projection of the delivery: Lambert-93
+#' (EPSG:2154) in mainland France and Corsica, the local UTM projection in
+#' overseas departments.
+#'
+#' @details
+#' The function performs the following steps:
+#' \enumerate{
+#'   \item Finds the departments intersecting the \code{roi} with \code{\link{get_departements_for_roi}}.
+#'   \item Lists the OCS GE deliveries of these departments (version 2, GeoPackage) and selects the vintage.
+#'   \item Downloads the archives missing from \code{cache_dir}, checks their MD5 sum and extracts the \code{OCCUPATION_SOL} layer.
+#'   \item Reads the features in the bounding box of the \code{roi} and clips them to its exact shape.
+#' }
+#'
+#' Corrective patches published separately by IGN (\code{PATCHCORRECTIF}) and
+#' the layers of differences between two vintages are not used.
+#'
+#' @note
+#' This function requires a working internet connection and a way to extract
+#' 7z archives: either the \pkg{archive} package, or the \code{7z} command
+#' line tool (7-Zip, p7zip).
+#'
+#' @examples
+#' \dontrun{
+#'   data(roi_metaleurop)
+#'
+#'   # latest vintage
+#'   ocsge_data <- get_ocsge_data_ign(roi_metaleurop)
+#'
+#'   # a given vintage
+#'   ocsge_2021 <- get_ocsge_data_ign(roi_metaleurop, year = 2021)
+#'
+#'   habitat_vole <- join_ocsge_species(ocsge_2021, "Microtus_arvalis")
+#' }
+#'
+#' @seealso \code{\link{get_ocsge}}, \code{\link{get_ocsge_data_fgb}}
+#'
+#' @export
+get_ocsge_data_ign <- function(roi,
+                               year = NULL,
+                               cache_dir = tools::R_user_dir("spacemodR", "cache"),
+                               quiet = FALSE) {
+
+  if (!inherits(roi, "sf") && !inherits(roi, "sfc")) {
+    stop("`roi` must be an 'sf' or 'sfc' spatial object.")
+  }
+  roi <- sf::st_union(sf::st_geometry(roi))
+
+  # 1. DEPARTMENTS AND VINTAGES
+  zones <- .ocsge_ign_zone(get_departements_for_roi(sf::st_sf(geometry = roi)))
+  if (length(zones) == 0) {
+    stop("`roi` does not intersect any French department.")
+  }
+  datasets <- do.call(rbind, lapply(zones, function(zone) {
+    .ocsge_ign_datasets(.ocsge_ign_get(.ocsge_ign_url, query = list(zone = zone, limit = 50)))
+  }))
+  datasets <- .ocsge_ign_select(datasets, zones, year)
+  if (!quiet) {
+    message("OCS GE from IGN: ", paste(datasets$title, collapse = ", "))
+    if (length(unique(datasets$year)) > 1) {
+      message("The departments are of different vintages; set `year` to get a single one.")
+    }
+  }
+
+  # 2. DOWNLOAD (once) AND FILTER READING
+  dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+  res <- lapply(datasets$title, function(title) {
+    gpkg <- .ocsge_ign_fetch(title, cache_dir, quiet)
+    roi_dpt <- sf::st_transform(roi, sf::st_layers(gpkg)$crs[[1]])
+    dpt <- sf::st_read(
+      gpkg,
+      layer = "OCCUPATION_SOL",
+      wkt_filter = sf::st_as_text(sf::st_as_sfc(sf::st_bbox(roi_dpt))),
+      quiet = TRUE
+    )
+    sf::st_agr(dpt) <- "constant"
+    sf::st_intersection(dpt, roi_dpt)
+  })
+
+  # 3. BIND DEPARTMENTS on the columns they share (the geometry column is not
+  # named the same in every delivery)
+  res <- lapply(res, function(x) {
+    sf::st_set_geometry(sf::st_transform(x, sf::st_crs(res[[1]])), "geometry")
+  })
+  cols <- Reduce(intersect, lapply(res, names))
+  res <- do.call(rbind, lapply(res, function(x) x[, cols]))
+  rownames(res) <- NULL
+  res
+}
+
+# "59" -> "D059", "2A" -> "D02A", "971" -> "D971"
+#' @noRd
+.ocsge_ign_zone <- function(code) {
+  code <- toupper(as.character(code))
+  paste0("D", strrep("0", pmax(0, 3 - nchar(code))), code)
+}
+
+#' @noRd
+.ocsge_ign_get <- function(url, query = NULL) {
+  resp <- httr::RETRY("GET", url, query = query, httr::timeout(60), times = 3,
+                      quiet = TRUE)
+  if (httr::http_error(resp)) {
+    stop(sprintf("Failed to query the IGN download service at %s (HTTP %s).",
+                 url, httr::status_code(resp)), call. = FALSE)
+  }
+  httr::content(resp, "text", encoding = "UTF-8")
+}
+
+# Deliveries listed in an Atom feed of the service, from their names, e.g.
+# OCS-GE_2-0__GPKG_LAMB93_D059_2021-01-01. Version 1.1 (shapefile), DIFF and
+# PATCHCORRECTIF deliveries are named differently and left out.
+#' @noRd
+.ocsge_ign_datasets <- function(feed) {
+  pattern <- "OCS-GE_2-0__GPKG_[A-Z0-9]+_D[0-9AB]{3}_[0-9]{4}-[0-9]{2}-[0-9]{2}"
+  title <- unique(regmatches(feed, gregexpr(pattern, feed))[[1]])
+  data.frame(
+    title = title,
+    zone = sub(".*_(D[0-9AB]{3})_.*", "\\1", title),
+    year = as.integer(sub(".*_([0-9]{4})-[0-9]{2}-[0-9]{2}$", "\\1", title))
+  )
+}
+
+# One delivery per zone: the vintage `year`, or the latest one
+#' @noRd
+.ocsge_ign_select <- function(datasets, zones, year = NULL) {
+  do.call(rbind, lapply(zones, function(zone) {
+    d <- datasets[datasets$zone == zone, ]
+    if (nrow(d) == 0) {
+      stop(sprintf("IGN publishes no OCS GE (version 2, GeoPackage) for department %s.", zone),
+           call. = FALSE)
+    }
+    keep <- if (is.null(year)) d$year == max(d$year) else d$year == year
+    if (!any(keep)) {
+      stop(sprintf("No OCS GE of %s for department %s. Available vintages: %s.",
+                   year, zone, paste(sort(d$year), collapse = ", ")), call. = FALSE)
+    }
+    d[keep, ][1, ]
+  }))
+}
+
+# Path of the GeoPackage of a delivery in the cache, downloaded if missing
+#' @noRd
+.ocsge_ign_fetch <- function(title, cache_dir, quiet = FALSE) {
+  gpkg <- file.path(cache_dir, paste0(title, ".gpkg"))
+  if (file.exists(gpkg)) {
+    return(gpkg)
+  }
+
+  feed <- .ocsge_ign_get(paste0(.ocsge_ign_url, "/", title))
+  url <- regmatches(feed, regexpr("https://data\\.geopf\\.fr/telechargement/download/[^\"<]+\\.7z(?=[\"<])",
+                                  feed, perl = TRUE))
+  if (length(url) == 0) {
+    stop(sprintf("No 7z archive found for the IGN delivery %s.", title), call. = FALSE)
+  }
+
+  archive <- file.path(cache_dir, paste0(title, ".7z"))
+  exdir <- tempfile("ocsge_", tmpdir = cache_dir)
+  on.exit(unlink(c(archive, exdir), recursive = TRUE), add = TRUE)
+
+  if (!quiet) message("Downloading ", url)
+  args <- list("GET", url, httr::write_disk(archive, overwrite = TRUE), times = 3, quiet = TRUE)
+  if (!quiet) args <- c(args, list(httr::progress()))
+  resp <- do.call(httr::RETRY, args)
+  if (httr::http_error(resp)) {
+    stop(sprintf("Failed to download %s (HTTP %s).", url, httr::status_code(resp)), call. = FALSE)
+  }
+
+  # the service publishes the MD5 sum next to the archive
+  md5 <- tryCatch(substr(trimws(.ocsge_ign_get(sub("\\.7z$", ".md5", url))), 1, 32),
+                  error = function(e) NA_character_)
+  if (!is.na(md5) && grepl("^[0-9a-f]{32}$", md5) && unname(tools::md5sum(archive)) != md5) {
+    stop(sprintf("The archive downloaded from %s is corrupted (MD5 mismatch). Try again.", url),
+         call. = FALSE)
+  }
+
+  if (!quiet) message("Extracting OCCUPATION_SOL.gpkg")
+  extracted <- .ocsge_ign_extract(archive, exdir)
+  if (length(extracted) != 1 || !file.exists(extracted)) {
+    stop(sprintf("OCCUPATION_SOL.gpkg not found in the IGN delivery %s.", title), call. = FALSE)
+  }
+  file.rename(extracted, gpkg)
+  gpkg
+}
+
+# Extract OCCUPATION_SOL.gpkg from a 7z archive, return its path
+#' @noRd
+.ocsge_ign_extract <- function(archive, exdir) {
+  if (requireNamespace("archive", quietly = TRUE)) {
+    files <- archive::archive(archive)$path
+    file <- grep("(^|/)OCCUPATION_SOL\\.gpkg$", files, value = TRUE)
+    archive::archive_extract(archive, dir = exdir, files = file)
+    return(file.path(exdir, file))
+  }
+  bin <- Sys.which(c("7z", "7zz", "7za", "7zr"))
+  bin <- bin[nzchar(bin)]
+  if (length(bin) == 0) {
+    stop("Extracting IGN archives needs the 'archive' package (install.packages(\"archive\")) ",
+         "or the 7z command line tool.", call. = FALSE)
+  }
+  # e: extract without the directory tree, -r: look for the file at any depth
+  system2(bin[[1]], c("e", "-y", "-r", paste0("-o", shQuote(exdir)), shQuote(archive),
+                      "OCCUPATION_SOL.gpkg"), stdout = FALSE)
+  file.path(exdir, "OCCUPATION_SOL.gpkg")
+}
 
 #' Join OCSGE Spatial Data with Species Traits
 #'

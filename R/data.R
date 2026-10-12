@@ -319,7 +319,7 @@
 #'
 #' @keywords datasets
 "eunis_species_dict"
-#' Data concentration Cd Soil - Veetation extracted from BAPPET
+#' Data concentration Cd Soil - Vegetation extracted from BAPPET
 #'
 #' @usage data(bappet_cd)
 #'

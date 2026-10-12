@@ -3,7 +3,7 @@
 \docType{data}
 \name{bappet_cd}
 \alias{bappet_cd}
-\title{Data concentration Cd Soil - Veetation extracted from BAPPET}
+\title{Data concentration Cd Soil - Vegetation extracted from BAPPET}
 \format{
 An object of class \code{data.frame} with 3040 rows and 80 columns.
 }
@@ -11,7 +11,7 @@ An object of class \code{data.frame} with 3040 rows and 80 columns.
 data(bappet_cd)
 }
 \description{
-Data concentration Cd Soil - Veetation extracted from BAPPET
+Data concentration Cd Soil - Vegetation extracted from BAPPET
 }
 \examples{
 data(bappet_cd)

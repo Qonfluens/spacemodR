@@ -71,8 +71,8 @@ calibrate_simple <- function(data, ...) {
   }
 
   # 3. Check if compiled Stan models object exists
-  if (!exists("stanmodels") || is.null(stanmodels$stan_code_direct)) {
-    stop("Compiled Stan model 'stan_code_direct' not found. ",
+  if (!exists("stanmodels") || is.null(stanmodels$stan_code_simple)) {
+    stop("Compiled Stan model 'stan_code_simple' not found. ",
          "Ensure the package was properly compiled with rstantools.")
   }
 

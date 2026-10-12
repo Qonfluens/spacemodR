@@ -194,7 +194,7 @@ run_julia_omniscape <- function(x, options) {
   writeLines(jl_code, jl_script)
 
   # --- E. EXÉCUTION ISOLÉE DE JULIA ---
-  cat("Running Omniscape in an isolated Julia sub-process...\n")
+  message("Running Omniscape in an isolated Julia sub-process...")
   status <- system2("julia", args = c(jl_script))
 
   if (status != 0) {

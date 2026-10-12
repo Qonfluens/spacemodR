@@ -13,8 +13,9 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width=10,
-  fig.height=5,
+  fig.width = 7,
+  fig.height = 3.5,
+  out.width = "100%",
   warning = FALSE,
   message = FALSE
 )
@@ -84,7 +85,7 @@ layer_plant = ocsge_metaleurop$code_cs %in%
 ```
 
 
-```{r map_sol, fig.height=6}
+```{r map_sol, fig.height=4.2}
 habitat_sol = habitat() |>
   add_habitat(ocsge_metaleurop[layer_soil_natural,]) |>
   add_nohabitat(ocsge_metaleurop[layer_soil_artificial,])

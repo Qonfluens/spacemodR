@@ -40,8 +40,8 @@ how to move from one to another.
 
 | Source | Extent | Resolution | Classes | Dictionary | Get the data |
 |---|---|---|---|---|---|
-| OCS-GE, cover (`CS`) | France | vector, about 1:5,000 | 14 | `ocsge_species_dict`, rows with `code_us = NA` | `get_ocsge_data_fgb()` |
-| OCS-GE, cover and use (`CS` x `US`) | France | vector, about 1:5,000 | 14 covers, refined for 47 (cover, use) pairs | `ocsge_species_dict`, rows with a `code_us` | `get_ocsge_data_fgb()` |
+| OCS-GE, cover (`CS`) | France | vector, about 1:5,000 | 14 | `ocsge_species_dict`, rows with `code_us = NA` | `get_ocsge()` |
+| OCS-GE, cover and use (`CS` x `US`) | France | vector, about 1:5,000 | 14 covers, refined for 47 (cover, use) pairs | `ocsge_species_dict`, rows with a `code_us` | `get_ocsge()` |
 | EUNIS Level 2 | 39 EEA countries | raster, 100 m | 45 | `eunis_species_dict` | `get_eunis_data()` |
 
 The table `ref_ocsge_eunis` links the OCS-GE and EUNIS nomenclatures. Other
@@ -150,6 +150,21 @@ OCS-GE is the French large-scale land cover database. Its *couverture du sol*
 data("ocsge_metaleurop")
 data("ref_ocsge")
 ref_ocsge[, c("code_cs", "nomenclature")]
+```
+
+The examples below use the layers shipped with the package. For another site,
+`get_ocsge()` returns the polygons of a region of interest, with their `CS` and
+`US` codes. It reads them either from the download service of IGN, which
+publishes one GeoPackage per department and vintage, or from a FlatGeobuf file
+that you host.
+
+```{r ocsge_get, eval=FALSE}
+# IGN: the departments of the ROI are downloaded once, then read from a cache
+ocsge_site <- get_ocsge(roi_metaleurop, source = "ign", year = 2021)
+
+# FlatGeobuf: only the features of the ROI are downloaded
+ocsge_site <- get_ocsge(roi_metaleurop, source = "fgb",
+                        fgb_url = "https://example.com/data/ocsge_france.fgb")
 ```
 
 `join_ocsge_species()` adds the scores of a species to the polygons, and

@@ -58,7 +58,6 @@ both be kept. When this matters, the only real solution is a finer
 \code{ground_raster}.
 }
 \examples{
-\dontrun{
 library(terra)
 library(sf)
 
@@ -86,5 +85,4 @@ my_habitat <- habitat() |>
   add_habitat(good_hab, weight = 0.8, priority = 1, touches = FALSE) |>
   add_nohabitat(bad_hab, priority = 2)
 plot(habitat_raster(ref_grid, my_habitat))
-}
 }

@@ -4,8 +4,8 @@
 #' Topsoil concentrations of cadmium (Cd), lead (Pb) and zinc (Zn) measured at
 #' 595 sampling points around the former Metaleurop Nord lead and zinc smelter
 #' (Noyelles-Godault, northern France). This is the data set used to build the
-#' soil rasters shipped in `inst/extdata` (`ground_concentration_*.tif`), see
-#' the kriging article.
+#' soil rasters of the package (`ground_concentration_*.tif`; the cadmium
+#' raster is shipped in `inst/extdata`), see the kriging article.
 #'
 #' Simple feature collection (POINT), projected CRS: RGF93 v1 / Lambert-93
 #' (EPSG:2154).

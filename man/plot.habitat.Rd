@@ -11,15 +11,21 @@
 
 \item{...}{Additional arguments passed to \code{plot} (e.g., \code{main}, \code{border}).}
 }
+\value{
+\code{x}, invisibly. Called for its side effect: a plot of the
+habitat zones.
+}
 \description{
 Visually inspect a \code{habitat} object. Favorable habitat zones are colored
 in green, and absolute barriers (non-habitat) are colored in red.
 }
 \examples{
-\dontrun{
+library(sf)
+square <- function(a, b) st_polygon(list(cbind(c(a, b, b, a, a), c(a, a, b, b, a))))
+good_polygons <- st_sf(geometry = st_sfc(square(1, 9)))
+roads <- st_sf(geometry = st_sfc(square(4, 6)))
 hab <- habitat() |>
   add_habitat(good_polygons, weight = 1) |>
   add_nohabitat(roads)
 plot(hab)
-}
 }

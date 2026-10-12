@@ -8,8 +8,7 @@ get_eunis_data(
   roi,
   level = c("L1", "L2"),
   resolution = 100,
-  service_url =
-    "https://bio.discomap.eea.europa.eu/arcgis/rest/services/Ecosystem/EcosystemTypeMap_v3_1_Terrestrial/MapServer"
+  service_url = NULL
 )
 }
 \arguments{

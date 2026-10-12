@@ -7,8 +7,8 @@ if (getRversion() >= "4.0.0")  utils::globalVariables(c(
 #' The 'spacemodR' package.
 #'
 #' @description
-#' Workflow for Environmental Risk Assessment: Habitat,
-#' Food Web, Dispersal, Exposure and Risk. A set of function for
+#' Workflow for spatially explicit environmental risk assessment: habitat,
+#' food web, dispersal, exposure and risk.
 #'
 #' @name spacemodR-package
 #' @aliases spacemodR

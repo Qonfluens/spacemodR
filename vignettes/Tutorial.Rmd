@@ -16,8 +16,9 @@ editor_options:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width=10,
-  fig.height=5
+  fig.width = 7,
+  fig.height = 3.5,
+  out.width = "100%"
 )
 ```
 
@@ -64,36 +65,38 @@ dpts
 
 ## Load OCS-GE layers in the Region Of Interest (ROI)
 
-The `get_ocsge_data` function is designed to download, extract, and prepare
-OCS GE (Occupation du Sol à Grande Échelle) version 2 datasets for a specific 
-Region of Interest (ROI).
+The `get_ocsge()` function retrieves the OCS GE (Occupation du Sol à Grande
+Échelle) version 2 polygons of a Region of Interest (ROI), with their cover
+(`code_cs`) and use (`code_us`) codes.
 
-This function automates the process of fetching 
-spatial data from the French National Geographic Institute (IGN), merging 
-data from all relevant departments, and cropping the result to match the 
-boundaries of your ROI.
+With `source = "ign"` (the default), it fetches the data from the download
+service of the French National Geographic Institute (IGN): it finds the
+departments of the ROI, downloads their GeoPackage, merges them and crops the
+result to the boundaries of your ROI. With `source = "fgb"`, it reads the ROI
+from a remote FlatGeobuf file given in `fgb_url`.
 
-Input Parameters:
+Input Parameters for the IGN source:
 
 - `roi`: An `sf` object (simple features) defining your region of interest.
-Only the first feature in the object is used.
-- `local_cache` (optional): A directory path where downloaded archives are stored.
-If not provided, a temporary directory is used.
+- `year` (optional): The vintage to retrieve. By default, the latest one of
+each department.
+- `cache_dir` (optional): A directory path where the downloaded GeoPackages
+are kept, so that each department is downloaded only once. By default, the
+user cache directory of the package.
 
-
-The function ensures that the ROI is transformed into the Lambert-93
-projection (EPSG:2154), which is the standard coordinate system for French geographic data.
+The result is in the Lambert-93 projection (EPSG:2154), which is the standard
+coordinate system for French geographic data.
 
 ```{r load_metaleurop_ocsge}
 ## This function is long to compute so we load the data set
-# sf_site <- get_ocsge_data(roi_metaleurop)
+# sf_site <- get_ocsge(roi_metaleurop, source = "ign")
 data(ocsge_metaleurop)
 ```
 
 You can then plot the object using for instance the `ggplot2` library which is not
 included in `spacemodR`.
 
-```{r vizualize_metaleurop_roi, fig.height=10}
+```{r vizualize_metaleurop_roi, fig.height=7}
 library(ggplot2)
 ggplot() +
   theme_minimal() +

@@ -134,15 +134,20 @@ print.habitat <- function(x, ...) {
 #' @param x A \code{habitat} object.
 #' @param ... Additional arguments passed to \code{plot} (e.g., \code{main}, \code{border}).
 #'
+#' @return \code{x}, invisibly. Called for its side effect: a plot of the
+#' habitat zones.
+#'
 #' @export
 #'
 #' @examples
-#' \dontrun{
+#' library(sf)
+#' square <- function(a, b) st_polygon(list(cbind(c(a, b, b, a, a), c(a, a, b, b, a))))
+#' good_polygons <- st_sf(geometry = st_sfc(square(1, 9)))
+#' roads <- st_sf(geometry = st_sfc(square(4, 6)))
 #' hab <- habitat() |>
 #'   add_habitat(good_polygons, weight = 1) |>
 #'   add_nohabitat(roads)
 #' plot(hab)
-#' }
 plot.habitat <- function(x, ...) {
   # Handle empty objects gracefully
   if (nrow(x) == 0) {
@@ -371,7 +376,6 @@ add_nohabitat.habitat <- function(hab, sf_data, priority = NULL, touches = TRUE,
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' library(terra)
 #' library(sf)
 #'
@@ -399,7 +403,6 @@ add_nohabitat.habitat <- function(hab, sf_data, priority = NULL, touches = TRUE,
 #'   add_habitat(good_hab, weight = 0.8, priority = 1, touches = FALSE) |>
 #'   add_nohabitat(bad_hab, priority = 2)
 #' plot(habitat_raster(ref_grid, my_habitat))
-#' }
 habitat_raster <- function(ground_raster, habitat){
   if (!inherits(habitat, "habitat")) {
     stop("`habitat` must be a 'habitat' object")

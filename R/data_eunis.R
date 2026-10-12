@@ -1,3 +1,8 @@
+#' @noRd
+.eunis_service_url <- paste0(
+  "https://bio.discomap.eea.europa.eu/arcgis/rest/services/Ecosystem/",
+  "EcosystemTypeMap_v3_1_Terrestrial/MapServer")
+
 #' Efficiently retrieve EUNIS land cover data from the EEA Ecosystem Type Map
 #'
 #' @description
@@ -77,9 +82,10 @@
 get_eunis_data <- function(roi,
                             level = c("L1", "L2"),
                             resolution = 100,
-                            service_url = "https://bio.discomap.eea.europa.eu/arcgis/rest/services/Ecosystem/EcosystemTypeMap_v3_1_Terrestrial/MapServer") {
+                            service_url = NULL) {
 
   level <- match.arg(level)
+  if (is.null(service_url)) service_url <- .eunis_service_url
 
   if (!inherits(roi, "sf") && !inherits(roi, "sfc")) {
     stop("`roi` must be an 'sf' or 'sfc' spatial object.")
