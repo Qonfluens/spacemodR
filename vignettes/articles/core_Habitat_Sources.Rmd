@@ -1,8 +1,9 @@
 ---
-title: "Habitat Layer from EUNIS"
+title: "Habitat Data Sources"
 output: rmarkdown::html_vignette
+bibliography: references.bib
 vignette: >
-  %\VignetteIndexEntry{Habitat Layer from EUNIS}
+  %\VignetteIndexEntry{Habitat Data Sources}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options:
@@ -22,49 +23,84 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The [Habitat Layer](core_Habitat.html) guide builds species habitat maps from
-the French OCS-GE land cover and the `ocsge_species_dict` dataset. This guide
-does the same from the **EUNIS** classification (European Nature Information
-System), using the `eunis_species_dict` dataset.
+A habitat layer tells, for each pixel of the landscape, how good the place is
+for a species and how hard it is to cross. In `spacemodR` it is always built
+the same way:
 
-EUNIS is a useful alternative when:
+1. a **land cover map**, which splits the landscape into classes;
+2. a **species dictionary**, which gives the scores of a species for each
+   class;
+3. a **join** of the two, then a **rasterization** on the grid shared with the
+   other layers (soil contamination, for instance).
 
-* the study area is **outside France**: the EEA *Ecosystem Type Map v3.1*
-  covers the 39 EEA countries;
-* the species depends on habitats that OCS-GE cannot separate: OCS-GE describes
-  land *cover* only, so reedbeds, wet meadows, bogs, dunes or arable land are
-  merged into broad classes. EUNIS Level 2 has 45 terrestrial classes,
-  including 6 wetland types (D1–D6), 6 grassland types (E1–E7) and 10 scrub
-  types (F1–FB).
+The [Habitat Layer](core_Habitat.html) guide follows these steps with one map
+and explains how to turn the result into a `habitat` object. This guide is
+about step 1: which map to use, what each one can and cannot tell apart, and
+how to move from one to another.
 
-The trade-off is resolution: the EUNIS map is 100 m, while OCS-GE is vector
-data mapped at about 1:5,000 scale.
+| Source | Extent | Resolution | Classes | Dictionary | Get the data |
+|---|---|---|---|---|---|
+| OCS-GE, cover (`CS`) | France | vector, about 1:5,000 | 14 | `ocsge_species_dict`, rows with `code_us = NA` | `get_ocsge_data_fgb()` |
+| OCS-GE, cover and use (`CS` x `US`) | France | vector, about 1:5,000 | 14 covers, refined for 47 (cover, use) pairs | `ocsge_species_dict`, rows with a `code_us` | `get_ocsge_data_fgb()` |
+| EUNIS Level 2 | 39 EEA countries | raster, 100 m | 45 | `eunis_species_dict` | `get_eunis_data()` |
 
-We again focus on the Wood mouse (*Apodemus sylvaticus*), then compare a few
-other species.
+The table `ref_ocsge_eunis` links the OCS-GE and EUNIS nomenclatures. Other
+sources that would refine these maps (agricultural parcels, vegetation
+indices, LiDAR) are discussed [at the end](#other-sources).
+
+All examples use the Metaleurop site, and mostly two small mammals with
+opposite needs: the common vole (*Microtus arvalis*), a species of open
+farmland, and the bank vole (*Myodes glareolus*), a species of woodland and
+dense cover.
 
 ```{r setup}
 library(spacemodR)
+library(sf)
 library(dplyr)
 library(ggplot2)
 library(terra)
 library(tidyterra)
-library(leaflet)
 library(patchwork)
 ```
 
-# The database
+# Species dictionaries
 
-## How it was built
+## One schema for every source
 
-`eunis_species_dict` covers the same 935 European vertebrates as
-`ocsge_species_dict`, with the same EEA habitat descriptions as input. Each
-species was scored against the 45 EUNIS Level 2 classes, each described by a
-short ecological summary (e.g. *G5: "Lines of trees, small woodlands, recently
-felled woodland: edge-rich, fragmented"*).
+`ocsge_species_dict` and `eunis_species_dict` cover the same 935 European
+terrestrial vertebrates and have the same columns. Only the column holding the
+land cover class differs.
 
-Compared with `ocsge_species_dict`, the scoring was changed to make the values
-easier to compare across species and directly usable in connectivity models:
+```{r load_dict}
+data("ocsge_species_dict")
+data("eunis_species_dict")
+names(ocsge_species_dict)
+names(eunis_species_dict)
+```
+
+| Column | Level | Range | Meaning |
+|---|---|---|---|
+| `code_cs`, `code_us` | class | – | OCS-GE cover and use. `code_us` is `NA` on the rows that score a cover whatever its use. |
+| `code_eunis` | class | – | EUNIS Level 2 code, as in `ref_eunis` and in the raster returned by `get_eunis_data(level = "L2")`. |
+| `species_name` | species | – | Scientific name, `Genus_species`. |
+| `sppID` | species | – | EEA identifier; first letter gives the group (A, R, B, M). |
+| `taxon_group` | species | – | amphibian, reptile, bird or mammal. |
+| `suitability` | class | 0–10 | Overall habitat quality. **Use as the source / habitat weight.** |
+| `weight_breeding` | class | 0–10 | Value as breeding, nesting, denning, roosting or larval site. |
+| `weight_foraging` | class | 0–10 | Value for feeding. |
+| `permeability` | class | 0–10 | Ease of movement (10 free, 7 readily, 4 reluctantly, 1 strong barrier, 0 impassable). |
+| `resistance` | class | 1–100 | `10^(2 * (1 - permeability / 10))`: 10 → 1, 5 → 10, 0 → 100. **Use as the resistance layer.** |
+| `habitat_breadth` | species | – | Number of classes with `suitability >= 5` (out of 14 covers or 45 EUNIS classes). |
+| `specialization` | species | 0–1 | 1 − normalised Shannon evenness of the suitability profile: 0 generalist, 1 specialist. |
+| `confidence` | species | 1–3 | Quality of the source description: 1 vague or empty, 2 medium, 3 detailed. |
+| `in_france` | species | 0/1 | 1 if the species occurs natively and regularly in metropolitan France. |
+
+## How the scores were built
+
+The input is the habitat and avoided-habitat description of each species
+published by the EEA [@oconnor2024habitat]. A large language model (Claude
+Opus) read each description against a short ecological summary of every class
+and scored it with the same rules for all sources:
 
 * **Anchored scale.** Every score uses the same reference points
   (0 unused or avoided, 2 marginal, 5 secondary, 8 main, 10 core habitat),
@@ -77,37 +113,6 @@ easier to compare across species and directly usable in connectivity models:
 * **Resistance derived, not scored.** Resistance is computed from permeability
   on the 1–100 log scale expected by Omniscape, so the two can never contradict
   each other and no further transformation is needed.
-* **Species-level flags** for confidence in the source description and
-  presence in France.
-
-Scores were assigned by a large language model (Claude Opus 5.5) reading the
-descriptions; they are expert-judgement values, not fitted to occurrence data.
-
-## What each column means
-
-```{r load_dict}
-data("eunis_species_dict")
-data("ref_eunis")
-str(eunis_species_dict)
-```
-
-| Column | Level | Range | Meaning |
-|---|---|---|---|
-| `code_eunis` | class | – | EUNIS Level 2 code, matches `ref_eunis$code` (with `level == "L2"`) and the raster returned by `get_eunis_data(level = "L2")`. |
-| `nom_espece` | species | – | Scientific name, `Genus_species`. |
-| `sppID` | species | – | EEA identifier; first letter gives the group (A, R, B, M). |
-| `taxon_group` | species | – | amphibian, reptile, bird or mammal. |
-| `suitability` | class | 0–10 | Overall habitat quality. **Use as the source / habitat weight.** |
-| `weight_breeding` | class | 0–10 | Value as breeding, nesting, denning, roosting or larval site. |
-| `weight_foraging` | class | 0–10 | Value for feeding. |
-| `permeability` | class | 0–10 | Ease of movement (10 free, 7 readily, 4 reluctantly, 1 strong barrier, 0 impassable). |
-| `resistance` | class | 1–100 | `10^(2 * (1 - permeability / 10))`: 10 → 1, 5 → 10, 0 → 100. **Use as the resistance layer.** |
-| `habitat_breadth` | species | 0–45 | Number of classes with `suitability >= 5`. |
-| `specialization` | species | 0–1 | 1 − normalised Shannon evenness of the suitability profile: 0 generalist, 1 specialist. |
-| `confidence` | species | 1–3 | Quality of the source description: 1 vague or empty, 2 medium, 3 detailed. |
-| `in_france` | species | 0/1 | 1 if the species occurs natively and regularly in metropolitan France. |
-
-The relation between permeability and resistance:
 
 ```{r perm_res, fig.height=3.5, fig.width=6}
 data.frame(permeability = 0:10) %>%
@@ -121,86 +126,158 @@ data.frame(permeability = 0:10) %>%
   labs(x = "Permeability (0–10)", y = "Resistance (log scale)")
 ```
 
-Species-level columns help select or weigh species before mapping, for example
-the specialists present in France with a reliable description:
+These are expert-judgement values, not values fitted to occurrence data.
+
+## Selecting species
+
+The dictionaries cover Europe. Before working on a French site, keep the
+species that occur in France, and check how much is known about them:
 
 ```{r species_level}
-eunis_species_dict %>%
-  distinct(nom_espece, taxon_group, habitat_breadth, specialization, confidence, in_france) %>%
+ocsge_species_dict %>%
+  distinct(species_name, taxon_group, habitat_breadth, specialization, confidence, in_france) %>%
   filter(in_france == 1, confidence == 3) %>%
   arrange(desc(specialization)) %>%
   head(8)
 ```
 
-# Defining habitat for *Apodemus sylvaticus*
+# Source 1: OCS-GE land cover (CS)
 
-## Scores of the Wood mouse
+OCS-GE is the French large-scale land cover database. Its *couverture du sol*
+(`CS`) describes what physically covers the ground, in 14 classes.
 
-We filter the dictionary for *Apodemus sylvaticus* and join the EUNIS labels
-and official colors from `ref_eunis`.
-
-```{r apsy_dict}
-ref_l2 <- ref_eunis %>% filter(level == "L2") %>% select(code, nomenclature, couleur)
-
-apsy <- eunis_species_dict %>%
-  filter(nom_espece == "Apodemus_sylvaticus") %>%
-  left_join(ref_l2, by = c("code_eunis" = "code"))
-
-apsy %>%
-  distinct(habitat_breadth, specialization, confidence, in_france)
+```{r ocsge_cs}
+data("ocsge_metaleurop")
+data("ref_ocsge")
+ref_ocsge[, c("code_cs", "nomenclature")]
 ```
 
-The Wood mouse is a generalist: 25 of the 45 classes are at least secondary
-habitat (`habitat_breadth`), and its specialization index is close to 0.
+`join_ocsge_species()` adds the scores of a species to the polygons, and
+`plot_species_habitat()` maps them.
 
-```{r apsy_profile, fig.height=8}
-apsy_long <- apsy %>%
-  select(code_eunis, nomenclature, suitability, weight_breeding, weight_foraging, permeability) %>%
-  tidyr::pivot_longer(c(suitability, weight_breeding, weight_foraging, permeability),
-                      names_to = "score", values_to = "value") %>%
-  mutate(label = factor(paste(code_eunis, substr(nomenclature, 1, 45)),
-                        levels = rev(paste(apsy$code_eunis, substr(apsy$nomenclature, 1, 45)))),
-         score = factor(score, levels = c("suitability", "weight_breeding", "weight_foraging", "permeability")))
-
-ggplot(apsy_long, aes(value, label)) +
-  geom_col(fill = "#2a78d6", width = 0.7) +
-  facet_wrap(~score, nrow = 1) +
-  scale_x_continuous(breaks = c(0, 5, 10)) +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = 7)) +
-  labs(x = "Score (0–10)", y = NULL, title = "Apodemus sylvaticus – scores per EUNIS Level 2 class")
+```{r cs_microtus}
+microtus_cs <- join_ocsge_species(ocsge_metaleurop, "Microtus_arvalis")
+plot_species_habitat(microtus_cs)
 ```
 
-## Understanding habitat values
+The strength of this source is its geometry: buildings, roads, hedges and
+ponds a few meters wide are mapped. Its weakness is that 14 cover classes say
+little about habitats. Herbaceous cover (`CS2.2.1`) holds cereal fields,
+meadows, lawns, road verges and reedbeds alike, and a species gets a single
+score for all of them:
 
-As in the OCS-GE guide, the suitability score can be read as habitat quality
-classes:
-
-- Non-habitat (suitability = 0):
-
-```{r ex_nonhabitat}
-apsy %>% filter(suitability == 0) %>% pull(nomenclature)
+```{r cs_herbaceous}
+ocsge_species_dict %>%
+  filter(code_cs == "CS2.2.1", is.na(code_us),
+         species_name %in% c("Microtus_arvalis", "Myodes_glareolus")) %>%
+  select(species_name, code_cs, suitability, weight_foraging, permeability)
 ```
 
-- Very poor habitat (0 < suitability ≤ 3):
+# Source 2: OCS-GE land cover and land use (CS x US)
 
-```{r ex_verypoor}
-apsy %>% filter(suitability > 0, suitability <= 3) %>% pull(nomenclature)
+## What the use adds
+
+OCS-GE polygons also carry an *usage du sol* (`US`): agriculture, forestry,
+residential, transport networks, and so on. The use does not describe a
+habitat by itself, but it tells what a cover stands for. On the Metaleurop
+site, herbaceous cover is made of:
+
+```{r us_herbaceous}
+data("ocsge_us_metaleurop")
+ocsge_us_metaleurop %>%
+  st_drop_geometry() %>%
+  filter(code_cs == "CS2.2.1") %>%
+  arrange(desc(area_ha)) %>%
+  mutate(share = round(100 * area_ha / sum(area_ha)))
 ```
 
-- Poor to secondary habitat (3 < suitability ≤ 7):
+Crops (`US1.1`, agriculture) make more than half of it, and gardens (`US5`,
+residential) about a fifth. `ocsge_species_dict` has rows for the (cover, use)
+pairs where the use matters:
 
-```{r ex_poor}
-apsy %>% filter(suitability > 3, suitability <= 7) %>% pull(nomenclature)
+```{r us_scores}
+ocsge_species_dict %>%
+  filter(code_cs == "CS2.2.1",
+         species_name %in% c("Microtus_arvalis", "Myodes_glareolus"),
+         is.na(code_us) | code_us %in% c("US1.1", "US1.2", "US3", "US5", "US6.3")) %>%
+  select(species_name, code_us, suitability) %>%
+  tidyr::pivot_wider(names_from = species_name, values_from = suitability)
 ```
 
-- Good habitat (suitability > 7):
+For the bank vole, herbaceous cover is poor habitat as a whole, almost unused
+when it is farmed, and secondary habitat when it is a forest clearing
+(`US1.2`). The common vole shows the opposite pattern.
 
-```{r ex_good}
-apsy %>% filter(suitability > 7) %>% pull(nomenclature)
+Rows with a `code_us` are not scored one by one: each (cover, use) pair is
+linked to EUNIS classes by `ref_ocsge_eunis`
+([see below](#moving-between-nomenclatures)) and takes a weighted mean of
+their scores in `eunis_species_dict`.
+
+## Joining on cover and use
+
+When the spatial object has a `code_us` column, `join_ocsge_species()` uses
+it. A polygon takes the scores of its (cover, use) pair when the dictionary
+has one, and the scores of its cover otherwise; the column `use_matched`
+tells which.
+
+```{r us_join}
+myodes_us <- join_ocsge_species(ocsge_us_metaleurop, "Myodes_glareolus")
+
+myodes_us %>%
+  st_drop_geometry() %>%
+  group_by(use_matched) %>%
+  summarise(pairs = n(), area_ha = round(sum(area_ha)))
 ```
 
-# Mapping
+To ignore the use, set `us_col = NULL`. The maps below compare the two for
+the bank vole:
+
+```{r us_maps, fig.height=5}
+myodes_cs <- join_ocsge_species(ocsge_us_metaleurop, "Myodes_glareolus", us_col = NULL)
+
+map_suit <- function(x, title) {
+  ggplot(x) +
+    geom_sf(aes(fill = suitability), color = NA) +
+    scale_fill_gradient(low = "#ffffe5", high = "#004529", limits = c(0, 10),
+                        na.value = "transparent", name = "Suitability") +
+    theme_void() +
+    labs(title = title)
+}
+map_suit(myodes_cs, "Cover only") + map_suit(myodes_us, "Cover and use") +
+  plot_layout(guides = "collect") +
+  plot_annotation(title = "Myodes glareolus")
+```
+
+With the cover alone, every field and garden is poor habitat of the same
+value. With the use, farmland drops to almost nothing, while gardens, parks
+and forest clearings keep some value.
+
+## What the use cannot tell
+
+Some distinctions remain out of reach of OCS-GE, with or without the use:
+
+* **crops and permanent grassland** share the same cover and the same
+  agricultural use;
+* **wetlands** (reedbeds, wet meadows, bogs) are not identified;
+* **grassland types** (dry, mesic, wet, alpine) are not separated;
+* **standing and running water**, **deciduous and evergreen broadleaved
+  woodland** are not separated.
+
+# Source 3: EUNIS
+
+## When to use it
+
+EUNIS (European Nature Information System) is a habitat classification. The
+EEA *Ecosystem Type Map v3.1* maps it over the 39 EEA countries at 100 m.
+It is the source to use when:
+
+* the study area is **outside France**;
+* the species depends on habitats that OCS-GE cannot separate. EUNIS Level 2
+  has 45 terrestrial classes, including 6 wetland types (D1–D6), 6 grassland
+  types (E1–E7) and 10 scrub types (F1–FB).
+
+The trade-off is resolution: one pixel of 100 m carries a single dominant
+class, so roads, hedges and gardens disappear into their surroundings.
 
 ## The EUNIS land cover layer
 
@@ -214,32 +291,49 @@ eunis_lc <- get_eunis_data(roi_metaleurop, level = "L2", resolution = 100)
 ```
 
 ```{r load_eunis}
+data("ref_eunis")
+ref_l2 <- ref_eunis %>% filter(level == "L2") %>% select(code, nomenclature, couleur)
+
 eunis_lc <- load_raster_extdata("eunis_metaleurop_L2.tif")
-eunis_lc
-```
-
-The raster is categorical. Its level table gives the EUNIS code of each pixel
-value. Note the combined code `"D5/F6"`: the EEA service draws D5 (sedge and
-reedbeds) and F6 (garrigue) with the same color, so these pixels cannot be
-told apart (see `?get_eunis_data`).
-
-```{r eunis_levels}
 lv <- terra::levels(eunis_lc)[[1]]
 names(lv) <- c("value", "code")
-lv %>% left_join(ref_l2, by = "code")
+lv %>% left_join(ref_l2, by = "code") %>% select(code, nomenclature)
+```
+
+The raster is categorical. Note the combined code `"D5/F6"`: the EEA service
+draws D5 (sedge and reedbeds) and F6 (garrigue) with the same color, so these
+pixels cannot be told apart (see `?get_eunis_data`).
+
+```{r eunis_map, fig.height=6}
+eunis_lab <- lv %>%
+  left_join(ref_l2, by = "code") %>%
+  transmute(value,
+            eunis = ifelse(is.na(nomenclature), code, paste(code, substr(nomenclature, 1, 40))),
+            couleur = ifelse(is.na(couleur), "#BDBDBD", couleur))
+eunis_lc_lab <- eunis_lc
+levels(eunis_lc_lab) <- eunis_lab[, c("value", "eunis")]
+
+ggplot() +
+  geom_spatraster(data = eunis_lc_lab) +
+  scale_fill_manual(values = setNames(eunis_lab$couleur, eunis_lab$eunis),
+                    na.value = "transparent", name = "EUNIS L2") +
+  theme_minimal() +
+  theme(legend.text = element_text(size = 7)) +
+  labs(title = "Land cover (EUNIS Level 2)")
 ```
 
 ## From species scores to rasters
 
-We write a small helper that replaces each EUNIS class by a species score. For
-combined codes such as `"D5/F6"`, the scores of the two classes are averaged.
+The map is a raster, so the join is a reclassification. We write a small
+helper that replaces each EUNIS class by a species score. For combined codes
+such as `"D5/F6"`, the scores of the two classes are averaged.
 
 ```{r helper}
 eunis_species_raster <- function(lc, species, var = "suitability",
                                  dict = eunis_species_dict) {
   lv <- terra::levels(lc)[[1]]
   names(lv) <- c("value", "code")
-  d <- dict[dict$nom_espece == species, ]
+  d <- dict[dict$species_name == species, ]
   if (nrow(d) == 0) stop("Species not found: ", species)
   val <- vapply(strsplit(lv$code, "/"),
                 function(cc) mean(d[[var]][match(cc, d$code_eunis)]), numeric(1))
@@ -251,146 +345,39 @@ eunis_species_raster <- function(lc, species, var = "suitability",
 }
 ```
 
-```{r apsy_rasters}
-apsy_suit <- eunis_species_raster(eunis_lc, "Apodemus_sylvaticus", "suitability")
-apsy_breed <- eunis_species_raster(eunis_lc, "Apodemus_sylvaticus", "weight_breeding")
-apsy_forag <- eunis_species_raster(eunis_lc, "Apodemus_sylvaticus", "weight_foraging")
-apsy_res <- eunis_species_raster(eunis_lc, "Apodemus_sylvaticus", "resistance")
-```
+```{r eunis_rasters, fig.height=8}
+vars <- c("suitability", "weight_breeding", "weight_foraging", "resistance")
+microtus_eunis <- rast(lapply(vars, function(v) eunis_species_raster(eunis_lc, "Microtus_arvalis", v)))
 
-## Static maps
-
-```{r apsy_staticmap, fig.height=9}
-eunis_lc_lab <- eunis_lc
-levels(eunis_lc_lab) <- lv %>%
-  left_join(ref_l2, by = "code") %>%
-  transmute(value, eunis = ifelse(is.na(nomenclature), code, paste(code, nomenclature)))
-eunis_cols <- lv %>%
-  left_join(ref_l2, by = "code") %>%
-  transmute(eunis = ifelse(is.na(nomenclature), code, paste(code, nomenclature)),
-            couleur = ifelse(is.na(couleur), "#BDBDBD", couleur))
-
-p0 <- ggplot() +
-  geom_spatraster(data = eunis_lc_lab) +
-  scale_fill_manual(values = setNames(eunis_cols$couleur, eunis_cols$eunis),
-                    na.value = "transparent", name = "EUNIS L2") +
-  theme_minimal() +
-  theme(legend.text = element_text(size = 7)) +
-  labs(title = "Land cover (EUNIS Level 2)")
-
-p1 <- ggplot() +
-  geom_spatraster(data = apsy_suit) +
+p_score <- ggplot() +
+  geom_spatraster(data = microtus_eunis[[1:3]]) +
+  facet_wrap(~lyr) +
   scale_fill_gradient(low = "#ffffe5", high = "#004529", limits = c(0, 10),
-                      na.value = "transparent", name = "Suitability") +
-  theme_minimal() + labs(title = "Suitability")
-
-p2 <- ggplot() +
-  geom_spatraster(data = apsy_breed) +
-  scale_fill_gradient(low = "#fcfbfd", high = "#3f007d", limits = c(0, 10),
-                      na.value = "transparent", name = "Breeding") +
-  theme_minimal() + labs(title = "Breeding weight")
-
-p3 <- ggplot() +
-  geom_spatraster(data = apsy_forag) +
-  scale_fill_gradient(low = "#f7fbff", high = "#08306b", limits = c(0, 10),
-                      na.value = "transparent", name = "Foraging") +
-  theme_minimal() + labs(title = "Foraging weight")
-
-p4 <- ggplot() +
-  geom_spatraster(data = apsy_res) +
+                      na.value = "transparent", name = "Score") +
+  theme_void()
+p_res <- ggplot() +
+  geom_spatraster(data = microtus_eunis[["resistance"]]) +
   scale_fill_gradient(low = "#fff5f0", high = "#67000d", trans = "log10", limits = c(1, 100),
                       na.value = "transparent", name = "Resistance") +
-  theme_minimal() + labs(title = "Resistance (1–100, log scale)")
+  theme_void() +
+  labs(title = "resistance (1–100, log scale)")
 
-p0
-(p1 | p2) / (p3 | p4) +
-  plot_annotation(title = "Apodemus sylvaticus – habitat layers from EUNIS")
+p_score / p_res + plot_annotation(title = "Microtus arvalis – habitat layers from EUNIS")
 ```
 
-For the Wood mouse, the arable land (I1) that dominates the Metaleurop area is
-good habitat (8/10), as are the woodland (G1) and gardens and parks (I2).
-Built-up areas (J1, J2) are secondary habitat (5/10). Roads (J4) are nearly
-unusable (1/10) and form the strongest barriers (resistance 63).
+## Scores of the classes present on the site
 
-## Interactive synthesis
-
-```{r leaflet_apsy, fig.width=9, fig.height=6}
-to_wgs <- function(r) terra::project(r, "EPSG:4326", method = "near")
-
-pal_suit <- colorNumeric("YlGn", domain = c(0, 10), na.color = "transparent")
-pal_breed <- colorNumeric("Purples", domain = c(0, 10), na.color = "transparent")
-pal_forag <- colorNumeric("Blues", domain = c(0, 10), na.color = "transparent")
-pal_res <- colorNumeric("Reds", domain = c(0, 2), na.color = "transparent")
-
-leaflet() %>%
-  addProviderTiles(providers$CartoDB.Positron) %>%
-  addRasterImage(to_wgs(apsy_suit), colors = pal_suit, opacity = 0.7, group = "Suitability") %>%
-  addRasterImage(to_wgs(apsy_breed), colors = pal_breed, opacity = 0.7, group = "Breeding") %>%
-  addRasterImage(to_wgs(apsy_forag), colors = pal_forag, opacity = 0.7, group = "Foraging") %>%
-  addRasterImage(log10(to_wgs(apsy_res)), colors = pal_res, opacity = 0.7, group = "Resistance (log10)") %>%
-  addLayersControl(
-    baseGroups = c("Suitability", "Breeding", "Foraging", "Resistance (log10)"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) %>%
-  addLegend(pal = pal_suit, values = c(0, 10), title = "Score (0–10)", position = "bottomright")
-```
-
-# Multi-species comparison
-
-The same helper works for any species. Below are the species used in the
-OCS-GE guide. Suitability shows where each one can live, and resistance
-shows what blocks its movement.
-
-```{r multi_species, fig.height=8}
-species <- c("Apodemus_sylvaticus", "Turdus_merula", "Passer_domesticus",
-             "Sorex_araneus", "Crocidura_russula", "Microtus_arvalis")
-
-suit_stack <- rast(lapply(species, function(s) eunis_species_raster(eunis_lc, s, "suitability")))
-names(suit_stack) <- gsub("_", " ", species)
-
-ggplot() +
-  geom_spatraster(data = suit_stack) +
-  facet_wrap(~lyr, ncol = 3) +
-  scale_fill_gradient(low = "#ffffe5", high = "#004529", limits = c(0, 10),
-                      na.value = "transparent", name = "Suitability") +
-  theme_minimal() +
-  theme(axis.text = element_blank(), strip.text = element_text(face = "italic")) +
-  labs(title = "Suitability from EUNIS for six species")
-```
-
-```{r multi_species_res, fig.height=8}
-res_stack <- rast(lapply(species, function(s) eunis_species_raster(eunis_lc, s, "resistance")))
-names(res_stack) <- gsub("_", " ", species)
-
-ggplot() +
-  geom_spatraster(data = res_stack) +
-  facet_wrap(~lyr, ncol = 3) +
-  scale_fill_gradient(low = "#fff5f0", high = "#67000d", trans = "log10", limits = c(1, 100),
-                      na.value = "transparent", name = "Resistance") +
-  theme_minimal() +
-  theme(axis.text = element_blank(), strip.text = element_text(face = "italic")) +
-  labs(title = "Resistance from EUNIS for six species")
-```
-
-The two birds never exceed a resistance of about 16 because they fly, whereas
-roads reach 63 for all four small mammals. Built-up areas (J1) are core
-habitat for the house sparrow and the blackbird (10/10), secondary for the
-Wood mouse (5/10) and unsuitable for the common vole (0/10). The common vole
-follows grassland (E2) and arable land (I1), while the common shrew prefers
-woodland (G1) and avoids arable land (3/10).
-
-A compact way to compare the species is to plot their scores for the classes
-present in the study area:
-
-```{r multi_species_profile, fig.height=5}
+```{r eunis_profile, fig.height=5}
+species <- c("Apodemus_sylvaticus", "Microtus_arvalis", "Myodes_glareolus",
+             "Sorex_araneus", "Crocidura_russula", "Turdus_merula", "Passer_domesticus")
 present <- unlist(strsplit(lv$code, "/"))
 
 eunis_species_dict %>%
-  filter(nom_espece %in% species, code_eunis %in% present) %>%
+  filter(species_name %in% species, code_eunis %in% present) %>%
   left_join(ref_l2, by = c("code_eunis" = "code")) %>%
-  mutate(nom_espece = gsub("_", " ", nom_espece),
+  mutate(species_name = gsub("_", " ", species_name),
          label = paste(code_eunis, substr(nomenclature, 1, 30))) %>%
-  ggplot(aes(nom_espece, label, fill = suitability)) +
+  ggplot(aes(species_name, label, fill = suitability)) +
   geom_tile(colour = "white") +
   geom_text(aes(label = suitability), size = 3) +
   scale_fill_gradient(low = "#ffffe5", high = "#004529", limits = c(0, 10)) +
@@ -400,37 +387,208 @@ eunis_species_dict %>%
        title = "Suitability of the EUNIS classes present at Metaleurop")
 ```
 
+Arable land (I1), mesic grassland (E2) and gardens and parks (I2) are three
+separate classes here, with clearly different values for the two voles and
+the shrews. In OCS-GE they are a single cover.
+
+# Moving between nomenclatures
+
+## The OCS-GE / EUNIS crosswalk
+
+OCS-GE and EUNIS do not nest: one describes what covers the ground, the other
+describes habitats. `ref_ocsge_eunis` gives, for each OCS-GE cover and for
+each (cover, use) pair that deserves it, a ranked list of EUNIS classes.
+
+```{r xw_default}
+data("ref_ocsge_eunis")
+
+# default EUNIS class of each cover, with the other candidates
+ref_ocsge_eunis %>%
+  filter(is.na(code_us)) %>%
+  group_by(code_cs) %>%
+  summarise(default = code_eunis[rank == 1],
+            others = paste(code_eunis[rank > 1], collapse = ", ")) %>%
+  left_join(ref_ocsge[, c("code_cs", "nomenclature")], by = "code_cs") %>%
+  select(code_cs, nomenclature, default, others)
+```
+
+Rows with a `code_us` refine the match, for instance for herbaceous cover:
+
+```{r xw_use}
+ref_ocsge_eunis %>%
+  filter(code_cs == "CS2.2.1", !is.na(code_us), rank <= 2) %>%
+  select(code_us, rank, code_eunis, pct_metaleurop, note) %>%
+  knitr::kable()
+```
+
+`rank` is an expert reading of the two nomenclatures. `pct_metaleurop` is a
+measurement: the share of the area of each OCS-GE group that falls in the
+EUNIS class on this site. The two do not always agree, because of the 100 m
+pixel of the EUNIS map: gardens (`US5`) are `I2` by definition, but they are
+too small to be the dominant class of a pixel, which is then classified as
+buildings.
+
+The column `main_cs` gives the opposite direction, the main OCS-GE cover of
+each EUNIS class:
+
+```{r xw_reverse}
+ref_ocsge_eunis %>%
+  filter(main_cs) %>%
+  group_by(code_cs) %>%
+  summarise(eunis = paste(code_eunis, collapse = ", "))
+```
+
+## Translating a map
+
+The crosswalk translates OCS-GE polygons into EUNIS classes, taking the
+(cover, use) pair when it is listed and the cover otherwise. This gives a
+EUNIS map with the geometry of OCS-GE:
+
+```{r xw_translate, fig.height=6}
+best <- ref_ocsge_eunis %>% filter(rank == 1)
+with_us <- best$code_eunis[match(paste(ocsge_us_metaleurop$code_cs, ocsge_us_metaleurop$code_us),
+                                 paste(best$code_cs, best$code_us))]
+cs_only <- best$code_eunis[match(paste(ocsge_us_metaleurop$code_cs, NA),
+                                 paste(best$code_cs, best$code_us))]
+ocsge_as_eunis <- ocsge_us_metaleurop %>%
+  mutate(code_eunis = ifelse(is.na(with_us), cs_only, with_us)) %>%
+  left_join(ref_l2, by = c("code_eunis" = "code")) %>%
+  mutate(eunis = paste(code_eunis, substr(nomenclature, 1, 40)))
+
+ggplot(ocsge_as_eunis) +
+  geom_sf(aes(fill = eunis), color = NA) +
+  scale_fill_manual(values = setNames(ocsge_as_eunis$couleur, ocsge_as_eunis$eunis), name = "EUNIS L2") +
+  theme_minimal() +
+  theme(legend.text = element_text(size = 7)) +
+  labs(title = "OCS-GE cover and use, translated into EUNIS Level 2")
+```
+
+Compare with the EEA map above: the classes are the same, the grain is not.
+
+# Comparing the sources
+
+To compare the three sources, we bring them onto the grid of the soil
+contamination raster (25 m).
+
+```{r compare_grid}
+ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
+
+ocsge_score_raster <- function(x, var = "suitability") {
+  habitat_raster(ground_cd, habitat(x, habitat = TRUE, weight = x[[var]], touches = FALSE))
+}
+compare_sources <- function(species, var = "suitability") {
+  cs <- join_ocsge_species(ocsge_us_metaleurop, species, us_col = NULL)
+  us <- join_ocsge_species(ocsge_us_metaleurop, species)
+  eu <- terra::project(eunis_species_raster(eunis_lc, species, var), ground_cd, method = "near")
+  out <- c(ocsge_score_raster(cs, var), ocsge_score_raster(us, var), eu)
+  names(out) <- c("OCS-GE cover", "OCS-GE cover and use", "EUNIS")
+  # keep the pixels covered by the three sources
+  terra::mask(out, terra::vect(sf::st_union(ocsge_us_metaleurop)))
+}
+```
+
+```{r compare_maps, fig.height=7}
+plot_sources <- function(species) {
+  ggplot() +
+    geom_spatraster(data = compare_sources(species)) +
+    facet_wrap(~lyr, ncol = 3) +
+    scale_fill_gradient(low = "#ffffe5", high = "#004529", limits = c(0, 10),
+                        na.value = "transparent", name = "Suitability") +
+    theme_void() +
+    labs(title = gsub("_", " ", species)) +
+    theme(plot.title = element_text(face = "italic"))
+}
+plot_sources("Microtus_arvalis") / plot_sources("Myodes_glareolus") +
+  plot_layout(guides = "collect")
+```
+
+The table below gives, for a few species, the mean suitability of the site
+under each source and the correlation between the maps.
+
+```{r compare_table}
+do.call(rbind, lapply(species, function(s) {
+  v <- as.data.frame(compare_sources(s), na.rm = TRUE)
+  data.frame(
+    species = gsub("_", " ", s),
+    mean_cover = round(mean(v[[1]]), 1),
+    mean_cover_use = round(mean(v[[2]]), 1),
+    mean_eunis = round(mean(v[[3]]), 1),
+    cor_cover_vs_use = round(cor(v[[1]], v[[2]]), 2),
+    cor_use_vs_eunis = round(cor(v[[2]], v[[3]]), 2)
+  )
+}))
+```
+
+How to read it:
+
+* where the cover and the cover-and-use maps correlate strongly, the use adds
+  little for this species on this site; where they do not, the species reacts
+  to what the use separates (crops, gardens, clearings);
+* the correlation with EUNIS is never high. Part of the gap is thematic, and
+  most of it is geometric: a 100 m pixel carries one class, while OCS-GE maps
+  the fields, gardens and roads inside it.
+
+# Choosing a source
+
+| | OCS-GE cover | OCS-GE cover and use | EUNIS |
+|---|---|---|---|
+| Study area | France | France | Europe (EEA-39) |
+| Smallest mapped object | a few meters | a few meters | 100 m pixel |
+| Built-up areas, roads | yes | yes | merged at 100 m |
+| Crops, gardens, verges, clearings | one class | separated by the use | separated, when larger than a pixel |
+| Crops versus permanent grassland | no | no | yes |
+| Wetlands, grassland types, dunes | no | no | yes |
+| Scores | scored for each cover | derived from EUNIS scores through `ref_ocsge_eunis` | scored for each class |
+
+In practice, for a French site of a few kilometers, OCS-GE with the use is
+the default choice, and EUNIS is worth overlaying where wetlands or grassland
+types matter for the species. Outside France, EUNIS is the only one of the
+three.
+
+# Other sources {#other-sources}
+
+The three sources above leave gaps that other geographic data can fill. None
+of them is wired into `spacemodR` yet; this section lists what each would
+bring, so that the same recipe (a map, a dictionary, a join) can be extended.
+
+| Source | What it would resolve | How it would enter |
+|---|---|---|
+| RPG (*Registre Parcellaire Graphique*, agricultural parcels) | Crops versus permanent grassland, and the crop type, inside `CS2.2.1` x `US1.1` | Splits a class: the parcel gives the EUNIS class (`I1`, `E2`, ...) instead of the crosswalk |
+| Wetland inventories, soil moisture | Wetlands (`D`) and wet grasslands (`E3`), which OCS-GE does not identify | Splits a class |
+| Vegetation indices (NDVI and time series) | Vegetation density and phenology within a class: bare field or standing crop, mown or tall grass | Modulates a score within a class |
+| LiDAR (canopy height, understorey, micro-topography) | Vegetation structure: hedges, young or mature stands, shrub layer | Modulates a score, or splits woodland and scrub classes |
+| Topography (altitude, slope, aspect) | Alpine and subalpine classes, dry or wet slopes | Splits a class |
+
+Two kinds of data appear in this table. Those that **split a class** fit the
+current design directly: they only change which dictionary row a polygon or a
+pixel takes, as the land use does in `join_ocsge_species()`. Those that
+**modulate a score** are continuous, and need a rule to combine them with the
+class score (a multiplier between 0 and 1, for instance), which is specific
+to each species.
+
 # Toward connectivity
 
-The suitability raster is the **source** layer and the resistance raster is
-the **resistance** layer for `compute_dispersal(method = "omniscape")`. Unlike the
-OCS-GE dictionary, `resistance` is already on the 1–100 log scale, so no
-exponential transformation is needed.
+Whatever the source, the suitability raster is the **source** layer and the
+resistance raster is the **resistance** layer of
+`compute_dispersal(method = "omniscape")`. `resistance` is already on the
+1–100 log scale in both dictionaries, so no transformation is needed. It must
+be at least 1: pixels outside the land cover map, left at 0 by
+`habitat_raster()`, have to be set to 1 or masked.
 
-To combine them with soil contamination maps, resample them onto the same grid
-as the contamination raster with nearest-neighbour interpolation:
+```{r omniscape, eval=FALSE}
+myodes <- join_ocsge_species(ocsge_us_metaleurop, "Myodes_glareolus")
+src <- ocsge_score_raster(myodes, "suitability")
+res <- ocsge_score_raster(myodes, "resistance")
+res <- terra::ifel(res < 1, 1, res)
 
-```{r to_grid}
-ground_cd <- load_raster_extdata("ground_concentration_cd_compressed.tif")
-apsy_suit_grid <- terra::project(apsy_suit, ground_cd, method = "near")
-apsy_res_grid <- terra::project(apsy_res, ground_cd, method = "near")
-c(apsy_suit_grid, apsy_res_grid)
+radius_px <- 500 / terra::res(ground_cd)[1]     # dispersal radius of 500 m
+compute_dispersal(x = src, method = "omniscape",
+                  options = list(resistance = res, radius = radius_px))
 ```
 
-```{r omniscape_eunis, eval=FALSE}
-res_m <- 500                                   # dispersal radius in metres
-radius_px <- res_m / terra::res(ground_cd)[1]
-compute_dispersal(
-  x = apsy_suit_grid,
-  method = "omniscape",
-  options = list(resistance = apsy_res_grid, radius = radius_px)
-)
-```
-
-See [Landscape Connectivity (Omniscape)](core_Omniscape_Connectivity.html) for
+See [Habitat Layer](core_Habitat.html) for building `habitat` objects with
+several layers, and
+[Landscape Connectivity (Omniscape)](core_Omniscape_Connectivity.html) for
 running and interpreting the connectivity model.
 
-Note that the EUNIS map is 100 m, so the landscape structure after
-resampling is coarser than with OCS-GE. Use EUNIS when the study area is
-outside France, or when the species depends on habitats that OCS-GE does not
-separate (wetlands, grassland types, dunes).
+# References

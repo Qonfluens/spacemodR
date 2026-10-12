@@ -6,14 +6,21 @@
 * **Continuity of thin structures:** `habitat()`, `add_habitat()` and `add_nohabitat()` gain a `touches` argument, stored in a new `touches` column. With `touches = TRUE`, lines and polygons fill every pixel they touch in `habitat_raster()`, which keeps hedgerows, rivers or roads continuous; with `touches = FALSE`, polygons fill the pixels whose centre they cover.
 * **Mixed geometries:** `habitat_raster()` now accepts points, lines and polygons in the same `habitat` object.
 * The "Habitat Layer" article explains `priority` and `touches` on a watercourse of the Metaleurop landscape.
+* **OCS-GE / EUNIS crosswalk:** new dataset `ref_ocsge_eunis`, a ranked correspondence between the 14 OCS-GE cover classes (`CS`), optionally refined by land use (`US`), and the 45 EUNIS Level 2 classes, with the share of each match measured on the Metaleurop site.
+* **Land use in OCS-GE habitats:** `ocsge_species_dict` now has rows for 47 (cover, use) pairs (`code_us`) in addition to the 14 covers, derived from `eunis_species_dict` through `ref_ocsge_eunis`. `join_ocsge_species()` gains a `us_col` argument: when the polygons carry the land use, they take the scores of their (cover, use) pair, and of their cover otherwise. New dataset `ocsge_us_metaleurop`, the OCS-GE of the Metaleurop site with cover and use.
+* **Habitat data sources guide:** the article "Habitat Layer from EUNIS" becomes "Habitat Data Sources". It compares OCS-GE cover, OCS-GE cover and use, and EUNIS, shows how to move between them, and lists the other sources that could refine them.
 
 ## Behaviour changes
 
 * `touches` defaults to `TRUE`, whereas `habitat_raster()` used to fill the pixels whose centre is covered by a polygon, and the pixels of a thin line. Existing rasters therefore change: features are drawn larger. Set `touches = FALSE` to get the previous result, in particular for layers of contiguous polygons such as a land cover map.
+* **`ocsge_species_dict` rebuilt with the columns of `eunis_species_dict`:** `weight_global` becomes `suitability`, `weight_movement` becomes `permeability`, `weight_breeding` and the species-level columns (`sppID`, `taxon_group`, `habitat_breadth`, `specialization`, `confidence`, `in_france`) are added, and cover codes are written without space (`"CS2.2.1"`). The scores themselves changed: they follow an anchored scale, are lower on classes that are not habitat, and movement accounts for flight. `resistance` is now on a 1-100 logarithmic scale derived from `permeability` (it was a 1-10 score): code that rescaled it, or tested `resistance == 10`, must be updated (use `permeability == 0` for impassable classes).
+* **`nom_espece` renamed `species_name`** in `ocsge_species_dict` and `eunis_species_dict`.
+* `plot_species_habitat()` now expects `suitability` instead of `weight_global`, and draws resistance on a log scale.
 
 ## Bug fixes
 
 * `habitat_raster()` no longer fails on an empty `habitat` object.
+* `get_eunis_data()` returned the raster upside down (north and south swapped), because the image exported by the EEA service carries no georeferencing. The image is now georeferenced before being read. The Metaleurop layer shipped in `inst/extdata/eunis_metaleurop_L2.tif` was rebuilt; rasters obtained with earlier versions must be downloaded again.
 
 # spacemodR 0.3.0
 

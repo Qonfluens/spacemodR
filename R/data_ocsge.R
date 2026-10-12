@@ -82,16 +82,29 @@ get_ocsge_data_fgb <- function(roi, fgb_url) {
 #' @description
 #' This function merges a spatial `sf` object containing OCSGE (Occupation du Sol
 #' à Grande Échelle) polygons with a dictionary of species-specific traits
-#' (e.g., habitat suitability weights, resistance). It handles potential code
-#' bridging via a reference dictionary.
+#' (e.g., habitat suitability, resistance). Polygons are matched on their
+#' cover code (\code{CS}) and, when the object also carries the land use
+#' (\code{US}), on the (cover, use) pair.
 #'
 #' @param sf_obj A spatial \code{sf} object containing the landscape polygons.
 #' @param species_pattern Character. A regex pattern or exact name to search for in the species dictionary.
-#' @param code_col Character. The name of the column in \code{sf_obj} that contains the OCSGE codes. Default is \code{"code_cs"}.
+#' @param code_col Character. The name of the column in \code{sf_obj} that contains the OCSGE cover codes. Default is \code{"code_cs"}.
 #' @param species_dict A data.frame containing the species traits. Defaults to \code{spacemodR::ocsge_species_dict}.
-#' @param ref_dict An optional reference data.frame to bridge codes between the spatial object and the species dictionary. Defaults to \code{spacemodR::ref_ocsge}.
+#' @param ref_dict An optional reference data.frame giving the label and color of each cover code, added to the result. Defaults to \code{spacemodR::ref_ocsge}.
+#' @param us_col Character. The name of the column in \code{sf_obj} that contains the OCSGE use codes. Default is \code{"code_us"}. Ignored when the column is absent; set to \code{NULL} to score polygons on their cover only.
 #'
 #' @return An \code{sf} object enriched with the species traits. Returns \code{NULL} if the species is not found.
+#'
+#' @details
+#' Cover codes are compared without spaces, so \code{"CS2.2.1"} and
+#' \code{"CS 2.2.1"} are the same class.
+#'
+#' In \code{\link{ocsge_species_dict}}, rows with \code{code_us = NA} hold the
+#' scores of a cover whatever its use, and rows with a \code{code_us} hold the
+#' scores of a (cover, use) pair. A polygon takes the scores of its (cover,
+#' use) pair when the dictionary has one, and the scores of its cover
+#' otherwise. The logical column \code{use_matched} of the result tells which
+#' of the two was used.
 #'
 #' @importFrom dplyr left_join
 #' @importFrom stats setNames
@@ -101,7 +114,8 @@ join_ocsge_species <- function(sf_obj,
                                species_pattern,
                                code_col = "code_cs",
                                species_dict = spacemodR::ocsge_species_dict,
-                               ref_dict = spacemodR::ref_ocsge) {
+                               ref_dict = spacemodR::ref_ocsge,
+                               us_col = "code_us") {
 
   # 1. Inputs validation
   if (!inherits(sf_obj, "sf")) {
@@ -110,9 +124,12 @@ join_ocsge_species <- function(sf_obj,
   if (!code_col %in% names(sf_obj)) {
     stop(sprintf("Column '%s' not found in `sf_obj`.", code_col))
   }
+  if (!all(c("species_name", "code_cs") %in% names(species_dict))) {
+    stop("`species_dict` must have the columns 'species_name' and 'code_cs'.")
+  }
 
   # 2. Match species in the dictionary
-  matched <- species_dict[grepl(species_pattern, species_dict$nom_espece, ignore.case = TRUE), ]
+  matched <- species_dict[grepl(species_pattern, species_dict$species_name, ignore.case = TRUE), ]
 
   if (nrow(matched) == 0) {
     warning(sprintf("No data found in the dictionary for species pattern: '%s'", species_pattern))
@@ -120,7 +137,7 @@ join_ocsge_species <- function(sf_obj,
   }
 
   # Check for multiple species matches and isolate the target
-  unique_species <- unique(matched$nom_espece)
+  unique_species <- unique(matched$species_name)
   sp_target <- unique_species[1]
 
   if (length(unique_species) > 1) {
@@ -128,21 +145,45 @@ join_ocsge_species <- function(sf_obj,
                     paste(unique_species, collapse = ", "), sp_target))
   }
 
-  df_sp <- matched[matched$nom_espece == sp_target, ]
+  df_sp <- matched[matched$species_name == sp_target, ]
 
-  # 3. Join spatial data with dictionaries
-  if (!is.null(ref_dict) && "code_cs_" %in% names(ref_dict)) {
-    df_merged <- dplyr::left_join(ref_dict, df_sp, by = c("code_cs_" = "code_cs"))
-  } else {
-    df_merged <- df_sp
+  # 3. Match each polygon to a dictionary row
+  strip <- function(x) gsub(" ", "", as.character(x))
+  poly_cs <- strip(sf_obj[[code_col]])
+  dict_cs <- strip(df_sp$code_cs)
+  dict_us <- if ("code_us" %in% names(df_sp)) strip(df_sp$code_us) else rep(NA_character_, nrow(df_sp))
+
+  # cover only
+  rows_cs <- which(is.na(dict_us))
+  idx <- rows_cs[match(poly_cs, dict_cs[rows_cs])]
+
+  # (cover, use) pair, where the object has the use and the dictionary has the pair
+  use_matched <- rep(FALSE, nrow(sf_obj))
+  rows_us <- which(!is.na(dict_us))
+  if (!is.null(us_col) && us_col %in% names(sf_obj) && length(rows_us) > 0) {
+    idx_us <- rows_us[match(paste(poly_cs, strip(sf_obj[[us_col]])),
+                            paste(dict_cs[rows_us], dict_us[rows_us]))]
+    use_matched <- !is.na(idx_us)
+    idx[use_matched] <- idx_us[use_matched]
   }
 
-  # Join the spatial object programmatically
-  join_by <- stats::setNames(names(df_merged)[1], code_col)
-  sf_merged <- dplyr::left_join(sf_obj, df_merged, by = join_by)
+  # 4. Add the traits, then the label and color of the cover
+  sf_merged <- sf_obj
+  trait_cols <- setdiff(names(df_sp), c("code_cs", "code_us"))
+  for (col in trait_cols) {
+    sf_merged[[col]] <- df_sp[[col]][idx]
+  }
+  sf_merged$use_matched <- use_matched
+
+  if (!is.null(ref_dict) && "code_cs" %in% names(ref_dict)) {
+    ref_idx <- match(poly_cs, strip(ref_dict$code_cs))
+    for (col in setdiff(names(ref_dict), c("code_cs", "code_cs_", names(sf_merged)))) {
+      sf_merged[[col]] <- ref_dict[[col]][ref_idx]
+    }
+  }
 
   # Check if the join actually retrieved data
-  if (all(is.na(sf_merged$weight_global))) {
+  if (all(is.na(idx))) {
     warning("No matching OCSGE codes were found between the spatial object and the species dictionary. The resulting traits will be empty.")
   }
 
@@ -155,14 +196,19 @@ join_ocsge_species <- function(sf_obj,
 #' Plot Habitat Suitability Maps from OCSGE Data
 #'
 #' @description
-#' Generates a composite plot of three spatial maps (Global Weight, Foraging Weight,
-#' and Resistance) from an `sf` object previously enriched with species traits.
+#' Generates a composite plot of three spatial maps (suitability, foraging
+#' weight and resistance) from an `sf` object previously enriched with species traits.
 #'
 #' @param sf_merged An `sf` object enriched with species traits (e.g., output of \code{\link{join_ocsge_species}}).
 #' @param title_species Character (optional). The name of the species to display in the title.
 #' If NULL, it will try to retrieve the name from the object attributes.
 #'
 #' @return A \code{patchwork} object containing the combined \code{ggplot2} maps.
+#'
+#' @details
+#' Suitability and foraging weight are drawn on their full 0-10 scale, and
+#' resistance on its 1-100 logarithmic scale, so that maps of different
+#' species can be compared.
 #'
 #' @importFrom ggplot2 ggplot geom_sf aes scale_fill_distiller theme_void labs theme element_text
 #' @importFrom patchwork plot_annotation
@@ -175,9 +221,9 @@ plot_species_habitat <- function(sf_merged, title_species = NULL) {
   }
 
   # Required columns check
-  req_cols <- c("weight_global", "weight_foraging", "resistance")
+  req_cols <- c("suitability", "weight_foraging", "resistance")
   if (!all(req_cols %in% names(sf_merged))) {
-    stop("Missing required columns in `sf_merged`. Expected: 'weight_global', 'weight_foraging', 'resistance'. Did you run `join_ocsge_species` first?")
+    stop("Missing required columns in `sf_merged`. Expected: 'suitability', 'weight_foraging', 'resistance'. Did you run `join_ocsge_species` first?")
   }
 
   # Retrieve species name for the title
@@ -188,22 +234,23 @@ plot_species_habitat <- function(sf_merged, title_species = NULL) {
 
   # Generate Maps
   p1 <- ggplot2::ggplot(sf_merged) +
-    ggplot2::geom_sf(ggplot2::aes(fill = .data$weight_global), color = NA) +
-    ggplot2::scale_fill_distiller(palette = "YlGn", direction = 1, na.value = "transparent", name = "Score") +
+    ggplot2::geom_sf(ggplot2::aes(fill = .data$suitability), color = NA) +
+    ggplot2::scale_fill_distiller(palette = "YlGn", direction = 1, na.value = "transparent", name = "Score", limits = c(0, 10)) +
     ggplot2::theme_void() +
-    ggplot2::labs(subtitle = "Global Weight") +
+    ggplot2::labs(subtitle = "Suitability") +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
   p2 <- ggplot2::ggplot(sf_merged) +
     ggplot2::geom_sf(ggplot2::aes(fill = .data$weight_foraging), color = NA) +
-    ggplot2::scale_fill_distiller(palette = "Blues", direction = 1, na.value = "transparent", name = "Score") +
+    ggplot2::scale_fill_distiller(palette = "Blues", direction = 1, na.value = "transparent", name = "Score", limits = c(0, 10)) +
     ggplot2::theme_void() +
     ggplot2::labs(subtitle = "Foraging Weight") +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))
 
   p3 <- ggplot2::ggplot(sf_merged) +
     ggplot2::geom_sf(ggplot2::aes(fill = .data$resistance), color = NA) +
-    ggplot2::scale_fill_distiller(palette = "Reds", direction = 1, na.value = "transparent", name = "Score") +
+    ggplot2::scale_fill_distiller(palette = "Reds", direction = 1, na.value = "transparent", name = "Score",
+                                  trans = "log10", limits = c(1, 100)) +
     ggplot2::theme_void() +
     ggplot2::labs(subtitle = "Resistance") +
     ggplot2::theme(plot.subtitle = ggplot2::element_text(hjust = 0.5))

@@ -25,8 +25,8 @@ navbar:
           href: articles/core_Soil_Kriging.html
         - text: "Habitat Layer"
           href: articles/core_Habitat.html
-        - text: "Habitat Layer from EUNIS"
-          href: articles/core_Habitat_EUNIS.html
+        - text: "Habitat Data Sources (OCS-GE, EUNIS)"
+          href: articles/core_Habitat_Sources.html
         - text: "Landscape Connectivity (Omniscape)"
           href: articles/core_Omniscape_Connectivity.html
         - text: "Food Intake"

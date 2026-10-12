@@ -9,7 +9,8 @@ join_ocsge_species(
   species_pattern,
   code_col = "code_cs",
   species_dict = spacemodR::ocsge_species_dict,
-  ref_dict = spacemodR::ref_ocsge
+  ref_dict = spacemodR::ref_ocsge,
+  us_col = "code_us"
 )
 }
 \arguments{
@@ -17,11 +18,13 @@ join_ocsge_species(
 
 \item{species_pattern}{Character. A regex pattern or exact name to search for in the species dictionary.}
 
-\item{code_col}{Character. The name of the column in \code{sf_obj} that contains the OCSGE codes. Default is \code{"code_cs"}.}
+\item{code_col}{Character. The name of the column in \code{sf_obj} that contains the OCSGE cover codes. Default is \code{"code_cs"}.}
 
 \item{species_dict}{A data.frame containing the species traits. Defaults to \code{spacemodR::ocsge_species_dict}.}
 
-\item{ref_dict}{An optional reference data.frame to bridge codes between the spatial object and the species dictionary. Defaults to \code{spacemodR::ref_ocsge}.}
+\item{ref_dict}{An optional reference data.frame giving the label and color of each cover code, added to the result. Defaults to \code{spacemodR::ref_ocsge}.}
+
+\item{us_col}{Character. The name of the column in \code{sf_obj} that contains the OCSGE use codes. Default is \code{"code_us"}. Ignored when the column is absent; set to \code{NULL} to score polygons on their cover only.}
 }
 \value{
 An \code{sf} object enriched with the species traits. Returns \code{NULL} if the species is not found.
@@ -29,6 +32,18 @@ An \code{sf} object enriched with the species traits. Returns \code{NULL} if the
 \description{
 This function merges a spatial `sf` object containing OCSGE (Occupation du Sol
 à Grande Échelle) polygons with a dictionary of species-specific traits
-(e.g., habitat suitability weights, resistance). It handles potential code
-bridging via a reference dictionary.
+(e.g., habitat suitability, resistance). Polygons are matched on their
+cover code (\code{CS}) and, when the object also carries the land use
+(\code{US}), on the (cover, use) pair.
+}
+\details{
+Cover codes are compared without spaces, so \code{"CS2.2.1"} and
+\code{"CS 2.2.1"} are the same class.
+
+In \code{\link{ocsge_species_dict}}, rows with \code{code_us = NA} hold the
+scores of a cover whatever its use, and rows with a \code{code_us} hold the
+scores of a (cover, use) pair. A polygon takes the scores of its (cover,
+use) pair when the dictionary has one, and the scores of its cover
+otherwise. The logical column \code{use_matched} of the result tells which
+of the two was used.
 }

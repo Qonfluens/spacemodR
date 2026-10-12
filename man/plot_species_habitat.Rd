@@ -16,6 +16,11 @@ If NULL, it will try to retrieve the name from the object attributes.}
 A \code{patchwork} object containing the combined \code{ggplot2} maps.
 }
 \description{
-Generates a composite plot of three spatial maps (Global Weight, Foraging Weight,
-and Resistance) from an `sf` object previously enriched with species traits.
+Generates a composite plot of three spatial maps (suitability, foraging
+weight and resistance) from an `sf` object previously enriched with species traits.
+}
+\details{
+Suitability and foraging weight are drawn on their full 0-10 scale, and
+resistance on its 1-100 logarithmic scale, so that maps of different
+species can be compared.
 }

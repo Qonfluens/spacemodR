@@ -8,7 +8,7 @@
 A data frame with 42,075 rows (935 species x 45 EUNIS classes) and 13 columns:
 \describe{
   \item{code_eunis}{Character. EUNIS Level 2 code (e.g. \code{"G1"}); matches \code{ref_eunis$code} for \code{level == "L2"}.}
-  \item{nom_espece}{Character. Scientific name, genus and species separated by \code{"_"}.}
+  \item{species_name}{Character. Scientific name, genus and species separated by \code{"_"}.}
   \item{sppID}{Character. Species identifier from the EEA source table; the first letter gives the group (A, R, B, M).}
   \item{taxon_group}{Character. \code{"amphibian"}, \code{"reptile"}, \code{"bird"} or \code{"mammal"}.}
   \item{suitability}{Integer (0-10). Overall habitat suitability: 0 unused or avoided, 2 marginal, 5 secondary, 8 main, 10 core habitat.}
@@ -47,7 +47,7 @@ build scripts are in \code{raw_data/opus_scoring/} of the source repository.
 }
 \examples{
 data(eunis_species_dict)
-subset(eunis_species_dict, nom_espece == "Apodemus_sylvaticus")
+subset(eunis_species_dict, species_name == "Apodemus_sylvaticus")
 
 }
 \seealso{

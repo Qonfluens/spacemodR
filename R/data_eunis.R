@@ -123,7 +123,10 @@ get_eunis_data <- function(roi,
   )
 
   tmp <- tempfile(fileext = ".png")
-  on.exit(unlink(tmp), add = TRUE)
+  # world file: the PNG has no embedded georeferencing, and terra reads an
+  # ungeoreferenced image upside down (row 1 at the bottom)
+  tmp_wld <- sub("\\.png$", ".pgw", tmp)
+  on.exit(unlink(c(tmp, tmp_wld)), add = TRUE)
 
   tryCatch({
     resp <- httr::GET(paste0(service_url, "/export"), query = query,
@@ -133,7 +136,12 @@ get_eunis_data <- function(roi,
     stop("Error when reading the EUNIS map service. Check URL and Internet connection.\n", e)
   })
 
-  img <- suppressWarnings(terra::rast(tmp)) # the PNG has no embedded georeferencing; set below
+  # pixel size x, rotation (2), pixel size y, center of the upper-left pixel (x, y)
+  writeLines(sprintf("%.6f", c(resolution, 0, 0, -resolution,
+                               bbox[["xmin"]] + resolution / 2,
+                               ymax - resolution / 2)), tmp_wld)
+
+  img <- terra::rast(tmp)
   names(img) <- c("r", "g", "b", "a")
   terra::ext(img) <- terra::ext(bbox[["xmin"]], xmax, bbox[["ymin"]], ymax)
   terra::crs(img) <- "EPSG:3035"

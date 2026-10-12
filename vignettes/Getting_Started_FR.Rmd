@@ -117,20 +117,20 @@ plot_species_habitat(crocidura_hab)
 Pour comprendre les 3 cartes en détails, ce référer à la page **Habitat**.
 Brièvement:
 
-- **Global weight** (pondération globale), c'est la capacité d'accueil (ou l'attractivité générale) d'un milieu pour l'espèce.
+- **Suitability** (qualité d'habitat), c'est la capacité d'accueil (ou l'attractivité générale) d'un milieu pour l'espèce.
 - **Foraging weight** (pondération de recherche de nourriture) : c'est l'attractivité trophique du milieu.
 Un animal ne se nourrit pas forcément partout où il vit.
-- **Resistance** (résistance au déplacement / Friction spatiale) : c'est le coût énergétique ou le danger lié à la traversée de ce milieu.
+- **Resistance** (résistance au déplacement / Friction spatiale) : c'est le coût énergétique ou le danger lié à la traversée de ce milieu, de 1 (déplacement libre) à 100 (infranchissable).
 Ce paramètre est utilisé par les modèles de connectivité et de dispersion (comme l'algorithme Omniscape abordé plus tard).
 
 
 
 ```{r def_hab_mammal}
-# nous utilise le poids `weight_global` comme habitat
-habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$weight_global) |>
-  add_nohabitat(microtus_hab[microtus_hab$resistance==10,])
-habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$weight_global) |>
-  add_nohabitat(crocidura_hab[crocidura_hab$resistance==10,])
+# nous utilisons `suitability` comme poids d'habitat, et retirons les couvertures infranchissables pour l'espèce
+habitat_herbivore <- habitat(microtus_hab, habitat=TRUE, weight=microtus_hab$suitability) |>
+  add_nohabitat(microtus_hab[microtus_hab$permeability==0,])
+habitat_carnivore <- habitat(crocidura_hab, habitat=TRUE, weight=crocidura_hab$suitability) |>
+  add_nohabitat(crocidura_hab[crocidura_hab$permeability==0,])
 ```
 
 

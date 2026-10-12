@@ -16,3 +16,22 @@ test_that("test eunis collector", {
   })
 
 })
+
+test_that("ref_ocsge_eunis is consistent with both nomenclatures", {
+
+  xw <- spacemodR::ref_ocsge_eunis
+  l2 <- spacemodR::ref_eunis$code[spacemodR::ref_eunis$level == "L2"]
+
+  # every class of both nomenclatures is covered, with no unknown code
+  expect_setequal(unique(xw$code_cs), spacemodR::ref_ocsge$code_cs)
+  expect_setequal(unique(xw$code_eunis), l2)
+
+  # one default EUNIS class per OCS-GE cover, ranks without gap
+  group <- paste(xw$code_cs, xw$code_us)
+  expect_true(all(tapply(xw$rank, group, function(r) identical(sort(r), seq_along(r)))))
+  expect_equal(sum(is.na(xw$code_us) & xw$rank == 1), nrow(spacemodR::ref_ocsge))
+
+  # one main OCS-GE cover per EUNIS class
+  expect_setequal(xw$code_eunis[xw$main_cs], l2)
+  expect_equal(sum(xw$main_cs), length(l2))
+})

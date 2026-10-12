@@ -74,7 +74,7 @@ the connectivity problem within this moving window.
 
 ## About Units of Source, Resistance and Radius
 
-1. *Source*: relative capacity or suitability (usually `weight_global` or `weight_foraging` is the internal `ocsge_species_dict` dataset). For instance:
+1. *Source*: relative capacity or suitability (usually `suitability` or `weight_foraging` in the internal `ocsge_species_dict` dataset). For instance:
   - Value 10 (Core habitat): A dense, undisturbed forest for a fox. It generates a massive amount of dispersing individuals.
   - Value 2 (Poor habitat): A small, degraded woodlot. It emits very few individuals.
   - Value 0 or NA (Non-habitat): A parking lot. It emits absolutely no 
@@ -89,15 +89,17 @@ the connectivity problem within this moving window.
 
 ## Exponential law for resistance
 
-When we build resistance map, for instance from the internal `ocsge_species_dict`
-dataset which provides resistance values that scale sharply, we have to transform the
-`weight` factor set in `0-10` to a log-scale function.
-Indeedn, if an optimal habitat is $1$ and the worst barrier is only $5$,
-`Omniscape` will barely notice the barrier and will simulate animals 
-walking almost in straight lines!
+A resistance map needs values that scale sharply. If an optimal habitat is $1$
+and the worst barrier is only $5$, `Omniscape` will barely notice the barrier
+and will simulate animals walking almost in straight lines!
 
-A good practice would is to convert the linear scale $0$ to $10$ in an
-exponential scale $1$ to $1000$ (e.g. `10^( (log10(1000) / 10) * x )`.
+A good practice is to convert a linear score into an exponential scale. This is
+what the internal `ocsge_species_dict` and `eunis_species_dict` datasets do:
+their `resistance` column is derived from the `permeability` score, set in
+`0-10`, as `10^(2 * (1 - permeability / 10))`, which runs from $1$ (free
+movement) to $100$ (impassable). It can be used as it is. For a sharper
+contrast, the same rule gives a scale from $1$ to $1000$ with
+`10^(3 * (1 - permeability / 10))`.
 
 ## The Algorithm
 
