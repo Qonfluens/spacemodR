@@ -1,0 +1,200 @@
+---
+title: "Apodemus sylvaticus habitat: EUNIS, OCS-GE and OCS-GE in EUNIS nomenclature"
+output: html_document
+params:
+  res: 1
+  nx: 4
+  ny: 4
+---
+
+# Render
+
+```{r render, eval=FALSE}
+# from the package root, 1 m in 4 x 4 tiles processed one after the other
+rmarkdown::render("data_big/habitat_apsy_bbox.Rmd", params = list(res = 1, nx = 4, ny = 4),
+                  output_file = "habitat_apsy_bbox_1m.html")
+# 10 m in a single tile
+rmarkdown::render("data_big/habitat_apsy_bbox.Rmd", params = list(res = 10, nx = 1, ny = 1),
+                  output_file = "habitat_apsy_bbox_10m.html")
+```
+
+# Setup
+
+```{r setup, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, fig.width = 12, fig.height = 9)
+library(spacemodR)
+library(sf)
+library(terra)
+terraOptions(memmax = 2, progress = 0) # Gb of RAM terra may use before working by blocks on disk
+
+species <- "Apodemus_sylvaticus"
+vars <- c("suitability", "weight_breeding", "weight_foraging", "resistance")
+res <- params$res
+max_bytes <- 1e9 # tiles are merged into one tif only below 1 Gb
+fgb_url <- "https://spacemod-ocsge.s3.fr-par.scw.cloud/ocsge_france.fgb"
+
+roi <- st_as_sfc(st_bbox(c(xmin = -0.63357, ymin = 46.085058, xmax = -0.178351, ymax = 46.34823), crs = 4326))
+roi <- st_as_sf(st_as_sfc(st_bbox(st_transform(roi, 2154))))
+tpl <- rast(ext(vect(roi)), resolution = res, crs = "EPSG:2154")
+
+out_dir <- "habitat_apsy_bbox"
+tile_dir <- file.path(out_dir, sprintf("tiles_%gm", res))
+dir.create(tile_dir, showWarnings = FALSE, recursive = TRUE)
+products <- c("lc_eunis", "lc_ocsge", "lc_ocsge_as_eunis", "apsy_eunis", "apsy_ocsge", "apsy_ocsge_as_eunis")
+wopt <- function(datatype) list(datatype = datatype, gdal = c(
+  "COMPRESS=DEFLATE", "TILED=YES", "NUM_THREADS=ALL_CPUS", "BIGTIFF=IF_SAFER"))
+
+data("ref_ocsge"); data("ref_eunis"); data("ref_ocsge_eunis")
+ref_eunis <- ref_eunis[ref_eunis$level == "L2", ]
+ref_eunis$label <- paste(ref_eunis$code, substr(ref_eunis$nomenclature, 1, 35))
+ref_ocsge$label <- paste(ref_ocsge$code_cs, ref_ocsge$nomenclature)
+dict_eunis <- eunis_species_dict[eunis_species_dict$species_name == species, ]
+best <- ref_ocsge_eunis[ref_ocsge_eunis$rank == 1, ]
+```
+
+# Tiles
+
+```{r tiles}
+cols <- round(seq(0, ncol(tpl), length.out = params$nx + 1))
+rows <- round(seq(0, nrow(tpl), length.out = params$ny + 1))
+tiles <- expand.grid(ix = seq_len(params$nx), iy = seq_len(params$ny))
+tiles$xmin <- xmin(tpl) + cols[tiles$ix] * res
+tiles$xmax <- xmin(tpl) + cols[tiles$ix + 1] * res
+tiles$ymin <- ymin(tpl) + rows[tiles$iy] * res
+tiles$ymax <- ymin(tpl) + rows[tiles$iy + 1] * res
+tiles$Mcells <- round((tiles$xmax - tiles$xmin) * (tiles$ymax - tiles$ymin) / res^2 / 1e6, 1)
+tiles
+```
+
+# EUNIS land cover (100 m, whole area)
+
+```{r eunis}
+eunis <- get_eunis_data(roi, level = "L2", resolution = 100)
+lv <- levels(eunis)[[1]]
+levels(eunis) <- NULL
+codes <- strsplit(lv$code, "/")
+eunis_scores <- lapply(dict_eunis[vars], function(x)
+  sapply(codes, function(cc) mean(x[match(cc, dict_eunis$code_eunis)])))
+```
+
+# Tile by tile: OCS-GE download, rasterization, habitat weights
+
+```{r process}
+write_cat <- function(r, id, class_id, file) {
+  classify(r, cbind(id, class_id), others = NA, filename = file, overwrite = TRUE, wopt = wopt("INT1U"))
+}
+write_scores <- function(r, id, scores, file) {
+  out <- rast(lapply(vars, function(v) classify(r, cbind(id, scores[[v]]), others = NA)))
+  names(out) <- vars
+  writeRaster(out, file, overwrite = TRUE, wopt = wopt("FLT4S"))
+}
+
+process_tile <- function(i) {
+  f <- setNames(file.path(tile_dir, sprintf("%s_%02d.tif", products, i)), products)
+  if (all(file.exists(f))) return(invisible(f)) # already done: the run can be resumed
+  t <- tiles[i, ]
+  tile <- rast(ext(t$xmin, t$xmax, t$ymin, t$ymax), resolution = res, crs = "EPSG:2154")
+
+  eu <- project(eunis, tile, method = "near")
+  write_cat(eu, lv$id, match(sapply(codes, `[`, 1), ref_eunis$code), f["lc_eunis"])
+  write_scores(eu, lv$id, eunis_scores, f["apsy_eunis"])
+
+  oc <- get_ocsge_data_fgb(st_as_sf(st_as_sfc(st_bbox(unlist(t[c("xmin", "ymin", "xmax", "ymax")]), crs = 2154))),
+                           fgb_url)
+  oc <- join_ocsge_species(oc, paste0("^", species, "$"))
+  with_us <- best$code_eunis[match(paste(oc$code_cs, oc$code_us), paste(best$code_cs, best$code_us))]
+  cs_only <- best$code_eunis[match(paste(oc$code_cs, NA), paste(best$code_cs, best$code_us))]
+  oc$code_eunis <- ifelse(is.na(with_us), cs_only, with_us)
+  grp <- unique(st_drop_geometry(oc)[, c("code_cs", "code_us", "code_eunis", vars)])
+  grp$id <- seq_len(nrow(grp))
+  oc$id <- match(paste(oc$code_cs, oc$code_us), paste(grp$code_cs, grp$code_us))
+  oc_id <- rasterize(vect(oc["id"]), tile, field = "id")
+
+  write_cat(oc_id, grp$id, match(grp$code_cs, ref_ocsge$code_cs), f["lc_ocsge"])
+  write_scores(oc_id, grp$id, grp[vars], f["apsy_ocsge"])
+  write_cat(oc_id, grp$id, match(grp$code_eunis, ref_eunis$code), f["lc_ocsge_as_eunis"])
+  write_scores(oc_id, grp$id, dict_eunis[match(grp$code_eunis, dict_eunis$code_eunis), vars],
+               f["apsy_ocsge_as_eunis"])
+
+  rm(eu, oc, oc_id); gc(); tmpFiles(remove = TRUE)
+  invisible(f)
+}
+
+for (i in seq_len(nrow(tiles))) process_tile(i)
+```
+
+# Merge the tiles (one tif per product if below 1 Gb)
+
+```{r merge}
+merge_tiles <- function(name) {
+  f <- list.files(tile_dir, sprintf("^%s_[0-9]+\\.tif$", name), full.names = TRUE)
+  out <- file.path(out_dir, sprintf("%s_%gm.tif", name, res))
+  if (sum(file.size(f)) >= max_bytes) { # too big: keep the tiles, tied together by a virtual raster
+    return(vrt(f, sub("\\.tif$", ".vrt", out), overwrite = TRUE))
+  }
+  r <- vrt(f)
+  if (startsWith(name, "lc_")) {
+    ref <- if (name == "lc_ocsge") ref_ocsge else ref_eunis
+    levels(r) <- data.frame(id = seq_len(nrow(ref)), class = ref$label)
+    coltab(r) <- data.frame(value = seq_len(nrow(ref)), col = ref$couleur)
+  } else {
+    names(r) <- vars
+  }
+  r <- writeRaster(r, out, overwrite = TRUE, wopt = wopt(if (startsWith(name, "lc_")) "INT1U" else "FLT4S"))
+  unlink(f)
+  r
+}
+
+habitat <- sapply(products, merge_tiles, simplify = FALSE)
+if (length(list.files(tile_dir)) == 0) unlink(tile_dir, recursive = TRUE)
+
+f <- list.files(out_dir, sprintf("_%gm\\.(tif|vrt)$", res), full.names = TRUE)
+knitr::kable(data.frame(file = basename(f), Mb = round(file.size(f) / 1e6, 2)))
+```
+
+```{r plot_fun}
+plot_scores <- function(r) {
+  par(mfrow = c(2, 2))
+  for (v in vars) plot(r[[v]], main = v, range = if (v == "resistance") c(1, 100) else c(0, 10))
+}
+```
+
+# Land cover
+
+## EUNIS
+
+```{r lc_eunis}
+plot(habitat$lc_eunis, mar = c(2, 2, 1, 22))
+```
+
+## OCS-GE
+
+```{r lc_ocsge}
+plot(habitat$lc_ocsge, mar = c(2, 2, 1, 22))
+```
+
+## OCS-GE in EUNIS nomenclature
+
+```{r lc_ocsge_eunis}
+plot(habitat$lc_ocsge_as_eunis, mar = c(2, 2, 1, 22))
+```
+
+# Habitat weights of *Apodemus sylvaticus*
+
+## EUNIS
+
+```{r apsy_eunis}
+plot_scores(habitat$apsy_eunis)
+```
+
+## OCS-GE
+
+```{r apsy_ocsge}
+plot_scores(habitat$apsy_ocsge)
+```
+
+## OCS-GE in EUNIS nomenclature
+
+```{r apsy_ocsge_eunis}
+plot_scores(habitat$apsy_ocsge_as_eunis)
+```
