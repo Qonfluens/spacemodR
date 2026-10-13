@@ -15,6 +15,8 @@
 
 ## spacemodR 0.3.5
 
+CRAN release: 2026-10-12
+
 ### New Features & Improvements
 
 - **Stacking order of habitat layers:**
