@@ -3,10 +3,10 @@
 \name{spacemodR-package}
 \alias{spacemodR-package}
 \alias{spacemodR}
-\title{The 'spacemodR' package.}
+\title{spacemodR: Wildlife Chemical Risk Mapping Through Food Webs}
 \description{
-Workflow for spatially explicit environmental risk assessment: habitat,
-food web, dispersal, exposure and risk.
+Workflow to map the risk of chemicals for wildlife: habitat, food web,
+dispersal, exposure and risk.
 }
 \references{
 Stan Development Team (2020). RStan: the R interface to Stan. R package version 2.21.2. https://mc-stan.org

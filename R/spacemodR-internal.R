@@ -4,11 +4,11 @@ if (getRversion() >= "4.0.0")  utils::globalVariables(c(
  "trophic_tbl", "x_from", "y_from", "x_to", "y_to", "y",
   "node", "spcmdl_habitat", "plot_weight"))
 
-#' The 'spacemodR' package.
+#' spacemodR: Wildlife Chemical Risk Mapping Through Food Webs
 #'
 #' @description
-#' Workflow for spatially explicit environmental risk assessment: habitat,
-#' food web, dispersal, exposure and risk.
+#' Workflow to map the risk of chemicals for wildlife: habitat, food web,
+#' dispersal, exposure and risk.
 #'
 #' @name spacemodR-package
 #' @aliases spacemodR

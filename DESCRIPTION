@@ -1,22 +1,24 @@
 Package: spacemodR
-Title: Spatial Environmental Risk Assessment Through Food Webs
+Title: Wildlife Chemical Risk Mapping Through Food Webs
 Version: 0.3.5
+Date: 2026-10-14
 Authors@R: 
     c(person("Virgile", "Baudrot", email = "virgile.baudrot@qonfluens.com", role = c("aut", "cre", "cph")),
-      person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr", role = "ctb"),
-      person("Clémentine", "Fritsch", email = "clementine.fritsch@univ-fcomte.fr", role = c("ctb", "cph")),
-      person("Renaud", "Scheifler", email = "renaud.scheifler@univ-fcomte.fr", role = "ctb")
+      person("Léa", "Bariod", email = "lea.bariod@univ-fcomte.fr", role = "aut"),
+      person("Clémentine", "Fritsch", email = "clementine.fritsch@univ-fcomte.fr", role = c("aut", "cph")),
+      person("Renaud", "Scheifler", email = "renaud.scheifler@univ-fcomte.fr", role = "aut"),
+      person("Quentin", "Devalloir", email = "quentin.devalloir@qonfluens.com", role = "aut")
     )
-Description: A workflow for spatially explicit environmental risk assessment
-  of contaminated sites: habitat, food web, dispersal, exposure and risk.
-  Starting from a raster of soil contamination, the package builds habitat
-  layers for a set of species, organises them in a directed acyclic graph
-  representing a food web, and propagates the flow of elements (e.g., food,
-  energy, contaminants) along its links. It also provides soil interpolation
-  by kriging, dispersal by kernel convolution or by circuit theory (through
-  the optional 'Julia' package 'Omniscape'), land cover retrieval for France
-  ('OCS-GE') and Europe ('EUNIS'), and Bayesian calibration of transfer
-  models with 'Stan'.
+Description: A workflow to map the risk of chemicals for wildlife: habitat,
+  food web, dispersal, exposure and risk. Starting from a raster of chemical
+  concentrations in the environment (e.g., metals in soil, pesticides in
+  fields), the package builds habitat layers for a set of species, organises
+  them in a directed acyclic graph representing a food web, and propagates
+  the flow of elements (e.g., food, energy, chemicals) along its links. It
+  also provides soil interpolation by kriging, dispersal by kernel
+  convolution or by circuit theory (through the optional 'Julia' package
+  'Omniscape'), land cover retrieval for France ('OCS-GE') and Europe
+  ('EUNIS'), and Bayesian calibration of transfer models with 'Stan'.
 License: MIT + file LICENSE
 URL: https://github.com/Qonfluens/spacemodR, https://qonfluens.github.io/spacemodR/
 BugReports: https://github.com/Qonfluens/spacemodR/issues

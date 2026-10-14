@@ -9,6 +9,7 @@ if (length(args) < 3) {
 path_habitat <- args[1]
 path_resistance <- args[2]
 radius <- as.numeric(args[3])
+path_output <- args[4]
 
 # 1. Nettoyer l'environnement R
 Sys.setenv(LD_LIBRARY_PATH = "")
@@ -35,7 +36,7 @@ dispersed_map <- compute_dispersal(
 
 # --- 3. Save the result ---
 output_file <- dirname(path_habitat)
-output_path <- file.path(output_file, "dispersed_map.rds")
 
-saveRDS(dispersed_map, output_path)
+output_path <- file.path(output_file, paste0(path_output, ".tif"))
+terra::writeRaster(dispersed_map, output_path, overwrite = TRUE)
 cat("Computation finished. File saved to", output_path, "\n")

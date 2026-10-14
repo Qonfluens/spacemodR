@@ -3,12 +3,13 @@
 [![Documentation](https://img.shields.io/badge/documentation-online-blue.svg)](https://qonfluens.github.io/spacemodR/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Spatial environmental risk assessment through food webs**
+**Wildlife chemical risk mapping through food webs**
 
-`spacemodR` is an R package for the ecological risk assessment of contaminated
-sites. It starts from a map of soil contamination and follows the contaminant
-through the food web, taking into account where each species lives and how it
-moves. The result is a set of maps: habitat, exposure and risk for each species.
+`spacemodR` is an R package to map the risk of chemicals for wildlife, such as
+metals in soil or pesticides in fields. It starts from a map of chemical
+concentrations and follows the chemical through the food web, taking into
+account where each species lives and how it moves. The result is a set of maps:
+habitat, exposure and risk for each species.
 
 Full documentation: <https://qonfluens.github.io/spacemodR/>
 
