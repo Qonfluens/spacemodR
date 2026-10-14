@@ -1,7 +1,7 @@
-# The 'spacemodR' package.
+# spacemodR: Wildlife Chemical Risk Mapping Through Food Webs
 
-Workflow for spatially explicit environmental risk assessment: habitat,
-food web, dispersal, exposure and risk.
+Workflow to map the risk of chemicals for wildlife: habitat, food web,
+dispersal, exposure and risk.
 
 ## References
 

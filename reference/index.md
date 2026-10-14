@@ -114,7 +114,7 @@
   : Distance and wind covariates around a contamination source
 - [`spacemodR-package`](https://qonfluens.github.io/spacemodR/reference/spacemodR-package.md)
   [`spacemodR`](https://qonfluens.github.io/spacemodR/reference/spacemodR-package.md)
-  : The 'spacemodR' package.
+  : spacemodR: Wildlife Chemical Risk Mapping Through Food Webs
 - [`spacemodel()`](https://qonfluens.github.io/spacemodR/reference/spacemodel.md)
   : Create a spacemodel object
 - [`` `[`( ``*`<trophic_tbl>`*`)`](https://qonfluens.github.io/spacemodR/reference/sub-.trophic_tbl.md)
